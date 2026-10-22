@@ -1,0 +1,268 @@
+<div class="titleBreak">
+  <h2><span id="uploadHeading"><a href="#upload"></a></span></h2>
+</div>
+<p class="upload_inst">
+	Anyone can upload educational media to propagate.info. To act as a "Good Librarian," Please take your Time when you fill out the Upload Form, as we try to distinguish ourselves through a sophisticated, organized structure! <br><br>Only <span id="legal">*PUBLIC DOMAIN*</span> Ebooks, Audiobooks, Classical Music, Renaissance Art, and Documentaries are allowed.<br><br>Please seed with a WebTorrent-enabled client, such as qBitTorrent 5.3 beta1, BiglyBT with WebTorrent plugin, or WebTorrent Desktop.<br><br>
+</p>
+<h3 id="newUploadHeader"><span>Uploading</span><a href="#"></a></h3>
+<form>
+	<div class="newUpload">
+		<div class="grid_0">
+			<label for="type">Type: </label>
+		</div>
+		<div class="grid_1">
+			<select id="type">
+				
+			</select>
+		</div>
+    <br>
+		<br>
+		<br>
+		<div class="grid_0">
+			<label for="title">Source Title: </label>
+		</div>
+		<div class="grid_1">
+			<div class="search_sources">
+				<input id="title" class="searchField search_upload_sources_input" name="title" placeholder="Source Title"><ul class="autosuggestBox"></ul>
+			</div>
+			<input id="uuid" name="uuid" placeholder="uuid">
+		</div>
+		
+		<br>
+		<br>
+		<br>
+		<div class="grid_0">
+			<label for="date">Original Date: </label>	
+		</div>
+		<div class="grid_1">
+			<input id="date" placeholder="First Edition Date" name="date">
+		</div>
+		<br>
+		<br>
+		<br>
+		<div class="grid_1" id="authors_area">
+		</div>
+		<div class="grid_0">
+			<label for="author_input">Author: </label>
+		</div>
+		<div class="grid_1">
+			<div class="search_authors">
+				<input name="author" class="searchField search_upload_authors_input" autocomplete="off" id="author_input" placeholder="Author"><ul class="autosuggestBox"></ul>
+			</div>
+			<!--<button id="add_author">Add Author</button>!-->
+			<button id="create_author">New Author</button><!-- TODO: warning if not already created !-->
+		</div>
+		<br><br><br>
+	  <div class="grid_0">
+			<label for="classes_input">Classes (comma-separated): </label>
+		</div>
+		<div class="grid_1">
+			<div class="search_classes">
+				<input name="classes" class="searchField search_upload_classes_input" id="classes_input" placeholder="Classes, comma separated"><ul class="autosuggestBox"></ul>
+			</div>
+		</div>
+    <br><br><br>
+
+		<script>
+			var authorCount = 0;
+			function addAuthorArea(id, author, cb){
+
+				var a = document.createElement("a");
+				$(a).text(decodeEntities(decodeEntities(author)) + " ");
+				$(a).attr("href", "#node?label=author&uuid=" + id)
+				$(a).click(function(e){
+					e.preventDefault();
+					ANCHOR.route("#node?label=author&uuid=" + id);
+				})
+				var div = document.createElement("div");
+				$(div).attr("id", "authors_div")
+				$(div).attr("data-id", id)
+
+				if(authorCount === 0){
+					$(div).append("<label id='authors_grid' class='grid_0'>Authors: </label>")
+				}
+				$("#authors_area").append(div);
+
+				authorCount++;
+
+				$(div).attr("id", "#author_" + id);
+
+				$(div).append(a);
+        
+				var select = document.createElement("select")
+				$(select).attr("id", "author_importance");
+
+
+				//$(div).append(input);
+
+				$("#author_input").val("");
+      
+				var remove = document.createElement("a");
+				$(div).append(remove);
+				$(remove).addClass("removeAuthor");
+				$(remove).text("[RM]");
+				$(remove).attr("href", "javascript:;");
+				$(remove).after("<id='author_break_" + id + "' class='author_break'>")
+				$("#authors_grid").after("<div class='grid_1'><br id='author_break_" + id + "' class='author_break'><br id='author_break_" + id + "' class='author_break'></div>")
+				cb(null, div, select, remove, id);
+			}
+
+			function removeAuthorArea(div, id){
+				$(div).remove();
+				$("#author_break_" + id).remove();
+			}
+
+		</script>
+	</div>
+	<br><br><br><br><br><br><br><br><br>
+	<div class="grid_0">
+		<label for="edition_check">Edition Info (Optional!)</label>
+	</div>
+	<div class='grid_1'>
+		<input id="edition_check" name="edition_check" type="checkbox" value="edition">
+	</div>
+	<br><br>
+	<div id="edition">
+		<br>
+		<!--<label>Enter edition information, such as publisher or "2nd Edition." Tags in edition title should be divided by a /</label>!-->
+		<div class="grid_0 existing_edition">
+			<label for="edition_select">Existing Edition?</label>
+		</div>
+		<div class="grid_1 existing_edition">
+			<select id="edition_select" name="edition_select">
+			</select>
+		</div><br><br><br>
+		<div id="newEdition">
+			<div class="grid_0">
+				<label for="edition_publisher">Publisher/Journal: </label>
+			</div>
+			<div class="grid_1">
+				<input name="edition_publisher" id="edition_publisher" placeholder="Publisher or Journal (e.g. Nature)"><ul class="autosuggestBox"></ul>
+			</div><br><br><br>
+			<div class="grid_0">
+				<label for="edition_title">Trans., Ed. or Vol.:</label> 
+			</div>
+			<div class="grid_1">
+				<input name="edition" id="edition_title" placeholder="Ed., Trans., or Vol.">
+			</div>
+			<br><br><br>
+			<div class="grid_0">
+				<label for="edition_no">No.:</label> 
+			</div>
+			<div class="grid_1">
+				<input name="edition_no" id="edition_no" placeholder="No. (for Journals)">
+			</div>
+			<br><br><br>
+			<div class="grid_0">
+				<label for="edition_pages">Pages or Length: </label>
+			</div>
+			<div class="grid_1">
+				<input id="edition_pages" placeholder="Pages / Length">
+			</div>
+			<br><br><br>
+			<div class="grid_0">
+				<label for="edition_date">Ed. Date: </label>
+			</div>
+			<div class="grid_1">
+				<input id="edition_date" name="edition_date" placeholder="Edition Date Published">
+			</div>
+		</div>
+	</div>
+	
+  <br><br><br><br><br><br>
+	<div class="grid_0">
+		<label for="media">Media: </label>
+	</div>
+	<div class="grid_1">
+		<select id="media">
+		</select>
+	</div>
+	<div class="grid_0">
+		<label for="format">Format:</label>
+	</div>
+	<div class="grid_1">
+    <select id="format">
+        <option value="">Select Format</option>
+        <option value="mp3">MP3</option>
+        <option value="mp4">MP4</option>
+        <option value="png">PNG</option>
+        <option value="PDF">PDF</option>
+    </select>
+	</div>
+	<div class="grid_0">
+	    <label for="resolutions">Resolution:</label>
+	</div>
+	<div class="grid_1">
+	    <select class="resolutions" id="pdf_resolutions" style="display:none;"></select>
+	    <select class="resolutions" id="music_resolutions" style="display:none;"></select>
+	    <select class="resolutions" id="video_resolutions" style="display:none;"></select>
+	    <input class="resolutions" id="image_resolutions" placeholder="Format: 1080x720" style="display:none;">
+	</div>
+  <br><br><br>
+  <br><br><br><br><br>
+  <div class="APA">
+		<div class="grid_0">
+			<label for="rename_file">Rename File to APA Format</label>
+		</div>
+		<div class="grid_1">
+			<button id="APA">Copy Filename</button>
+		</div>
+	</div>
+  <br><br><br><br><br><br>
+	<div id="torrent_area">
+			<div class="grid_0">
+				<label for="upload_files">Upload files: </label>
+			</div>
+			<div class="grid_1">
+				<input type="file" id="upload_files" multiple>
+				<div id='MG'>
+				</div>
+			</div><br><br><br>   
+	</div>
+	<br><br><br>
+  <!--
+	<div class="copyrighted">
+		<div class="grid_0 paid copy">
+			<label for="LINK_price">Payment</label>
+		</div>
+		<div class="grid_1 paid copy">
+			<input id="link_price" name="LINK_price"><br>
+			<input id="link_address" placeholder = "$LINK ADDRESS" name="LINK_address">
+      
+		</div>
+	</div>
+!-->
+
+	<div class="grid_0">
+		<button id="up_submit">Upload!</button>
+	</div><br><br><br>
+	<div class="grid_1" id="errorsDiv">
+	</div>
+	<script>
+		function addError(msg){
+			console.log(msg);
+			$("#errorsDiv").empty();
+			$("#errorsDiv").append("<br>" + msg + "<br>");
+			$("#errorsDiv").css({color : "red"});
+		}
+	</script>
+
+</form>
+<br><br><br>
+
+<!--
+<div class="merge_source">
+	<label for="merge_source_input">Merge source: </label>
+	<input id="merge_source_input" placeholder="source uuid"><button id="merge_source_button">Merge into</button>
+</div>!-->
+<script>
+	$("#merge_source_button").click(function(e){
+		var uuid = $("#merge_source_input").val();
+		e.preventDefault();
+		$.post("merge_source/" + ANCHOR.getParams().uuid, {mergeInto : uuid}, function(){
+			ANCHOR.route("#source?silo="+ getSilo().uuid + "&uuid=" + uuid);
+		})
+	})
+	
+
+</script>

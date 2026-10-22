@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+	<head>
+    <link rel="icon" type="image/png" href="img/favicon.png">
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  		<meta name="description" content="Legal educational Public Domain PDFs. WebTorrent FTW!">
+		<meta name="viewport" content="width=device-width, initial-scale=1">   
+  		
+		<title>A Happy WebTorrent Library</title>    
+		<script
+			  src="https://code.jquery.com/jquery-3.6.0.min.js"
+			  integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+			  crossorigin="anonymous"></script>
+		<script src="//cdn.jsdelivr.net/npm/d3@7"></script>
+		<script src="//cdn.jsdelivr.net/npm/aframe"></script>
+		<script src="//cdn.jsdelivr.net/npm/three-spritetext"></script>
+		<script src="//cdn.jsdelivr.net/npm/3d-force-graph-vr"></script>
+		<script src="//momentjs.com/downloads/moment.min.js"></script>
+		<script type='module'>
+		    import WebTorrent from 'https://esm.sh/webtorrent/dist/webtorrent.min.js';
+		    const client = new WebTorrent();
+		    window.client = client;    
+		</script>
+ 		<!--<script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.12.1/r-2.3.0/rg-1.2.0/sc-2.0.7/datatables.min.js"></script>!-->
+		<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+		<link href="https://cdn.datatables.net/v/bs5/dt-2.3.6/r-3.0.7/rg-1.6.0/datatables.min.css" rel="stylesheet" integrity="sha384-i/e6BsAbTmZKP2IcmciTyXaRiUI8dsCcCup+rx9YTpue2vAs88x0EMdVpJwsy1w6" crossorigin="anonymous">
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+		<script src="https://cdn.datatables.net/v/bs5/dt-2.3.6/r-3.0.7/rg-1.6.0/datatables.min.js" integrity="sha384-hEKF7lI4CXMfgws5RQaFG/2ujXcySjhBW4iiRyp2i631II/GRq2CfWMum47bxoXY" crossorigin="anonymous"></script>
+		<script
+			  src="https://code.jquery.com/ui/1.13.1/jquery-ui.min.js"
+			  integrity="sha256-eTyxS0rkjpLEo16uXTS0uVCS4815lc40K2iVpWDvdSY="
+			  crossorigin="anonymous"></script>
+		<link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+		<link rel="stylesheet" type="text/css" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/pepper-grinder/jquery-ui.min.css">
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/caret/1.3.7/jquery.caret.min.js" integrity="sha512-DR6H+EMq4MRv9T/QJGF4zuiGrnzTM2gRVeLb5DOll25f3Nfx3dQp/NlneENuIwRHngZ3eN6w9jqqybT3Lwq+4A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+		<script src="lib/TEMPEST.js"></script>
+		<script src="lib/util.js"></script>
+
+		<script src="js/model/Category.js"></script>
+		<script src="js/model/webtorrent.js"></script>
+		<script src="js/model/graph.js"></script>
+		<script src="js/model/torrents.js"></script>
+		<script src="js/model/recommendation.js"></script>
+		<script src="js/model/hero.js"></script>
+
+		<script src="js/hook/hiero.js"></script>
+		<script src="js/hook/webtorrent.js"></script>
+		<script src="js/hook/header.js"></script>
+		<script src="js/hook/torrents.js"></script>
+		<script src="js/hook/recommendation.js"></script>
+		<script src="js/hook/Category.js"></script>
+		<script src="js/hook/graph.js"></script>
+		<script src="js/hook/add_source.js"></script>
+		<script src="js/hook/node.js"></script>
+
+
+		<script src="js/controller/add_source.js"></script>
+		<script src="js/controller/hero.js"></script>
+		<script src="js/controller/torrents.js"></script>
+		<script src="js/controller/webtorrent.js"></script>
+		<script src="js/controller/recommendation.js"></script>
+		<script src="js/controller/graph.js"></script>
+		<script src="js/controller/autocomplete.js"></script>
+		<script src="js/controller/Category.js"></script>
+		<script src="js/controller/search.js"></script>
+		<script src="js/controller/loader.js"></script>
+
+		<link rel="stylesheet" type="text/css" href="styles/Mystery.css"/>
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Noto+Sans+Egyptian+Hieroglyphs&family=Oswald&family=Rationale&display=swap" rel="stylesheet">
+
+
+
+	</head>		
+	<body>		
+		<header>
+		</header>
+
+	
+		<div class="TEMPEST">
+			<div class="gate">
+			</div>
+			<div class="upload">
+			</div>
+			<div class="webtorrent">
+			</div>
+			<div class="top10">
+			</div>
+			<div class="node">
+			</div>
+			<div class="Category">
+			</div>
+			<div class="torrents">
+			</div>
+			<div class="privacy">
+			</div>
+		</div>		
+		<footer>
+		</footer>
+	</body>
+</html>
