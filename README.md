@@ -1,3 +1,4 @@
 Free on vercel, what must sync with github
 
-For public domain media
+Free code also released under GNU License.
+
