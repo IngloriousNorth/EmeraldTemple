@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+	<head>
+    <link rel="icon" type="image/png" href="img/favicon.png">
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  		<meta name="description" content="Legal educational Public Domain PDFs. WebTorrent, ftw!">
+		<meta name="viewport" content="width=device-width, initial-scale=1">   
+  		
+		<title>EmeraldTemplev1beta1.</title>    
+
+		<script type='module'>
+ 			import WebTorrent from 'WebTorrent'
+ 			const client = new WebTorrent();
+		    const controller = await navigator.serviceWorker.register('/sw.min.js', { scope: './' })
+		    await navigator.serviceWorker.ready
+		    client.createServer({ controller })
+			window.client = client;		    
+		</script>
+ 		<!--<script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.12.1/r-2.3.0/rg-1.2.0/sc-2.0.7/datatables.min.js"></script>!-->
+
+		<script src="bundle.js"></script>
+
+		<link rel="stylesheet" type="text/css" href="styles/Mystery.css"/>
+		<link rel="stylesheet" type="text/css" href="styles/jquery-ui.min.css">
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<!-- GEMINI INSTRUCT HOW TO DOWNLOAD AND UNZIP AND PUT IN FONTS DIR!-->
+		<link rel="stylesheet" href="/styles/fonts.css">
+
+
+
+	</head>		
+	<body>		
+		<header>
+		</header>
+
+	
+		<div class="TEMPEST">
+			<div class="gate">
+			</div>
+			<div class="upload">
+			</div>
+			<div class="webtorrent">
+			</div>
+			<div class="top10">
+			</div>
+			<div class="node">
+			</div>
+			<div class="Category">
+			</div>
+			<div class="torrents">
+			</div>
+			<div class="privacy">
+			</div>
+		</div>		
+		<footer>
+		</footer>
+	</body>
+</html>

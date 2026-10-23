@@ -1,0 +1,21 @@
+@font-face {
+  font-family: 'Noto Sans Egyptian Hieroglyphs';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/vEF42-tODB8RrNDvZSUmRhcQHzx1s7y_F9-j3qSzEcbEYindSQ.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Rationale';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/9XUnlJ92n0_JFxHIfHcsdg.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Share Tech Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/J7aHnp1uDWRBEqV98dVQztYldFc7pA.ttf) format('truetype');
+}
