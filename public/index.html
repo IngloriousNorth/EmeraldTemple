@@ -5,7 +5,7 @@
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
         <meta name="description" content="Legal educational Public Domain PDFs. WebTorrent, ftw!">
         <meta name="viewport" content="width=device-width, initial-scale=1">    
-        <title>EmeraldTemple</title>    
+        <title>The Public Domain WebTorrent Indexer</title>    
 
         <link rel="stylesheet" type="text/css" href="styles/Mystery.css"/>
         <link rel="stylesheet" type="text/css" href="styles/jquery-ui.min.css"/>
@@ -44,7 +44,7 @@
                 });
 
                 // 2. Verify and route to #torrents when .GATE is clicked
-                const gateElement = document.querySelector('#gate');
+                const gateElement = document.querySelector('#lock');
                 if (gateElement) {
                     gateElement.addEventListener('click', function() {
                         if (isAuthenticated) {
@@ -62,7 +62,7 @@
         </script>
 
         <div class="GATE" style="cursor: pointer;">
-            <span id="stupa">&#x13296;</span>
+            <span id="lock">&#x13296;</span>
             <p id="inscription">
                 Here lies the solution to the great educational reform so necessary at this time. We can not hope to build a nobility of man upon the sterility of a narrow, competitive, materialistic educational policy. The ignorance of man has been his undoing. Only wisdom can restore him to his divine estate. 
             </p> 

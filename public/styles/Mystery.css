@@ -153,7 +153,7 @@ footer{
   text-shadow:2px 2px gold;
 }
 
-#stupa{
+#lock{
   padding:0px 0px 0px 0px;
   display:block;
   color:#03fc6c;
@@ -1809,7 +1809,7 @@ h2 span a{
   color:darkgoldenrod !important;
 }
 
-#stupa:hover{
+#lock:hover{
   cursor:pointer;
 }
 
