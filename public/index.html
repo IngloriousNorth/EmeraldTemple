@@ -33,29 +33,19 @@
         document.addEventListener('DOMContentLoaded', function() {
                 let isAuthenticated = false;
 
-                // 1. Login via MetaMask on page load
-                EthersAuth.initAuth(function(authenticated) {
-                    isAuthenticated = authenticated;
-                    if (authenticated) {
-                        const script = document.createElement('script');
-                        script.src = '../js/bundle.js';
-                        document.body.appendChild(script);
-                    }
-                });
-
                 // 2. Verify and route to #torrents when .GATE is clicked
                 const gateElement = document.querySelector('#lock');
                 if (gateElement) {
                     gateElement.addEventListener('click', function() {
-                        if (isAuthenticated) {
-                            if (window.TEMPEST && typeof window.TEMPEST.route === 'function') {
-                                window.TEMPEST.route('#torrents');
-                            } else {
-                                window.location.hash = '#torrents';
+                         // 1. Login via MetaMask on page load
+                        EthersAuth.initAuth(function(authenticated) {
+                            isAuthenticated = authenticated;
+                            if (authenticated) {
+                                const script = document.createElement('script');
+                                script.src = '../js/bundle.js';
+                                document.body.appendChild(script);
                             }
-                        } else {
-                            alert("Please complete MetaMask authentication first.");
-                        }
+                        });
                     });
                 }
             });

@@ -78789,7 +78789,7 @@ ${str}>>`;
     defaultPage: "gate",
     dir: "/fragment",
     fade: true,
-    pages: ["gate", "webtorrent", "torrents", "top10", "node", "Category", "upload", "privacy"],
+    pages: ["webtorrent", "torrents", "top10", "node", "Category", "upload", "privacy"],
     helm: [
       {
         page: "torrents",
@@ -78903,19 +78903,12 @@ ${str}>>`;
           jquery_module_default("h2 span a").text("Privacy Policy").css("color", "silver").hide().fadeIn(1337);
           ;
         }
-      },
-      {
-        page: "gate",
-        fn: function() {
-          jquery_module_default("#city").off("click").click(function() {
-            TEMPEST.route("#torrents");
-          });
-        }
       }
     ]
   };
   function go() {
     jquery_module_default(".autosuggestBox").hide();
+    TEMPEST.route("#torrents");
     const params = TEMPEST.paramREC() ? TEMPEST.paramREC() : {};
     jquery_module_default.get("/fragment/header.html", function(data2) {
       jquery_module_default("header").html(data2);
