@@ -39,11 +39,11 @@ window.initializeTorrents = function initializeTorrents(table, cb) {
         pageLength: 10,
         columns: [
             { visible: false, searchable: false }, // Index 0: Grouping (Date/Title)
-            { width: "50%" },                 // Index 1: APA Citation
-            { width: "16.66%" },              // Index 2: Revs
-            { width: "16.66%" },              // Index 3: Date
-            { width: "16.66%" },              // Index 4: Time
-            { width: "100%", responsivePriority: 1 } // Index 5: Download
+            { width: "50%" },                      // Index 1: APA Citation / Drop Zone
+            { width: "16.66%" },                   // Index 2: Revs
+            { width: "16.66%" },                   // Index 3: Date
+            { width: "16.66%" },                   // Index 4: Time
+            { width: "100%", responsivePriority: 1 }// Index 5: Download
         ],
         columnDefs: [
             { targets: [0], visible: false }, 
@@ -79,15 +79,26 @@ window.initializeTorrents = function initializeTorrents(table, cb) {
             dataSrc: function(json) {
                 refreshDTRecs();
 
-                // If server-side returns a standard wrapper object with records
+                // Exactly 6 elements to match the 6 defined table columns (Index 0 to 5)
+                var uploadBannerRow = [
+                    "", // Index 0: Grouping
+                    "<div class='upload-dropzone-row' style='text-align: center; padding: 14px; font-weight: bold; cursor: pointer; border: 2px dashed #888; border-radius: 6px; margin: 4px 0; background: rgba(0,0,0,0.01);'>📄 Drag & Drop a PDF to seed the Graph</div>", // Index 1: Drop Zone
+                    "", // Index 2: Revs
+                    "", // Index 3: Date
+                    "", // Index 4: Time
+                    ""  // Index 5: Download
+                ];
+
                 var records = json && json.records ? json.records : (Array.isArray(json) ? json : []);
 
                 if (!records || records.length === 0) {
-                    console.log("No results found in database.");
-                    return []; // Return empty array to DataTables cleanly
+                    console.log("No results found.");
+                    dtRecs.unshift(uploadBannerRow);
+                    return dtRecs;
                 }
 
                 insertTableData(json);
+                dtRecs.unshift(uploadBannerRow);
 
                 var editionsAdded = [];
                 tableData.records.forEach(function(record) {
@@ -150,43 +161,29 @@ window.initializeTorrents = function initializeTorrents(table, cb) {
         drawCallback: function(settings) {
             cb();
 
-            // Guaranteed UI Injection for Dropzone & Add Source (Runs on every draw, handles empty states safely)
-            if (TEMPEST.pageREC() === "torrents") {
-                const $tableWrapper = $("#" + table).closest(".dataTables_wrapper");
+            // Inject add_source inputs into the first dtrg-group row
+            if (TEMPEST.pageREC() === "torrents" && $("#add_source").length === 0) {
+                const $firstGroup = $(".dtrg-group").first();
                 
-                // 1. Inject Drag & Drop Zone above table if it doesn't exist yet
-                if ($tableWrapper.find(".upload-dropzone-row").length === 0) {
-                    $tableWrapper.before(`
-                        <div class='upload-dropzone-row' style='text-align: center; padding: 14px; font-weight: bold; cursor: pointer; border: 2px dashed #888; border-radius: 6px; margin-bottom: 12px; background: rgba(0,0,0,0.01);'>
-                            📄 Drag & Drop a PDF to seed the Graph
-                        </div>
+                if ($firstGroup.length) {
+                    $firstGroup.append(`
+                        <span class="source-inputs-wrapper" style="margin-left: 15px;">
+                            <input type="text" id="add_source_apa" placeholder="APA Citation" />
+                            <input type="text" id="add_source" placeholder="Archive URL (Pre-1931 Only)" />
+                            <button id="add_source_btn">Add</button>
+                        </span>
                     `);
-                }
-
-                // 2. Inject Add Source inputs if they don't exist yet
-                if ($("#add_source").length === 0) {
-                    const $firstGroup = $(".dtrg-group").first();
-                    
-                    if ($firstGroup.length) {
-                        $firstGroup.append(`
-                            <span class="source-inputs-wrapper" style="margin-left: 15px;">
-                                <input type="text" id="add_source_apa" placeholder="APA Citation" />
-                                <input type="text" id="add_source" placeholder="Archive URL" />
+                } else {
+                    const $tableWrapper = $("#" + table).closest(".dataTables_wrapper");
+                    if ($tableWrapper.find("#add_source").length === 0) {
+                        $tableWrapper.before(`
+                            <div class="empty-state-inputs" style="margin-bottom: 15px; padding: 10px; background: rgba(0,0,0,0.03); border: 1px dashed #ccc;">
+                                <span style="margin-right: 10px; font-size: 0.9em; color: #666;">Add Source (Pre-1931 Only):</span>
+                                <input type="text" id="add_source_apa" placeholder="APA Citation" style="margin-right: 5px;" />
+                                <input type="text" id="add_source" placeholder="Archive URL" style="margin-right: 5px;" />
                                 <button id="add_source_btn">Add</button>
-                            </span>
+                            </div>
                         `);
-                    } else {
-                        // Fallback container injection above table when table rows are completely empty (0 nodes)
-                        if ($tableWrapper.find("#add_source").length === 0) {
-                            $tableWrapper.before(`
-                                <div class="empty-state-inputs" style="margin-bottom: 15px; padding: 10px; background: rgba(0,0,0,0.03); border: 1px dashed #ccc;">
-                                    <span style="margin-right: 10px; font-size: 0.9em; color: #666;">Add your first Source:</span>
-                                    <input type="text" id="add_source_apa" placeholder="APA Citation" style="margin-right: 5px;" />
-                                    <input type="text" id="add_source" placeholder="Archive URL" style="margin-right: 5px;" />
-                                    <button id="add_source_btn">Add</button>
-                                </div>
-                            `);
-                        }
                     }
                 }
             }
