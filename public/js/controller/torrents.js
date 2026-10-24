@@ -79,17 +79,18 @@ window.initializeTorrents = function initializeTorrents(table, cb) {
             dataSrc: function(data) {
                 refreshDTRecs();
 
-                // 1. Define the custom upload banner row
+                // Exactly 6 elements to match the 6 defined table columns (Index 0 to 5)
                 var uploadBannerRow = [
-                    "<div class='upload-dropzone-row' style='text-align: center; padding: 12px; font-weight: bold; cursor: pointer; border: 2px dashed #888; border-radius: 6px; margin: 4px 0;'>" +
-                        "📄 Drag & Drop a PDF to seed the Graph" +
-                    "</div>",
-                    "", "", "" // Dummy columns if your DataTable expects specific column array lengths
+                    "", // Index 0: Grouping
+                    "<div class='upload-dropzone-row' style='text-align: center; padding: 12px; font-weight: bold; cursor: pointer; border: 2px dashed #888; border-radius: 6px; margin: 4px 0;'>📄 Drag & Drop a PDF to seed the Graph</div>", // Index 1: APA Citation column
+                    "", // Index 2: Revs
+                    "", // Index 3: Date
+                    "", // Index 4: Time
+                    ""  // Index 5: Download
                 ];
 
                 if (!data || !data.records || data.records.length === 0) {
                     console.log("No results found.");
-                    // Still return the upload row so users can always drop files even on empty search results
                     dtRecs.unshift(uploadBannerRow);
                     return dtRecs;
                 }
@@ -163,17 +164,13 @@ window.initializeTorrents = function initializeTorrents(table, cb) {
             },
         },
         drawCallback: function(settings) {
-            
-            //this sets graphParams in the graphModel so the graph can accumulate where the user left off.
-           
             cb();
 
-           // Inject elements into the first dtrg-group, or fallback above the table if empty
+            // Inject add_source inputs safely whether groups exist or table is empty
             if (TEMPEST.pageREC() === "torrents" && $("#add_source").length === 0) {
                 const $firstGroup = $(".dtrg-group").first();
                 
                 if ($firstGroup.length) {
-                    // Normal case: Groups exist (table has data)
                     $firstGroup.append(`
                         <span class="source-inputs-wrapper" style="margin-left: 15px;">
                             <input type="text" id="add_source_apa" placeholder="APA Citation" />
@@ -182,15 +179,14 @@ window.initializeTorrents = function initializeTorrents(table, cb) {
                         </span>
                     `);
                 } else {
-                    // Fallback case: Table is empty, so place the inputs above the table wrapper
-                    const $tableContainer = $("#torrents").closest(".dataTables_wrapper").length ? 
-                                            $("#torrents").closest(".dataTables_wrapper") : 
-                                            $("#torrents").parent();
+                    const $tableContainer = $("#" + table).closest(".dataTables_wrapper").length ? 
+                                            $("#" + table).closest(".dataTables_wrapper") : 
+                                            $("#" + table).parent();
                                             
                     if ($tableContainer.find("#add_source").length === 0) {
                         $tableContainer.prepend(`
                             <div class="empty-state-inputs" style="margin-bottom: 15px; padding: 10px; background: rgba(0,0,0,0.03); border: 1px dashed #ccc;">
-                                <span style="margin-right: 10px; font-size: 0.9em; color: #666;">No entries found. Add your first Source:</span>
+                                <span style="margin-right: 10px; font-size: 0.9em; color: #666;">Add your first Source:</span>
                                 <input type="text" id="add_source_apa" placeholder="APA Citation" style="margin-right: 5px;" />
                                 <input type="text" id="add_source" placeholder="Archive URL" style="margin-right: 5px;" />
                                 <button id="add_source_btn">Add</button>
@@ -211,20 +207,13 @@ window.initializeTorrents = function initializeTorrents(table, cb) {
             }
 
             var api = this.api();
-        
-            // Internal DataTables draw counter
-            // settings.iDraw > 1 ensures this doesn't run on the initial load
             if (settings.iDraw > 1) {
-                // Use the wrapper to ensure we find the top of the table component
                 var tableWrapper = $(api.table().container());
-                
-                // Scroll to the top of the wrapper
                 tableWrapper[0].scrollIntoView({ 
                     behavior: 'smooth', 
                     block: 'start' 
                 });
             }            
-            
         },
     })
 
@@ -232,61 +221,39 @@ window.initializeTorrents = function initializeTorrents(table, cb) {
     
     $(document).off("click", "#torrent_infoHash").on("click", "#torrent_infoHash", function(e){
       e.preventDefault();
-      
-      // Retrieve the infohash from the data-infohash attribute
       const infoHash = $(this).data('infohash');
-      
-      if (!infoHash) {
-        console.warn('No data-infohash attribute found on this element.');
-        return;
-      }
+      if (!infoHash) return;
 
-      // Copy to clipboard using modern Navigator API
-      navigator.clipboard.writeText(infoHash)
-        .then(() => {
-          
-          // Optional: Give visual feedback to the user
+      navigator.clipboard.writeText(infoHash).then(() => {
           const $el = $(this);
           const originalText = $el.text();
           $el.text('[Copied!]');
           $el.css('color', '#50C777');
           setTimeout(() => { $el.text(originalText); $el.css('color', 'darkgoldenrod'); }, 2000);
-        })
-        .catch(err => {
-          console.error('Failed to copy to clipboard:', err);
-        });
+      }).catch(err => console.error('Failed to copy:', err));
     });
 
     $(document).off("click", ".copy-citation-btn").on("click", ".copy-citation-btn", function(e) {
       e.stopPropagation();
       const uuid = $(this).data("uuid");
       const $btn = $(this);
-      
-      // Extract clean text content from the citation element
       const textToCopy = $("#edition_" + uuid + "_field").text().trim();
 
-      navigator.clipboard.writeText(textToTest = textToCopy).then(() => {
-        // Visual indicator feedback (turns green briefy)
+      navigator.clipboard.writeText(textToCopy).then(() => {
         $btn.css("color", "#50C777");
         setTimeout(() => $btn.css("color", "#a0a0a0"), 1200);
-      }).catch(err => {
-        console.error("Failed to copy citation: ", err);
-      });
+      }).catch(err => console.error("Failed to copy citation: ", err));
     });
     
     $(document).off("click", "a.webtorrent").on("click", "a.webtorrent", function(e) {
         e.preventDefault();
         const d = this.dataset;
-        // Fix: Using d.infoHash (case sensitive) and adding quotes to selector        
-        
         const $existing = $(`#hero option[value="${d.infohash}"]`);
 
-    //called on webtorrent route load, either refresh or a.webtorrent route()
         if ($existing.length === 0){
             $(this).text("[Revving..!]");
             $(this).css('color', 'darkcyan');
-        }
-        else{
+        } else {
             $(this).text("[Already Revved.]");
             $(this).css('color', 'orange');
         }
@@ -300,4 +267,6 @@ window.initializeTorrents = function initializeTorrents(table, cb) {
     });
 
     $("a.webtorrent").text("[WebTorrent]");
-}
+};
+
+window.initializeTorrents = initializeTorrents;

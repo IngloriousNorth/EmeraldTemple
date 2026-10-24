@@ -32,16 +32,13 @@ var TEMPEST = {
         window.addEventListener('popstate', (event) => {
             const target = that.pageREC();
             
-            // If the path has actually changed, we must re-disclose the Truth (render)
             if (that.currentPage !== target) {
                 document.dispatchEvent(new CustomEvent("TEMPEST")); 
             } else {
-                // If only parameters changed, just update the helm rituals
                 that.helm(target); 
             }
         });
 
-        // 2. INITIAL HORIZON
         var currentHash = window.location.hash.split('?')[0].substring(1);
         var startingPage = currentHash || that._default;
 
@@ -69,12 +66,12 @@ var TEMPEST = {
         var that = this;
         if (!page) page = this._default;
 
-        // 1. Hide all pages first to clear the horizon using vanilla DOM
+        // 1. Hide all pages first to clear the horizon
         this._pages.forEach(p => {
             document.querySelectorAll("div." + p).forEach(el => el.style.display = 'none');
         });
 
-        // 2. CHECK: Has this page been "un-concealed" (rendered) before?
+        // 2. CHECK: Has this page been rendered before?
         var targetDivs = document.querySelectorAll("div." + page);
         if (targetDivs.length === 0) return;
 
@@ -236,7 +233,7 @@ var TEMPEST = {
     },
 
     _invisible_page: function(page) {
-        document.querySelectorAll(".TEMPEST div." + page).forEach(el => el.style.display = 'none');
+        document.querySelectorAll("div." + page).forEach(el => el.style.display = 'none');
     },
 
     _show_div: function(path) {
@@ -256,7 +253,6 @@ var TEMPEST = {
     }
 };
 
-// SMEE: This listener looks out for the trigger after TEMPEST is fully defined
 document.addEventListener("TEMPEST", function() {
     let page = TEMPEST.pageREC();
     TEMPEST.render(page);

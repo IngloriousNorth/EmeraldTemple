@@ -346,7 +346,7 @@ app.post('/add_source/:infoHash', async (req, res) => {
             : "n.d.";
             
         const editionDate = (extractedMetadata && extractedMetadata.edition_date) ? String(extractedMetadata.edition_date).trim() : "";
-        if(!editionDate || editionDate > 1934){
+        if(!editionDate || editionDate < 1931){
             return res.json({status: "Sorry, Not In Public Domain!"})
         }
         const session = driver.session();

@@ -78493,9 +78493,299 @@ ${str}>>`;
 
   // public/js/controller/torrents.js
   init_jquery_shim();
+  window.initializeTorrents = function initializeTorrents2(table, cb) {
+    if (jquery_module_default.fn.DataTable.isDataTable("#" + table)) {
+      var oldTable = jquery_module_default("#" + table).DataTable();
+      oldTable.clear().destroy();
+      jquery_module_default("#" + table).empty();
+      jquery_module_default("#" + table).removeAttr("style").removeClass("dtr-inline collapsed");
+      jquery_module_default("#" + table).append('<thead><tr><th>Group</th><th>APA Citation</th><th>Revs</th><th>Date</th><th>Time</th><th class="none"></th></tr></thead><tbody></tbody>');
+    }
+    var hashes = [];
+    var url = "";
+    var checkTable = table;
+    if (table === "torrents") {
+      if (!TEMPEST.paramREC()) {
+        url = "/" + table;
+      } else {
+        url = "/" + table + "/adv_search";
+      }
+    } else if (TEMPEST.pageREC() === "top10") {
+      url = "/top10/" + table;
+    } else if (table === "node") {
+      url = "/" + table + "/" + TEMPEST.paramREC().label + "?uuid=" + TEMPEST.paramREC().uuid;
+    }
+    dataTable = jquery_module_default("#" + table).DataTable({
+      destroy: true,
+      responsive: {
+        details: {
+          display: jquery_module_default.fn.dataTable.Responsive.display.childRowImmediate,
+          type: "none"
+        }
+      },
+      serverSide: true,
+      bSort: true,
+      pageLength: 10,
+      columns: [
+        { visible: false, searchable: false },
+        // Index 0: Grouping (Date/Title)
+        { width: "50%" },
+        // Index 1: APA Citation
+        { width: "16.66%" },
+        // Index 2: Revs (Right-align to keep icon tidy)
+        { width: "16.66%" },
+        // Index 3: Date
+        { width: "16.66%" },
+        // Index 4: Time
+        { width: "100%", responsivePriority: 1 }
+        // Index 5: Download
+      ],
+      columnDefs: [
+        { targets: [0], visible: false },
+        // Grouping column
+        { targets: [1], className: "text-left" },
+        // APA Citation
+        { targets: [2, 3, 4], className: "dt-left" },
+        // Revs, Date, Time (aligned left)
+        { targets: 5, responsivePriority: 1 }
+        // Download
+      ],
+      order: [[4, "desc"]],
+      processing: true,
+      searching: false,
+      paging: true,
+      stateSave: TEMPEST.pageREC() === "torrents" && !TEMPEST.paramREC() ? true : false,
+      info: true,
+      rowGroup: {
+        dataSrc: 0,
+        ordering: true,
+        orderable: true
+      },
+      ajax: {
+        url,
+        type: "POST",
+        data: {
+          title: TEMPEST.paramREC() ? TEMPEST.paramREC().title : "",
+          author: TEMPEST.paramREC() ? TEMPEST.paramREC().author : "",
+          classes: TEMPEST.paramREC() ? TEMPEST.paramREC().classes : "",
+          all: "true",
+          publisher: TEMPEST.paramREC() ? TEMPEST.paramREC().publisher : "",
+          type: TEMPEST.paramREC() ? TEMPEST.paramREC().type : "",
+          media: TEMPEST.paramREC() ? TEMPEST.paramREC().media : "",
+          format: TEMPEST.paramREC() ? TEMPEST.paramREC().format : "",
+          res: TEMPEST.paramREC() ? TEMPEST.paramREC().res : ""
+        },
+        dataSrc: function(data2) {
+          refreshDTRecs();
+          var uploadBannerRow = [
+            "",
+            // Index 0: Grouping
+            "<div class='upload-dropzone-row' style='text-align: center; padding: 12px; font-weight: bold; cursor: pointer; border: 2px dashed #888; border-radius: 6px; margin: 4px 0;'>\u{1F4C4} Drag & Drop a PDF to seed the Graph</div>",
+            // Index 1: APA Citation column
+            "",
+            // Index 2: Revs
+            "",
+            // Index 3: Date
+            "",
+            // Index 4: Time
+            ""
+            // Index 5: Download
+          ];
+          if (!data2 || !data2.records || data2.records.length === 0) {
+            console.log("No results found.");
+            dtRecs.unshift(uploadBannerRow);
+            return dtRecs;
+          } else {
+            insertTableData(data2);
+          }
+          var editionsAdded = [];
+          tableData.records.forEach(function(record) {
+            var authorField = "";
+            record._fields[1].forEach(function(field, i2) {
+              if (i2 === 0)
+                authorField += "<span class='silver'> by </span>";
+              if (record._fields[1].length === 1) {
+                authorField += "<a class='TEMPEST node author' href='#node?label=author&uuid=" + field.properties.uuid + "'>" + decodeEntities(field.properties.name);
+              } else {
+                authorField += "<a class='TEMPEST node author' href='#node?label=author&uuid=" + field.properties.uuid + "'>" + decodeEntities(field.properties.name);
+                if (i2 < record._fields[1].length - 1) {
+                  authorField += "<span class='silver'>, </span>";
+                }
+              }
+              authorField += "</a>";
+            });
+            var dateField = "";
+            if (record._fields[0] && record._fields[0].properties.date) {
+              dateField += "<b class='silver'>[" + decodeEntities(record._fields[0].properties.date) + "]</b>";
+            }
+            var classesField = " ";
+            record._fields[3].forEach(function(field, i2) {
+              if (field.properties.uuid) {
+                classesField += "<a class='TEMPEST node class' href='#node?label=class&uuid=" + field.properties.uuid + "'>" + decodeEntities(field.properties.name);
+              }
+              if (record._fields[3].length > 1 && i2 < record._fields[3].length - 1) {
+                classesField += "<span class='classComma silver'>,</span></a>";
+              } else {
+                classesField += "</a>";
+              }
+            });
+            var sourceIMG = assertSourceIMG(record);
+            var numPeers = 0;
+            record._fields[2].forEach(function(edition_torrent) {
+              var currentApa = assertAPACitation(record, edition_torrent);
+              var singleTrRow = assertTr(record, edition_torrent, currentApa);
+              if (editionsAdded.indexOf(edition_torrent.edition.properties.uuid) === -1) {
+                var fullTable = "<table class='torrentsTable'><thead><tr><th>File</th><th>Download</th><th>Revs</th><th>Size</th></tr></thead><tbody>" + singleTrRow + "</tbody></table>";
+                assertFirstEditionRow(record, edition_torrent, editionsAdded, currentApa, sourceIMG, dateField, authorField, classesField, fullTable);
+              } else {
+                assertExistingEditionRow(edition_torrent, editionsAdded, singleTrRow);
+              }
+            });
+          });
+          return dtRecs;
+        }
+      },
+      drawCallback: function(settings) {
+        cb();
+        if (TEMPEST.pageREC() === "torrents" && jquery_module_default("#add_source").length === 0) {
+          const $firstGroup = jquery_module_default(".dtrg-group").first();
+          if ($firstGroup.length) {
+            $firstGroup.append(`
+                        <span class="source-inputs-wrapper" style="margin-left: 15px;">
+                            <input type="text" id="add_source_apa" placeholder="APA Citation" />
+                            <input type="text" id="add_source" placeholder="Archive URL" />
+                            <button id="add_source_btn">Add</button>
+                        </span>
+                    `);
+          } else {
+            const $tableContainer = jquery_module_default("#" + table).closest(".dataTables_wrapper").length ? jquery_module_default("#" + table).closest(".dataTables_wrapper") : jquery_module_default("#" + table).parent();
+            if ($tableContainer.find("#add_source").length === 0) {
+              $tableContainer.prepend(`
+                            <div class="empty-state-inputs" style="margin-bottom: 15px; padding: 10px; background: rgba(0,0,0,0.03); border: 1px dashed #ccc;">
+                                <span style="margin-right: 10px; font-size: 0.9em; color: #666;">Add your first Source:</span>
+                                <input type="text" id="add_source_apa" placeholder="APA Citation" style="margin-right: 5px;" />
+                                <input type="text" id="add_source" placeholder="Archive URL" style="margin-right: 5px;" />
+                                <button id="add_source_btn">Add</button>
+                            </div>
+                        `);
+            }
+          }
+        }
+        jquery_module_default("table tbody").off("click", ".magnetURI").on("click", ".magnetURI", function() {
+          const infoHash = jquery_module_default(this).data("infohash");
+          jquery_module_default.post("/rev/" + infoHash);
+        });
+        assertNodeNameFromData();
+        if (TEMPEST.pageREC() === "node") {
+          assertButtonTab();
+        }
+        var api = this.api();
+        if (settings.iDraw > 1) {
+          var tableWrapper = jquery_module_default(api.table().container());
+          tableWrapper[0].scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+          });
+        }
+      }
+    });
+    if (TEMPEST.pageREC() === "top10") jquery_module_default("th").unbind("click.DT");
+    jquery_module_default(document).off("click", "#torrent_infoHash").on("click", "#torrent_infoHash", function(e) {
+      e.preventDefault();
+      const infoHash = jquery_module_default(this).data("infohash");
+      if (!infoHash) return;
+      navigator.clipboard.writeText(infoHash).then(() => {
+        const $el = jquery_module_default(this);
+        const originalText = $el.text();
+        $el.text("[Copied!]");
+        $el.css("color", "#50C777");
+        setTimeout(() => {
+          $el.text(originalText);
+          $el.css("color", "darkgoldenrod");
+        }, 2e3);
+      }).catch((err) => console.error("Failed to copy:", err));
+    });
+    jquery_module_default(document).off("click", ".copy-citation-btn").on("click", ".copy-citation-btn", function(e) {
+      e.stopPropagation();
+      const uuid = jquery_module_default(this).data("uuid");
+      const $btn = jquery_module_default(this);
+      const textToCopy = jquery_module_default("#edition_" + uuid + "_field").text().trim();
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        $btn.css("color", "#50C777");
+        setTimeout(() => $btn.css("color", "#a0a0a0"), 1200);
+      }).catch((err) => console.error("Failed to copy citation: ", err));
+    });
+    jquery_module_default(document).off("click", "a.webtorrent").on("click", "a.webtorrent", function(e) {
+      e.preventDefault();
+      const d = this.dataset;
+      const $existing = jquery_module_default(`#hero option[value="${d.infohash}"]`);
+      if ($existing.length === 0) {
+        jquery_module_default(this).text("[Revving..!]");
+        jquery_module_default(this).css("color", "darkcyan");
+      } else {
+        jquery_module_default(this).text("[Already Revved.]");
+        jquery_module_default(this).css("color", "orange");
+      }
+      var that = jquery_module_default(this);
+      setTimeout(function() {
+        that.text("[WebTorrent]");
+        that.css("color", "darkgoldenrod");
+      }, 2360);
+      webtorrent(d.infoHash);
+    });
+    jquery_module_default("a.webtorrent").text("[WebTorrent]");
+  };
+  window.initializeTorrents = initializeTorrents;
 
   // public/js/controller/webtorrent.js
   init_jquery_shim();
+  window.webtorrent = function DL(infoHash) {
+    jquery_module_default.get(`/torrent/${infoHash}`, function(data2) {
+      if (!data2 || !data2.torrent) {
+        console.error("Invalid torrent data returned from server.");
+        return;
+      }
+      const torrent = data2.torrent;
+      const hexArr = typeof torrent === "object" ? torrent.hex : torrent;
+      const hexStr = hexArr.split(",");
+      const torrentUint8Array = new Uint8Array(hexStr);
+      const torrentBuffer = window.Buffer.from(torrentUint8Array);
+      const webseeds = torrent.webseeds || [];
+      const options = {
+        urlList: webseeds,
+        maxConns: 0,
+        announce: [],
+        private: true
+      };
+      client.add(torrentBuffer, options, function(torrent2) {
+        console.log("Torrent added successfully. InfoHash:", torrent2.infoHash);
+        if (typeof torrent2.throttle === "function") {
+          torrent2.throttle({ upload: 0 });
+        }
+        torrent2.on("download", function(bytes) {
+          console.log(`Downloaded ${bytes} bytes from webseed. Progress: ${(torrent2.progress * 100).toFixed(2)}%`);
+        });
+        torrent2.on("done", function() {
+          console.log("Download finished successfully from webseed!");
+          const file = torrent2.files[0];
+          file.getBlob(function(err, blob) {
+            if (err) throw err;
+            const url = URL.createObjectURL(blob);
+            const a4 = document.createElement("a");
+            a4.href = url;
+            a4.download = file.name;
+            document.body.appendChild(a4);
+            a4.click();
+            window.URL.revokeObjectURL(url);
+            a4.remove();
+            torrent2.destroy({ destroyStore: true }, () => {
+              console.log("Torrent instance destroyed. Zero background activity.");
+            });
+          });
+        });
+      });
+    });
+  };
 
   // public/js/controller/loader.js
   init_jquery_shim();
