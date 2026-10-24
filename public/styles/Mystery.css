@@ -165,9 +165,8 @@ footer{
   right:auto;
 }
 
-.city{
+.enter{
   position:fixed;
-  z-index:9999;
   width:100%;
   overflow-y:auto;
   height:100%;
@@ -185,6 +184,10 @@ footer{
   bottom:reset;
   margin:auto;
 
+}
+
+.city{
+  display:none;
 }
 
 /*#torrents_wrapper{
@@ -890,7 +893,7 @@ td{
   display:block;
 }
 
-.city{
+.enter{
   font-size:22px;
   color:#83DAC0;;
   width:100%;

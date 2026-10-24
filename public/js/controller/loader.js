@@ -137,7 +137,9 @@ const config = {
 
 function go() {
     $(".autosuggestBox").hide();
-    TEMPEST.route("#torrents")
+    TEMPEST.route("#torrents");
+    $(".city").fadeIn();
+
     const params = TEMPEST.paramREC() ? TEMPEST.paramREC() : {};
     $.get("/fragment/header.html", function(data){
         $("header").html(data);            

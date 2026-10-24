@@ -25,39 +25,39 @@
             window.client = client;         
         </script>
 
-        <div class="city">
-    <!-- Web3 Auth Module Script -->
-    <script type="module">
-        import EthersAuth from '../js/hook/web3-auth.js';
+        <div class="enter">
+            <!-- Web3 Auth Module Script -->
+            <script type="module">
+                import EthersAuth from '../js/hook/web3-auth.js';
 
-        document.addEventListener('DOMContentLoaded', function() {
-                let isAuthenticated = false;
+                document.addEventListener('DOMContentLoaded', function() {
+                        let isAuthenticated = false;
 
-                // 2. Verify and route to #torrents when .GATE is clicked
-                const gateElement = document.querySelector('#lock');
-                if (gateElement) {
-                    gateElement.addEventListener('click', function() {
-                         // 1. Login via MetaMask on page load
-                        EthersAuth.initAuth(function(authenticated) {
-                            isAuthenticated = authenticated;
-                            if (authenticated) {
-                                const script = document.createElement('script');
-                                script.src = '../js/bundle.js';
-                                document.body.appendChild(script);
-                            }
-                        });
+                        // 2. Verify and route to #torrents when .GATE is clicked
+                        const gateElement = document.querySelector('#lock');
+                        if (gateElement) {
+                            gateElement.addEventListener('click', function() {
+                                 // 1. Login via MetaMask on page load
+                                EthersAuth.initAuth(function(authenticated) {
+                                    isAuthenticated = authenticated;
+                                    if (authenticated) {
+                                        const script = document.createElement('script');
+                                        script.src = '../js/bundle.js';
+                                        document.body.appendChild(script);
+                                    }
+                                });
+                            });
+                        }
                     });
-                }
-            });
-        </script>
+                </script>
 
-        <div class="GATE" style="cursor: pointer;">
-            <span id="lock">&#x13296;</span>
-            <p id="inscription">
-                Here lies the solution to the great educational reform so necessary at this time. We can not hope to build a nobility of man upon the sterility of a narrow, competitive, materialistic educational policy. The ignorance of man has been his undoing. Only wisdom can restore him to his divine estate. 
-            </p> 
-        </div>
-    </div>
+                <div class="GATE" style="cursor: pointer;">
+                    <span id="lock">&#x13296;</span>
+                    <p id="inscription">
+                        Here lies the solution to the great educational reform so necessary at this time. We can not hope to build a nobility of man upon the sterility of a narrow, competitive, materialistic educational policy. The ignorance of man has been his undoing. Only wisdom can restore him to his divine estate. 
+                    </p> 
+                </div>
+            </div>
 
         <script type="module">
             import TEMPEST from '/js/lib/TEMPEST.js';
@@ -65,15 +65,17 @@
         </script>
     </head>        
     <body>      
-        <header></header>
-            <div class="gate"></div>
-            <div class="TEMPEST upload"></div>
-            <div class="TEMPEST webtorrent"></div>
-            <div class="TEMPEST top10"></div>
-            <div class="TEMPEST node"></div>
-            <div class="TEMPEST Category"></div>
-            <div class="TEMPEST torrents"></div>
-            <div class="TEMPEST privacy"></div>    
-        <footer></footer>
+        <div class="city">
+            <header></header>
+                <div class="gate"></div>
+                <div class="TEMPEST upload"></div>
+                <div class="TEMPEST webtorrent"></div>
+                <div class="TEMPEST top10"></div>
+                <div class="TEMPEST node"></div>
+                <div class="TEMPEST Category"></div>
+                <div class="TEMPEST torrents"></div>
+                <div class="TEMPEST privacy"></div>    
+            <footer></footer>
+        </div>
     </body>
 </html>
