@@ -36395,6 +36395,9 @@ ${str}>>`;
   // public/js/src/main.js
   init_jquery_shim();
 
+  // public/js/hook/ethers-login.js
+  init_jquery_shim();
+
   // node_modules/jquery-ui/dist/jquery-ui.js
   init_jquery_shim();
   (function(factory2) {
@@ -78530,7 +78533,7 @@ ${str}>>`;
         { visible: false, searchable: false },
         // Index 0: Grouping (Date/Title)
         { width: "50%" },
-        // Index 1: APA Citation
+        // Index 1: APA Citation / Drop Zone
         { width: "16.66%" },
         // Index 2: Revs
         { width: "16.66%" },
@@ -78573,12 +78576,28 @@ ${str}>>`;
         },
         dataSrc: function(json) {
           refreshDTRecs();
+          var uploadBannerRow = [
+            "",
+            // Index 0: Grouping
+            "<div class='upload-dropzone-row' style='text-align: center; padding: 14px; font-weight: bold; cursor: pointer; border: 2px dashed #888; border-radius: 6px; margin: 4px 0; background: rgba(0,0,0,0.01);'>\u{1F4C4} Drag & Drop a PDF to seed the Graph</div>",
+            // Index 1: Drop Zone
+            "",
+            // Index 2: Revs
+            "",
+            // Index 3: Date
+            "",
+            // Index 4: Time
+            ""
+            // Index 5: Download
+          ];
           var records = json && json.records ? json.records : Array.isArray(json) ? json : [];
           if (!records || records.length === 0) {
-            console.log("No results found in database.");
-            return [];
+            console.log("No results found.");
+            dtRecs.unshift(uploadBannerRow);
+            return dtRecs;
           }
           insertTableData(json);
+          dtRecs.unshift(uploadBannerRow);
           var editionsAdded = [];
           tableData.records.forEach(function(record) {
             var authorField = "";
@@ -78627,36 +78646,27 @@ ${str}>>`;
       },
       drawCallback: function(settings) {
         cb();
-        if (TEMPEST.pageREC() === "torrents") {
-          const $tableWrapper = jquery_module_default("#" + table).closest(".dataTables_wrapper");
-          if ($tableWrapper.find(".upload-dropzone-row").length === 0) {
-            $tableWrapper.before(`
-                        <div class='upload-dropzone-row' style='text-align: center; padding: 14px; font-weight: bold; cursor: pointer; border: 2px dashed #888; border-radius: 6px; margin-bottom: 12px; background: rgba(0,0,0,0.01);'>
-                            \u{1F4C4} Drag & Drop a PDF to seed the Graph
-                        </div>
+        if (TEMPEST.pageREC() === "torrents" && jquery_module_default("#add_source").length === 0) {
+          const $firstGroup = jquery_module_default(".dtrg-group").first();
+          if ($firstGroup.length) {
+            $firstGroup.append(`
+                        <span class="source-inputs-wrapper" style="margin-left: 15px;">
+                            <input type="text" id="add_source_apa" placeholder="APA Citation" />
+                            <input type="text" id="add_source" placeholder="Archive URL (Pre-1931 Only)" />
+                            <button id="add_source_btn">Add</button>
+                        </span>
                     `);
-          }
-          if (jquery_module_default("#add_source").length === 0) {
-            const $firstGroup = jquery_module_default(".dtrg-group").first();
-            if ($firstGroup.length) {
-              $firstGroup.append(`
-                            <span class="source-inputs-wrapper" style="margin-left: 15px;">
-                                <input type="text" id="add_source_apa" placeholder="APA Citation" />
-                                <input type="text" id="add_source" placeholder="Archive URL" />
+          } else {
+            const $tableWrapper = jquery_module_default("#" + table).closest(".dataTables_wrapper");
+            if ($tableWrapper.find("#add_source").length === 0) {
+              $tableWrapper.before(`
+                            <div class="empty-state-inputs" style="margin-bottom: 15px; padding: 10px; background: rgba(0,0,0,0.03); border: 1px dashed #ccc;">
+                                <span style="margin-right: 10px; font-size: 0.9em; color: #666;">Add Source (Pre-1931 Only):</span>
+                                <input type="text" id="add_source_apa" placeholder="APA Citation" style="margin-right: 5px;" />
+                                <input type="text" id="add_source" placeholder="Archive URL" style="margin-right: 5px;" />
                                 <button id="add_source_btn">Add</button>
-                            </span>
+                            </div>
                         `);
-            } else {
-              if ($tableWrapper.find("#add_source").length === 0) {
-                $tableWrapper.before(`
-                                <div class="empty-state-inputs" style="margin-bottom: 15px; padding: 10px; background: rgba(0,0,0,0.03); border: 1px dashed #ccc;">
-                                    <span style="margin-right: 10px; font-size: 0.9em; color: #666;">Add your first Source:</span>
-                                    <input type="text" id="add_source_apa" placeholder="APA Citation" style="margin-right: 5px;" />
-                                    <input type="text" id="add_source" placeholder="Archive URL" style="margin-right: 5px;" />
-                                    <button id="add_source_btn">Add</button>
-                                </div>
-                            `);
-              }
             }
           }
         }

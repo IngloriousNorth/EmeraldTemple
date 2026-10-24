@@ -28,6 +28,7 @@
     "drag-drop": "^7.2.0",
     "esbuild": "^0.28.2",
     "esmify": "^2.1.1",
+    "ethers": "^6.17.0",
     "jquery": "^4.0.0",
     "jquery-ui": "^1.14.2",
     "moment": "^2.31.0",

@@ -12,22 +12,67 @@ import bodyParser from 'body-parser';
 import neo4j from 'neo4j-driver';
 
 //import PDFParse from 'pdf-parse';
-import dotenv from 'dotenv';
 
 import { check, validationResult } from 'express-validator';
-
-// Load environment variables from .env file for local development
-dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+app.use(express.json())
 
 // Initialize Neo4j Driver
 
 import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
 import { z } from 'zod';
+
+import { ethers, verifyMessage } from 'ethers';
+
+const authenticatedSessions = new Set();
+
+// 1. SIWE Handshake Endpoint (/access-ctrl)
+app.post('/ethers-login', async (req, res) => {
+    const { address, signature, message } = req.body;
+
+    const adminWallet = process.env.ETH_ADDRESS ? process.env.ETH_ADDRESS.toLowerCase() : "";
+    
+    if (!address || address.toLowerCase() !== adminWallet) {
+        return res.status(403).json({ success: false, error: "Unauthorized wallet address." });
+    }
+
+    try {
+        const recoveredAddress = verifyMessage(message, signature);
+        if (recoveredAddress.toLowerCase() !== adminWallet) {
+            return res.status(403).json({ success: false, error: "Signature verification failed." });
+        }
+
+        const sessionToken = Math.random().toString(36).substring(2) + Date.now().toString(36);
+        authenticatedSessions.add(sessionToken);
+
+        return res.json({ success: true, token: sessionToken });
+    } catch (err) {
+        return res.status(500).json({ success: false, error: "Verification error." });
+    }
+});
+
+const requireCryptoAuth = async (req, res, next) => {
+    const { address, signature, message } = req.headers; // or request body/headers
+
+    const adminWallet = process.env.ADMIN_ETH_ADDRESS ? process.env.ADMIN_ETH_ADDRESS.toLowerCase() : "";
+
+    try {
+        // Mathematically recover the address from the message and signature
+        const recoveredAddress = verifyMessage(message, signature);
+        
+        if (recoveredAddress.toLowerCase() === adminWallet) {
+            return next(); // Cryptographically verified as the admin wallet!
+        }
+        
+        return res.status(403).json({ success: false, error: "Access Denied: Invalid cryptographic proof." });
+    } catch (err) {
+        return res.status(403).json({ success: false, error: "Verification failed." });
+    }
+};
 
 // Middleware for lightweight JSON payloads (bypasses Vercel payload limits)
 app.use(bodyParser.json({ limit: '1mb' }));

@@ -1,13 +1,5 @@
-instant.io, except media metadata is indexed thru RAG
+instant.io, except torrent metadata is indexed thru RAG
 
-Free on vercel, what must sync with github
-
-Free code also released under GNU License.
-
-Free Neo4J aura DB
-
-Free QRNG from lfdr.de
-
-Domain Unnecessary
+i upload the code here for testing serverless functions on a personal vercel.app where you log in by admin only.
 
 

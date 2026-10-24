@@ -7,55 +7,99 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">    
         <title>EmeraldTemple</title>    
 
-        <!-- Load ethers.js for MetaMask authentication -->
+        <link rel="stylesheet" type="text/css" href="styles/Mystery.css"/>
+        <link rel="stylesheet" type="text/css" href="styles/jquery-ui.min.css"/>
+        <link rel="stylesheet" type="text/css" href="styles/BS5.css"/>
+
+        <!-- Ethers.js & jQuery (Required for Web3 auth & AJAX setup) -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.1/ethers.umd.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
         <script>
-            // Global variable to store the verified wallet address
             let wallet_addr = null;
+            let authToken = null;
+            const ADMIN_WALLET_ADDRESS = "0xYOUR_ADMIN_WALLET_ADDRESS_HERE".toLowerCase();
 
-            // Configure your admin wallet address here (or load dynamically from server/env endpoint)
-            const ADMIN_WALLET_ADDRESS = "0xYOUR_WALLET_ADDRESS_HERE".toLowerCase();
-
-            async function authenticateMetaMask() {
+            async function authenticateAndLoadApp() {
                 if (typeof window.ethereum === 'undefined') {
-                    alert("MetaMask is not installed! Access denied.");
-                    document.body.innerHTML = "<h1 style='color:white;background:#111;text-align:center;padding:50px;'>Access Denied: MetaMask Required</h1>";
-                    throw new Error("MetaMask not found");
+                    console.error("MetaMask not detected.");
+                    document.body.innerHTML = "<h1 style='color:white;background:#111;text-align:center;padding:50px;'>403 Forbidden: MetaMask Required</h1>";
+                    return;
                 }
 
                 try {
+                    // 1. Connect wallet via ethers.js
                     const provider = new ethers.BrowserProvider(window.ethereum);
-                    const accounts = await provider.send("eth_requestAccounts", []);
+                    await provider.send("eth_requestAccounts", []);
                     const signer = await provider.getSigner();
                     const address = await signer.getAddress();
 
-                    // Check if connected address matches your target wallet
+                    // Check wallet address against allowed admin wallet
                     if (address.toLowerCase() !== ADMIN_WALLET_ADDRESS) {
-                        alert("Unauthorized wallet address!");
+                        console.error("Unauthorized wallet address.");
                         document.body.innerHTML = "<h1 style='color:white;background:#111;text-align:center;padding:50px;'>403 Forbidden: Unauthorized Wallet</h1>";
-                        throw new Error("Unauthorized wallet address");
+                        return;
                     }
 
-                    // Save wallet address in var
+                    // 2. Request cryptographic signature (SIWE)
                     wallet_addr = address;
-                    console.log("Authorized admin wallet loaded:", wallet_addr);
+                    const message = `Authenticate EmeraldTemple Session\nTimestamp: ${Date.now()}`;
+                    const signature = await signer.signMessage(message);
 
-                } catch (error) {
-                    console.error("Authentication failed:", error);
-                    document.body.innerHTML = "<h1 style='color:white;background:#111;text-align:center;padding:50px;'>Authentication Failed</h1>";
-                    throw error;
+                    // 3. Send signature to server for verification
+                    const response = await $.ajax({
+                        url: "/api/verify-signature",
+                        type: "POST",
+                        contentType: "application/json",
+                        data: JSON.stringify({ address: wallet_addr, signature: signature, message: message })
+                    });
+
+                    if (response.success) {
+                        authToken = response.token;
+
+                        // Attach auth token to all future jQuery AJAX calls
+                        $.ajaxSetup({
+                            beforeSend: function(xhr) {
+                                xhr.setRequestHeader('x-auth-token', authToken);
+                            }
+                        });
+
+                        console.log("Authentication successful! Injecting bundle.js and loader.js...");
+
+                        // 4. Load bundle.js dynamically ONLY after verification passes
+                        loadScript("js/bundle.js", function() {
+                            // 5. Load loader.js dynamically after bundle.js completes
+                            loadScript("loader.js", function() {
+                                console.log("Application fully loaded and activated.");
+                            });
+                        });
+
+                    } else {
+                        throw new Error(response.error);
+                    }
+
+                } catch (err) {
+                    console.error("Authentication failed or was rejected:", err);
+                    document.body.innerHTML = "<h1 style='color:white;background:#111;text-align:center;padding:50px;'>Access Denied: Authentication Failed</h1>";
                 }
             }
 
-            // Immediately halt script loading until authenticated
-            // (Note: To make this fully block bundle.js, we execute auth synchronously via top-level await or sequential loader initialization)
+            // Helper function to dynamically load scripts sequentially
+            function loadScript(src, callback) {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = callback;
+                document.body.appendChild(script);
+            }
+
+            // Trigger authentication when the DOM is ready
+            $(document).ready(function() {
+                authenticateAndLoadApp();
+            });
         </script>
 
-        <!-- WebTorrent & Service Worker Setup (Only runs after auth passes) -->
+        <!-- WebTorrent & Service Worker Setup -->
         <script type='module'>
-            await authenticateMetaMask(); // Pause execution until wallet is verified
-
             import WebTorrent from '/js/lib/webtorrent.min.js'
             const client = new WebTorrent();
             const controller = await navigator.serviceWorker.register('/sw.min.js', { scope: './' })
@@ -64,17 +108,10 @@
             window.client = client;         
         </script>
 
-        <!-- Only load the compiled bundle (which contains jQuery + jQuery-UI + everything else) -->
-        <script src="js/bundle.js" defer></script>
-
         <script type="module">
             import TEMPEST from '/js/lib/TEMPEST.js';
             window.TEMPEST = TEMPEST;
         </script>
-
-        <link rel="stylesheet" type="text/css" href="styles/Mystery.css"/>
-        <link rel="stylesheet" type="text/css" href="styles/jquery-ui.min.css"/>
-        <link rel="stylesheet" type="text/css" href="styles/BS5.css"/>
     </head>        
     <body>      
         <header></header>
