@@ -6,7 +6,56 @@
         <meta name="description" content="Legal educational Public Domain PDFs. WebTorrent, ftw!">
         <meta name="viewport" content="width=device-width, initial-scale=1">    
         <title>EmeraldTemple</title>    
+
+        <!-- Load ethers.js for MetaMask authentication -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.1/ethers.umd.min.js"></script>
+
+        <script>
+            // Global variable to store the verified wallet address
+            let wallet_addr = null;
+
+            // Configure your admin wallet address here (or load dynamically from server/env endpoint)
+            const ADMIN_WALLET_ADDRESS = "0xYOUR_WALLET_ADDRESS_HERE".toLowerCase();
+
+            async function authenticateMetaMask() {
+                if (typeof window.ethereum === 'undefined') {
+                    alert("MetaMask is not installed! Access denied.");
+                    document.body.innerHTML = "<h1 style='color:white;background:#111;text-align:center;padding:50px;'>Access Denied: MetaMask Required</h1>";
+                    throw new Error("MetaMask not found");
+                }
+
+                try {
+                    const provider = new ethers.BrowserProvider(window.ethereum);
+                    const accounts = await provider.send("eth_requestAccounts", []);
+                    const signer = await provider.getSigner();
+                    const address = await signer.getAddress();
+
+                    // Check if connected address matches your target wallet
+                    if (address.toLowerCase() !== ADMIN_WALLET_ADDRESS) {
+                        alert("Unauthorized wallet address!");
+                        document.body.innerHTML = "<h1 style='color:white;background:#111;text-align:center;padding:50px;'>403 Forbidden: Unauthorized Wallet</h1>";
+                        throw new Error("Unauthorized wallet address");
+                    }
+
+                    // Save wallet address in var
+                    wallet_addr = address;
+                    console.log("Authorized admin wallet loaded:", wallet_addr);
+
+                } catch (error) {
+                    console.error("Authentication failed:", error);
+                    document.body.innerHTML = "<h1 style='color:white;background:#111;text-align:center;padding:50px;'>Authentication Failed</h1>";
+                    throw error;
+                }
+            }
+
+            // Immediately halt script loading until authenticated
+            // (Note: To make this fully block bundle.js, we execute auth synchronously via top-level await or sequential loader initialization)
+        </script>
+
+        <!-- WebTorrent & Service Worker Setup (Only runs after auth passes) -->
         <script type='module'>
+            await authenticateMetaMask(); // Pause execution until wallet is verified
+
             import WebTorrent from '/js/lib/webtorrent.min.js'
             const client = new WebTorrent();
             const controller = await navigator.serviceWorker.register('/sw.min.js', { scope: './' })
@@ -14,6 +63,7 @@
             client.createServer({ controller })
             window.client = client;         
         </script>
+
         <!-- Only load the compiled bundle (which contains jQuery + jQuery-UI + everything else) -->
         <script src="js/bundle.js" defer></script>
 
@@ -25,7 +75,7 @@
         <link rel="stylesheet" type="text/css" href="styles/Mystery.css"/>
         <link rel="stylesheet" type="text/css" href="styles/jquery-ui.min.css"/>
         <link rel="stylesheet" type="text/css" href="styles/BS5.css"/>
-    </head>       
+    </head>        
     <body>      
         <header></header>
             <div class="TEMPEST gate"></div>
