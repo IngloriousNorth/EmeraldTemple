@@ -78532,7 +78532,7 @@ ${str}>>`;
         { width: "50%" },
         // Index 1: APA Citation
         { width: "16.66%" },
-        // Index 2: Revs (Right-align to keep icon tidy)
+        // Index 2: Revs
         { width: "16.66%" },
         // Index 3: Date
         { width: "16.66%" },
@@ -78542,13 +78542,9 @@ ${str}>>`;
       ],
       columnDefs: [
         { targets: [0], visible: false },
-        // Grouping column
         { targets: [1], className: "text-left" },
-        // APA Citation
         { targets: [2, 3, 4], className: "dt-left" },
-        // Revs, Date, Time (aligned left)
         { targets: 5, responsivePriority: 1 }
-        // Download
       ],
       order: [[4, "desc"]],
       processing: true,
@@ -78575,29 +78571,14 @@ ${str}>>`;
           format: TEMPEST.paramREC() ? TEMPEST.paramREC().format : "",
           res: TEMPEST.paramREC() ? TEMPEST.paramREC().res : ""
         },
-        dataSrc: function(data2) {
+        dataSrc: function(json) {
           refreshDTRecs();
-          var uploadBannerRow = [
-            "",
-            // Index 0: Grouping
-            "<div class='upload-dropzone-row' style='text-align: center; padding: 12px; font-weight: bold; cursor: pointer; border: 2px dashed #888; border-radius: 6px; margin: 4px 0;'>\u{1F4C4} Drag & Drop a PDF to seed the Graph</div>",
-            // Index 1: APA Citation column
-            "",
-            // Index 2: Revs
-            "",
-            // Index 3: Date
-            "",
-            // Index 4: Time
-            ""
-            // Index 5: Download
-          ];
-          if (!data2 || !data2.records || data2.records.length === 0) {
-            console.log("No results found.");
-            dtRecs.unshift(uploadBannerRow);
-            return dtRecs;
-          } else {
-            insertTableData(data2);
+          var records = json && json.records ? json.records : Array.isArray(json) ? json : [];
+          if (!records || records.length === 0) {
+            console.log("No results found in database.");
+            return [];
           }
+          insertTableData(json);
           var editionsAdded = [];
           tableData.records.forEach(function(record) {
             var authorField = "";
@@ -78630,7 +78611,6 @@ ${str}>>`;
               }
             });
             var sourceIMG = assertSourceIMG(record);
-            var numPeers = 0;
             record._fields[2].forEach(function(edition_torrent) {
               var currentApa = assertAPACitation(record, edition_torrent);
               var singleTrRow = assertTr(record, edition_torrent, currentApa);
@@ -78647,27 +78627,36 @@ ${str}>>`;
       },
       drawCallback: function(settings) {
         cb();
-        if (TEMPEST.pageREC() === "torrents" && jquery_module_default("#add_source").length === 0) {
-          const $firstGroup = jquery_module_default(".dtrg-group").first();
-          if ($firstGroup.length) {
-            $firstGroup.append(`
-                        <span class="source-inputs-wrapper" style="margin-left: 15px;">
-                            <input type="text" id="add_source_apa" placeholder="APA Citation" />
-                            <input type="text" id="add_source" placeholder="Archive URL" />
-                            <button id="add_source_btn">Add</button>
-                        </span>
+        if (TEMPEST.pageREC() === "torrents") {
+          const $tableWrapper = jquery_module_default("#" + table).closest(".dataTables_wrapper");
+          if ($tableWrapper.find(".upload-dropzone-row").length === 0) {
+            $tableWrapper.before(`
+                        <div class='upload-dropzone-row' style='text-align: center; padding: 14px; font-weight: bold; cursor: pointer; border: 2px dashed #888; border-radius: 6px; margin-bottom: 12px; background: rgba(0,0,0,0.01);'>
+                            \u{1F4C4} Drag & Drop a PDF to seed the Graph
+                        </div>
                     `);
-          } else {
-            const $tableContainer = jquery_module_default("#" + table).closest(".dataTables_wrapper").length ? jquery_module_default("#" + table).closest(".dataTables_wrapper") : jquery_module_default("#" + table).parent();
-            if ($tableContainer.find("#add_source").length === 0) {
-              $tableContainer.prepend(`
-                            <div class="empty-state-inputs" style="margin-bottom: 15px; padding: 10px; background: rgba(0,0,0,0.03); border: 1px dashed #ccc;">
-                                <span style="margin-right: 10px; font-size: 0.9em; color: #666;">Add your first Source:</span>
-                                <input type="text" id="add_source_apa" placeholder="APA Citation" style="margin-right: 5px;" />
-                                <input type="text" id="add_source" placeholder="Archive URL" style="margin-right: 5px;" />
+          }
+          if (jquery_module_default("#add_source").length === 0) {
+            const $firstGroup = jquery_module_default(".dtrg-group").first();
+            if ($firstGroup.length) {
+              $firstGroup.append(`
+                            <span class="source-inputs-wrapper" style="margin-left: 15px;">
+                                <input type="text" id="add_source_apa" placeholder="APA Citation" />
+                                <input type="text" id="add_source" placeholder="Archive URL" />
                                 <button id="add_source_btn">Add</button>
-                            </div>
+                            </span>
                         `);
+            } else {
+              if ($tableWrapper.find("#add_source").length === 0) {
+                $tableWrapper.before(`
+                                <div class="empty-state-inputs" style="margin-bottom: 15px; padding: 10px; background: rgba(0,0,0,0.03); border: 1px dashed #ccc;">
+                                    <span style="margin-right: 10px; font-size: 0.9em; color: #666;">Add your first Source:</span>
+                                    <input type="text" id="add_source_apa" placeholder="APA Citation" style="margin-right: 5px;" />
+                                    <input type="text" id="add_source" placeholder="Archive URL" style="margin-right: 5px;" />
+                                    <button id="add_source_btn">Add</button>
+                                </div>
+                            `);
+              }
             }
           }
         }
