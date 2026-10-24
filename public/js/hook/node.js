@@ -1,4 +1,4 @@
-function assertNodeNameFromData() {
+window.assertNodeNameFromData = function assertNodeNameFromData() {
     if(TEMPEST.paramREC() && TEMPEST.paramREC().uuid === "undefined"){
         $("h2 span a").css("color", "red").text("No Node Found!").fadeIn(5555)
         $("#sentinel").hide();

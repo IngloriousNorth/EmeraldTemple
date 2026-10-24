@@ -1,12 +1,12 @@
-var tableData;
-var dataTable;
-var dtRecs; //for DataTable records[]
+window.tableData = [];
+window.dataTable = "";
+window.dtRecs = []; //for DataTable records[]
 
-function refreshDTRecs(){
+window.refreshDTRecs = function refreshDTRecs(){
 	dtRecs = [];
 }
 
-function insertTableData(data){
+window.insertTableData = function insertTableData(data){
 	tableData = data;
 }
 

@@ -1,4 +1,4 @@
-function walkGraph(){
+window.walkGraph = function walkGraph(){
   TEMPEST.route(
       "#torrents?search=true&title=" +
         encodeURIComponent($("#adv_title").val()) +
@@ -23,7 +23,7 @@ function walkGraph(){
     );
 }
 
-function traverseGraph(label, searchable){
+window.traverseGraph = function traverseGraph(label, searchable){
     TEMPEST.paramREM("label");
     TEMPEST.paramREM("uuid");
     label = label.toLowerCase();

@@ -1,4 +1,4 @@
-function processHiero(hero){
+window.processHero = function processHiero(hero){
         const $selected = hero.find("option:selected");
         const val = $selected.val();
 

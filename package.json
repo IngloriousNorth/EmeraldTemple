@@ -16,24 +16,29 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "3d-force-graph-vr": "^3.1.2",
-    "aframe": "^1.8.0",
-    "browserify": "^17.0.0",
+    "@babel/core": "^8.0.9",
+    "@babel/preset-env": "^8.0.7",
+    "browserify": "^17.0.1",
     "d3": "^7.9.0",
+    "datatables.net": "^3.1.4",
     "datatables.net-jqui": "^3.1.4",
-    "datatables.net-responsive-jqui": "^4.1.1",
-    "datatables.net-rowgroup-jqui": "^2.1.1",
+    "datatables.net-responsive": "^4.1.1",
+    "datatables.net-rowgroup": "^2.1.1",
+    "datatables.net-rowgroup-bs5": "^2.1.1",
     "drag-drop": "^7.2.0",
-    "ethers": "^6.17.0",
+    "esbuild": "^0.28.2",
+    "esmify": "^2.1.1",
     "jquery": "^4.0.0",
-    "jquery-ui": "^1.14.1",
+    "jquery-ui": "^1.14.2",
     "moment": "^2.31.0",
-    "pdf-parse": "^2.4.5",
-    "three": "^0.174.0",
-    "three-spritetext": "^1.10.0",
-    "webtorrent": "^1.9.7"
+    "path-browserify": "^1.0.1",
+    "pdfjs": "^2.5.4",
+    "process": "^0.11.10",
+    "ui-autocomplete": "^0.6.1",
+    "webtorrent": "^3.0.21"
   },
   "scripts": {
-    "build": "browserify public/js/src/main.js --insert-globals false --noparse=node_modules/aframe/dist/aframe-v1.8.0.js -o public/js/bundle.js"
+    "build": "node build.js",
+    "start": "node --env-file=.env server.js"
   }
 }

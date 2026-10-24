@@ -1,10 +1,9 @@
+client = window.client;
 var torrent = null;
 var magnetURI = ""
 var interval = null;
-var wired = false;
 
-
-function getMagnetURI(infoHash) {
+window.getMagnetURI = function getMagnetURI(infoHash) {
     var trackers = [
         'wss://tracker.webtorrent.dev',
         'wss://tracker.openwebtorrent.com',
@@ -16,5 +15,5 @@ function getMagnetURI(infoHash) {
         return '&tr=' + encodeURIComponent(tr);
     }).join('');
 
-    return 'magnet:?xt=urn:btih:' + infoHash + trParams;
+    return 'magnet:?xt=urn:btih:' + infoHash + webseedParams;
 }

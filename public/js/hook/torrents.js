@@ -1,10 +1,10 @@
-function assertGraphParamsPendingReset(){
+window.assertGraphParamsPendingReset = function assertGraphParamsPendingReset(){
   $("a TEMPEST.torrents").on("click", function(){
     resetGraphParams();
   })
 }
 
-function resolveCoverUrl(record, sourceUuid, defaultImg) {
+window.resolveCoverUrl = function resolveCoverUrl(record, sourceUuid, defaultImg) {
     let sourceNode = record._fields[0].properties;
 
     // 1. Check if cover_url is already stored on the source node properties from Neo4j

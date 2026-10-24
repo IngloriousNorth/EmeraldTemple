@@ -1,4 +1,4 @@
-function crossWard(cb) {
+window.Select = function crossWard(cb) {
     //no class 1:02
     const currentWard = TEMPEST.pageREC() === "set" ? TEMPEST.paramREC().ward : null;
     // STARDATE 202512.18.1355ms: Consolidating 'ward' and 'set'

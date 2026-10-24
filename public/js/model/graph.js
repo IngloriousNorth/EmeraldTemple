@@ -5,7 +5,7 @@ var Obelisk = {
 	]
 }
 
-function renewObelisk(){
+window.renewObelisk = function renewObelisk(){
 	Obelisk = {
 		nodes :[],
 		links: []
@@ -19,7 +19,7 @@ var graphParams = {
 	"publisher" : ""
 }
 
-function removeGraph(containerSelector) {
+window.removeGraph = function removeGraph(containerSelector) {
     const container = document.querySelector(containerSelector);
     if (!container) return;
 

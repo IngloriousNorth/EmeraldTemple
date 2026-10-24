@@ -1,4 +1,4 @@
-function headerAutocomplete(){
+window.headerAutocomplete = function headerAutocomplete(){
     $(document).keyup(function(e) {
         if (e.key === "Escape") {
             $(".autosuggestBox").hide();
@@ -136,8 +136,7 @@ function headerAutocomplete(){
         }
     });
 }
-
-function advAutocomplete(){
+window.advAutocomplete = function advAutocomplete(){
     $(document).keyup(function(e) {
         if (e.key === "Escape") {
             $(".autosuggestBox").hide();
@@ -177,10 +176,9 @@ function advAutocomplete(){
         },
         select: function(event, ui){
             $(".mobile_menu").hide();
-            let currentVal = $(this).val();
-            let lastComma = currentVal.lastIndexOf(",");
-            let baseVal = lastComma > -1 ? currentVal.substring(0, lastComma) + ", " : "";
-            $(this).val(baseVal + ui.item.label).css("color", "#000");
+            $("#adv_title").val($(this).val().substring(0,$(this).val().lastIndexOf(",")) + 
+                ($(this).val().indexOf(",") > 1 ? ", " : "") + ui.item.label)
+                .css("color", "#000");
             return false;
         }
     }).autocomplete("instance");
@@ -207,10 +205,9 @@ function advAutocomplete(){
         },
         select: function(event, ui){
             $(".mobile_menu").hide();
-            let currentVal = $(this).val();
-            let lastComma = currentVal.lastIndexOf(",");
-            let baseVal = lastComma > -1 ? currentVal.substring(0, lastComma) + ", " : "";
-            $(this).val(baseVal + ui.item.label).css("color", "goldenrod");
+            $("#adv_author").val($(this).val().substring(0,$(this).val().lastIndexOf(",")) + 
+                ($(this).val().indexOf(",") > 1 ? ", " : "") + ui.item.label)
+                .css("color", "goldenrod");
             return false;
         }
     }).autocomplete("instance");
@@ -237,9 +234,7 @@ function advAutocomplete(){
         select: function(event, ui){
             $(".mobile_menu").hide();
             var arr = $("#adv_classes").val().split(",");
-            // Fallback index assignment safely without caret plugin bounds
-            let activeIdx = typeof j !== 'undefined' ? j : arr.length - 1;
-            arr[activeIdx] = activeIdx > 0 ? " " + ui.item.label : ui.item.label;
+            arr[j] = j > 0 ? " " + ui.item.label : ui.item.label;
             var value = arr.toString();
             $("#adv_classes").val(value).css("color", "cyan");
             return false;       
@@ -268,125 +263,13 @@ function advAutocomplete(){
         },
         select: function(event, ui){
             $(".mobile_menu").hide();
-            let currentVal = $(this).val();
-            let lastComma = currentVal.lastIndexOf(",");
-            let baseVal = lastComma > -1 ? currentVal.substring(0, lastComma) + ", " : "";
-            $(this).val(baseVal + ui.item.label).css("color", "darkviolet");
+            $("#adv_publisher").val($(this).val().substring(0,$(this).val().lastIndexOf(",")) + 
+                ($(this).val().indexOf(",") > 1 ? ", " : "") + ui.item.label)
+                .css("color", "darkviolet");
             return false;
         }
     }).autocomplete("instance");
     if (advPubAuto) {
         advPubAuto._renderItem = (ul, item) => $("<li>").append(`<div class="ui-menu-item-wrapper" style="color: darkviolet !important; font-weight: bold;">${item.label}</div>`).appendTo(ul);
-    }
-}
-
-function uploadAutocomplete(){
-    // --- EDITION PUBLISHER (Dark Violet) ---
-    $("#edition_publisher").css("color", "darkviolet");
-    let edPubAuto = $("#edition_publisher").autocomplete({
-        scroll: true,
-        source: function( request, response ) {
-            $.ajax({
-                data: { term: request.term },
-                url: '/search?field=search_publishers',
-                type: "get",
-                success: function(data) {
-                    response($.map(data, function(item) {
-                        return { label: toTitleCase(decodeEntities(decodeEntities(item.label))), value: item.value };
-                    }));
-                }
-            });
-        },
-        select : function(event, ui){
-            $(".mobile_menu").hide();
-            $("#edition_publisher").val(ui.item.label).css("color", "darkviolet");
-            return false;
-        }
-    }).autocomplete("instance");
-    if (edPubAuto) {
-        edPubAuto._renderItem = (ul, item) => $("<li>").append(`<div class="ui-menu-item-wrapper" style="color: darkviolet !important; font-weight: bold;">${item.label}</div>`).appendTo(ul);
-    }
-
-    // --- UPLOAD SOURCES (Black) ---
-    $(".search_upload_sources_input").css("color", "#000");
-    let upSrcAuto = $(".search_upload_sources_input").autocomplete({
-        scroll: true,
-        source: function( request, response ) {
-            $.ajax({
-                data: { term: request.term },
-                url: '/search?field=search_sources',
-                type: "get",
-                success: function(data) {
-                    response($.map(data, function(item) {
-                        return { label: decodeEntities(decodeEntities(item.label)), value: item.value };
-                    }));
-                }
-            });
-        },
-        select : function(event, ui){
-            $(".mobile_menu").hide();
-            $(".search_upload_sources_input").css("color", "#000");
-            TEMPEST.route("#upload?uuid=" + ui.item.value);             
-        }
-    }).autocomplete("instance");
-    if (upSrcAuto) {
-        upSrcAuto._renderItem = (ul, item) => $("<li>").append(`<div class="ui-menu-item-wrapper" style="color: #000 !important;">${item.label}</div>`).appendTo(ul);
-    }
-
-    // --- UPLOAD AUTHORS (Goldenrod) ---
-    $(".search_upload_authors_input").css("color", "goldenrod");
-    let upAuthAuto = $(".search_upload_authors_input").autocomplete({
-        scroll: true,
-        source: function( request, response ) {
-            $.ajax({
-                data: { term: request.term.split(",")[0] },
-                url: '/search?field=search_authors&upload=true',
-                type: "get",
-                success: function(data) {
-                    response($.map(data, function(item) {
-                        return { label: decodeEntities(decodeEntities(item.label)), value: item.value };
-                    }));
-                }
-            });
-        },
-        select : function(event, ui){
-            $(".mobile_menu").hide();
-            $(".search_upload_authors_input").val("").css("color", "goldenrod");
-            addAuthor({uuid : ui.item.value, name : ui.item.label});
-            return false;             
-        }
-    }).autocomplete("instance");
-    if (upAuthAuto) {
-        upAuthAuto._renderItem = (ul, item) => $("<li>").append(`<div class="ui-menu-item-wrapper" style="color: goldenrod !important;">${item.label}</div>`).appendTo(ul);
-    }
-
-    // --- UPLOAD CLASSES (Cyan) ---
-    $(".search_upload_classes_input").css("color", "cyan");
-    let upClassAuto = $(".search_upload_classes_input").autocomplete({
-        scroll: true,
-        source: function( request, response ) {
-            $.ajax({
-                data: { term: getCommaSplice(".search_upload_classes_input", request.term) },
-                url: '/search?field=search_classes',
-                type: "get",
-                success: function(data) {
-                    response($.map(data, function(item) {
-                        return { label: decodeEntities(decodeEntities(item.label)), value: item.value };
-                    }));
-                }
-            });
-        },
-        select : function(event, ui){
-            $(".mobile_menu").hide();
-            var arr = $(".search_upload_classes_input").val().split(",");
-            let activeIdx = typeof j !== 'undefined' ? j : arr.length - 1;
-            arr[activeIdx] = ui.item.label;
-            var value = arr.toString();
-            $(".search_upload_classes_input").val(value).css("color", "cyan");
-            return false;          
-        }
-    }).autocomplete("instance");
-    if (upClassAuto) {
-        upClassAuto._renderItem = (ul, item) => $("<li>").append(`<div class="ui-menu-item-wrapper" style="color: cyan !important;">${item.label}</div>`).appendTo(ul);
     }
 }

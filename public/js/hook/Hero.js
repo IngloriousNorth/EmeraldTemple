@@ -1,4 +1,4 @@
-const dragDrop = require('drag-drop')
+window.dragOn = dragOn;
 
 /**
  * Feross drag-drop wrapper for the Emerald-Temple
@@ -17,16 +17,46 @@ function dragOn(dropTargetSelector, maxPages = 15, options = false, onFileDroppe
         files.forEach(async (file) => {
             // ARG SWITCH: Bypass PDF.js and send the complete raw file
             if (bypassPdfJs) {
-                console.log('⚡ Bypassing PDF.js extraction. Sending entire raw file:', file.name);
+                console.log('⚡ Bypassing PDF.js extraction. Seeding raw file via WebTorrent:', file.name);
                 
-                if (typeof onFileDropped === 'function') {
-                    onFileDropped({
+                client.seed(file, (torrent) => {
+                    console.log('🌱 Torrent seeded successfully. InfoHash:', torrent.infoHash);
+
+                    // Post infoHash and file metadata to /add_source
+                    $.post('/add_source', {
+                        infoHash: torrent.infoHash,
                         name: file.name,
-                        size: file.size,
-                        type: file.type,
-                        rawFile: file // Complete File/Blob object ready for ingestion or WebTorrent seeding
+                        size: file.size
+                    }, (res) => {
+                        console.log('📥 Response from /add_source:', res);
+
+                        // Download the .torrent file once response is received
+                        const torrentBlob = new Blob([torrent.torrentFile], { type: 'application/x-bittorrent' });
+                        const downloadUrl = URL.createObjectURL(torrentBlob);
+                        const a = document.createElement('a');
+                        a.href = downloadUrl;
+                        a.download = `${file.name}.torrent`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+
+                        if (typeof onFileDropped === 'function') {
+                            onFileDropped({
+                                name: file.name,
+                                size: file.size,
+                                type: file.type,
+                                rawFile: file,
+                                infoHash: torrent.infoHash,
+                                response: res
+                            });
+                        }
+
+                        // Call initializeTorrents after successful torrent addition & download
+                        if (typeof window.initializeTorrents === 'function') {
+                            window.initializeTorrents("torrents");
+                        }
                     });
-                }
+                });
                 return;
             }
 
@@ -47,14 +77,48 @@ function dragOn(dropTargetSelector, maxPages = 15, options = false, onFileDroppe
                     pagesArray.push(pageText);
                 }
 
-                if (typeof onFileDropped === 'function') {
-                    onFileDropped({
+                // Seed file using WebTorrent
+                client.seed(file, (torrent) => {
+                    console.log('🌱 Torrent seeded successfully. InfoHash:', torrent.infoHash);
+
+                    // Post pages and infoHash to /add_source
+                    $.post('/add_source', {
+                        infoHash: torrent.infoHash,
                         name: file.name,
                         size: file.size,
                         pages_array: pagesArray,
                         totalPdfPages: pdfDocument.numPages
+                    }, (res) => {
+                        console.log('📥 Response from /add_source:', res);
+
+                        // Download the .torrent file once /add_source returns response
+                        const torrentBlob = new Blob([torrent.torrentFile], { type: 'application/x-bittorrent' });
+                        const downloadUrl = URL.createObjectURL(torrentBlob);
+                        const a = document.createElement('a');
+                        a.href = downloadUrl;
+                        a.download = `${file.name}.torrent`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+
+                        if (typeof onFileDropped === 'function') {
+                            onFileDropped({
+                                name: file.name,
+                                size: file.size,
+                                pages_array: pagesArray,
+                                totalPdfPages: pdfDocument.numPages,
+                                infoHash: torrent.infoHash,
+                                response: res
+                            });
+                        }
+
+                        // Call initializeTorrents with "torrents"
+                        if (typeof window.initializeTorrents === 'function') {
+                            window.initializeTorrents("torrents");
+                        }
                     });
-                }
+                });
+
             } catch (err) {
                 console.error("⚠️ Error parsing PDF file locally:", err);
             }
@@ -74,78 +138,8 @@ var $remaining
 var $uploadSpeed
 var $downloadSpeed
 
-//NB infohash is lowercase in hero, not camelCase, because it's an html5 data obj
-function assertHero(currentFile) {
-    const $existing = $(`#hero option[value="${currentFile.infohash}"]`);
 
-    //called on webtorrent route load, either refresh or a.webtorrent route()
-    if ($existing.length !== 0){
-        assertSwitch(currentFile.infohash);
-        return;
-    }
-
-    const $option = $("<option></option>");
-    $option.val(currentFile.infohash);
-    $option.text(`${currentFile.apa} (${currentFile.format})`);
-    
-    // Fix: ensure infohash is stored consistently
-    $option.data(currentFile);
-
-    $("#hero").append($option);
-
-    // Trigger the download immediately when the file is first added
-    DL(currentFile.infohash);
-
-    const $hero = $("#hero");
-    const $aten = $(".hiero");
-
-    $aten.click(function(e){
-        e.preventDefault();
-        processHiero($hero);
-    })
-    // Use 'change' for new selections and 'click' for re-clicking the same one
-    $hero.off("click").on("click", function(e) {
-        // If the dropdown is open, some browsers don't register 'click' on options.
-        // We check the value; if it's valid, we route.
-        
-    });
-
-    assertSwitch(currentFile.infohash)
-}
-
-
-function assertSwitch(infoHash) {
-    const $select = $("#hero");
-    const $option = $select.find(`option[value="${infoHash}"]`);
-
-    if ($option.length > 0) {
-        // 1. Sync dropdown selection
-        $select.val(infoHash);
-        $option.prop('selected', true);
-        
-        // 2. Toggle visible output container
-        $(".output").hide();
-        $("#output_" + infoHash).show();
-        
-        // 3. Sync bottom progress bar
-        assertProgress(infoHash);
-
-        // 4. FIX: If torrent exists in WebTorrent memory and is already done,
-        // force swap of status elements to Download Buttons!
-        const torrent = client.get(infoHash);
-        if (torrent && torrent.done) {
-            apa = TEMPEST.paramREC() ? TEMPEST.paramREC().apa : ""
-            torrent.files.forEach((file, index) => {
-               assertButton(file, torrent.infoHash, index, apa);
-            });
-        } else if (!torrent) {
-            // If it wasn't added yet, run full DL
-            DL(infoHash);
-        }
-    }
-}
-
-function assertProgress(infoHash){
+window.assertProgress = function assertProgress(infoHash){
     $body = document.querySelector("body");
     $progressBar = document.querySelector('#progressBar');
     $numPeers = document.querySelector('#numPeers');
@@ -189,7 +183,7 @@ function assertProgress(infoHash){
     }
 }
 
-function onProgress(torrent) {
+window.onProgress = function onProgress(torrent) {
 
     const $hero = $("#hero").find("option:selected");
     if(torrent.infoHash === $("#hero").val() || $("#hero").val() === "null"){

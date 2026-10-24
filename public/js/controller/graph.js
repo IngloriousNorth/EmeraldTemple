@@ -1,4 +1,4 @@
-function initializeGraph() {
+window.initializeGraph = function initializeGraph() {
     if (TEMPEST.pageREC() === "torrents" && TEMPEST.paramREC().search) {
         $.post("/graph_search", TEMPEST.paramREC(), function(data) {
             graph(data); 
@@ -36,6 +36,8 @@ function graph(data) {
     }
 
     const addedNodeIds = new Set();
+    const nodes = [];
+    const links = [];
 
     const addUniqueNode = (field) => {
         if (!field) return;
@@ -65,7 +67,7 @@ function graph(data) {
                 tempDiv.innerHTML = field.properties.html_entity || "";
                 let glyphSymbol = tempDiv.textContent || tempDiv.innerText || rawName;
 
-                Obelisk.nodes.push({ 
+                nodes.push({ 
                     id: id, 
                     group: "Hieroglyph", 
                     html_entity: glyphSymbol,
@@ -78,19 +80,19 @@ function graph(data) {
             else if (label === "Source") {
                 nodeUUIDs.push(id);
                 var isMatch = (TEMPEST.pageREC() === "torrents") ? titles.some(t => rawName.toLowerCase().includes(t)) : (id === TEMPEST.paramREC().uuid);
-                Obelisk.nodes.push({ id: id, group: isMatch ? "Find Source" : "Source", name: rawName, count: 0, color: "#000" });
+                nodes.push({ id: id, group: isMatch ? "Find Source" : "Source", name: rawName, count: 0, color: "#000" });
             } 
             else if (label === "Author") {
                 var isMatch = (TEMPEST.pageREC() === "node") && (id === TEMPEST.paramREC().uuid);
-                Obelisk.nodes.push({ id: id, group: isMatch ? "Find Author" : "Author", name: rawName, count: 0, color: "goldenrod" });
+                nodes.push({ id: id, group: isMatch ? "Find Author" : "Author", name: rawName, count: 0, color: "goldenrod" });
             } 
             else if (label === "Class") {
                 var isMatch = (TEMPEST.pageREC() === "node") && (id === TEMPEST.paramREC().uuid);
-                Obelisk.nodes.push({ id: id, group: isMatch ? "Find Class" : "Class", name: rawName, count: 0, color: "darkcyan" });
+                nodes.push({ id: id, group: isMatch ? "Find Class" : "Class", name: rawName, count: 0, color: "darkcyan" });
             }
             else if (label === "Publisher") {
                 var isMatch = (TEMPEST.pageREC() === "node") && (id === TEMPEST.paramREC().uuid);
-                Obelisk.nodes.push({ id: id, group: isMatch ? "Find Publisher" : "Publisher", name: toTitleCase(rawName), count: 0, color: "mediumvioletred" });
+                nodes.push({ id: id, group: isMatch ? "Find Publisher" : "Publisher", name: toTitleCase(rawName), count: 0, color: "mediumvioletred" });
             }
         }
     };
@@ -100,6 +102,8 @@ function graph(data) {
             record._fields.forEach(addUniqueNode);
         });
     }
+
+    Obelisk.nodes = nodes;
 
     const addedLinkKeys = new Set();
 
@@ -135,7 +139,7 @@ function graph(data) {
 
         if (!addedLinkKeys.has(linkKey)) {
             addedLinkKeys.add(linkKey);
-            Obelisk.links.push({ source: idA, target: idB, isGold: isGoldLink(idA, idB) });
+            links.push({ source: idA, target: idB, isGold: isGoldLink(idA, idB) });
             
             let idxA = Obelisk.nodes.findIndex(n => n.id === idA);
             let idxB = Obelisk.nodes.findIndex(n => n.id === idB);
@@ -144,7 +148,6 @@ function graph(data) {
         }
     };
 
-    // Helper to process exact {node, hieroglyph} pairs
     const processPairs = (pairs, parentNode, isParentToNode = true) => {
         if (!Array.isArray(pairs)) return;
         pairs.forEach(pair => {
@@ -162,20 +165,18 @@ function graph(data) {
 
     if (data && data.gData) {
         data.gData.forEach(function(record) {
-            var s            = record._fields[0];
-            var h            = record._fields[1];
-            var authorPairs  = record._fields[2];
-            var classPairs   = record._fields[3];
+            var s = record._fields[0];
+            var h = record._fields[1];
+            var authorPairs = record._fields[2];
+            var classPairs = record._fields[3];
             var publisherPairs = record._fields[4];
             var connectedSources = record._fields[5];
 
-            // Primary Source links
             if (h) addSafeLinkEntity(s, h);
-            processPairs(authorPairs, s, false);  // author -> s
-            processPairs(classPairs, s, true);    // s -> class
-            processPairs(publisherPairs, s, true); // s -> publisher
+            processPairs(authorPairs, s, false); 
+            processPairs(classPairs, s, true);    
+            processPairs(publisherPairs, s, true); 
 
-            // Secondary Connected Sources
             if (Array.isArray(connectedSources)) {
                 connectedSources.forEach(item => {
                     if (!item || !item.source) return;
@@ -191,388 +192,129 @@ function graph(data) {
         });
     }
 
+    Obelisk.links = links;
     graphRenderAdaptive("." + TEMPEST.pageREC() + "_graph");
 }
+
 function graphRenderAdaptive(selector) {
-    /*if (isMobileDevice() && typeof ForceGraphAR === 'function') {
-        console.log("Initializing AR for mobile device...");
-        graphRenderAR(selector);
-    } else {
-        console.log("Initializing VR / standard view...");
-        graphRenderVR(selector);
-    }*/
-    graphRenderVR(selector);
+    graphRenderPureD33D(selector);
 }
-let highlightedNode = null;
-let highlightedLinks = new Set();
-let highlightedNodes = new Set();
 
-function graphRenderVR(selector) {
+function graphRenderPureD33D(selector) {
     const container = document.querySelector(selector);
     if (!container) return;
 
-    if (container.clientWidth === 0 || container.clientHeight === 0) {
-        requestAnimationFrame(() => graphRenderVR(selector));
-        return;
-    }
+    container.innerHTML = ""; // Clear out previous canvas/elements
+
+    const width = container.clientWidth || window.innerWidth;
+    const height = container.clientHeight || window.innerHeight;
 
     assertScrollPause();
 
-    const Graph = ForceGraphVR()(container)
-        .width(container.clientWidth)
-        .height(container.clientHeight)
-        .backgroundColor('lightgoldenrodyellow')// AR usually benefits from a transparent background
+    // 1. Setup Three.js Scene, Camera, and WebGLRenderer
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color('lightgoldenrodyellow');
 
-        .graphData({ nodes: Obelisk.nodes, links: Obelisk.links })
+    const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+    camera.position.set(0, 0, 300);
 
-        .nodeRelSize(7)
-        .nodeLabel("")
-        .nodeColor(d => d.color)
-        .nodeThreeObject(node => {
-            const group = new THREE.Group();
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.xr.enabled = true; // Enable native WebXR VR support!
+    container.appendChild(renderer.domElement);
 
-            if (node.group === "Hieroglyph") {
-                // Check if this hieroglyph is tied to a gold link or node property
-                const isConnectedToGold = Graph.graphData().links.some(link => {
-                    const sId = typeof link.source === 'object' ? link.source.id : link.source;
-                    const tId = typeof link.target === 'object' ? link.target.id : link.target;
-                    return (sId === node.id || tId === node.id) && link.isGold;
-                }) || node.isGold;
+    // Add lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+    scene.add(ambientLight);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+    directionalLight.position.set(100, 200, 100);
+    scene.add(directionalLight);
 
-                const spriteColor = isConnectedToGold ? 'gold' : (node.color || 'darkgoldenrod');
+    // 2. Setup D3 3D Force Simulation
+    const simulation = d3.forceSimulation(Obelisk.nodes, 3)
+        .force('link', d3.forceLink(Obelisk.links).id(d => d.id).distance(150))
+        .force('charge', d3.forceManyBody().strength(-300))
+        .force('center', d3.forceCenter(0, 0, 0));
 
-                const sprite = new SpriteText(node.html_entity || '');
-                sprite.font = 'bold 128px Noto Sans Egyptian Hieroglyphs';
-                sprite.color = spriteColor;
-                sprite.textHeight = isConnectedToGold ? 40 : 40; 
-                sprite.position.set(0, 0, 0); 
-                sprite.padding = 15;
+    // 3. Create Three.js Meshes for Nodes and Lines
+    const nodeGroup = new THREE.Group();
+    scene.add(nodeGroup);
 
-                sprite.material.depthWrite = false;
+    const nodeMeshes = new Map();
+    Obelisk.nodes.forEach(node => {
+        const radius = node.group === "Hieroglyph" ? 6 : Math.max(3, (node.count / 4));
+        const geometry = new THREE.SphereGeometry(radius, 16, 16);
+        const material = new THREE.MeshLambertMaterial({ color: node.color || '#333333' });
+        const mesh = new THREE.Mesh(geometry, material);
+        
+        mesh.userData = node;
+        nodeGroup.add(mesh);
+        nodeMeshes.set(node.id, mesh);
+    });
 
-                node.__sprite = sprite;
-                node.__defaultColor = spriteColor; // Save default color for hover restoration
-                sprite.raycast = () => {};
-                group.add(sprite);
+    // Create line segments for links
+    const lineMaterial = new THREE.LineBasicMaterial({ color: 0xCDCDCD, transparent: true, opacity: 0.6 });
+    const lineGeometry = new THREE.BufferGeometry();
+    const lineSegments = new THREE.LineSegments(lineGeometry, lineMaterial);
+    scene.add(lineSegments);
 
-                const hitbox = new THREE.Mesh(
-                    new THREE.SphereGeometry(32),
-                    new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false })
-                );
-                hitbox.scale.set(1, 2.8, 1);
-                group.add(hitbox);
+    // 4. Animation loop & Physics tick
+    let animationFrameId;
+    function animate() {
+        animationFrameId = requestAnimationFrame(animate);
 
-                return group;
-            }
+        // Update D3 simulation tick
+        simulation.tick();
 
-            const sprite = new SpriteText(node.name || '');
-            sprite.font = '16px Rationale';
-            
-            const textColor = node.color;
-            sprite.color = textColor;
-            sprite.textHeight = 11;
-            sprite.position.set(3, 6, 9);
-            
-            sprite.material.depthWrite = false;
-
-            node.__sprite = sprite; 
-            node.__defaultColor = textColor;
-            group.add(sprite);
-
-            const dynamicRadius = Math.max(3, (node.count / 4));
-
-            const visibleMesh = new THREE.Mesh(
-                new THREE.SphereGeometry(dynamicRadius), 
-                new THREE.MeshLambertMaterial({ color: node.color })
-            );
-            group.add(visibleMesh);
-
-            const hitbox = new THREE.Mesh(
-                new THREE.SphereGeometry(dynamicRadius + 8),
-                new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false })
-            );
-            group.add(hitbox);
-
-            return group;
-        })
-        .onNodeClick((node) => {
-            handleNormalClick(node);
-        })
-        let isSimulationStable = false;
-
-// Enable hovers only after ForceAtlas2 finishes its initial layout
-Graph.onEngineStop(() => {
-    isSimulationStable = true;
-});
-
-Graph.onNodeHover(node => {
-    // Ignore hover events while the simulation is actively moving nodes
-    if (!isSimulationStable) return;
-
-    if (highlightedNode && highlightedNode.__sprite) {
-        if (highlightedNode.group !== "Hieroglyph") {
-            highlightedNode.__sprite.color = highlightedNode.__defaultColor || '#475569';
-            highlightedNode.__sprite.textHeight = 12;
-        } else {
-            highlightedNode.__sprite.textHeight = 55; 
-        }
-    }
-
-    if (node && node.__sprite) {
-        if (node.group === "Hieroglyph") {
-            const isConnectedToGold = Graph.graphData().links.some(link => {
-                const sId = typeof link.source === 'object' ? link.source.id : link.source;
-                const tId = typeof link.target === 'object' ? link.target.id : link.target;
-                return (sId === node.id || tId === node.id) && link.isGold;
-            }) || node.isGold;
-            node.__sprite.textHeight = isConnectedToGold ? 55 : 55; 
-            node.__sprite.color = isConnectedToGold ? 'gold' : 'gold';
-            insertObelisk(node.name, node.html_entity);
-        } else {
-            node.__sprite.color = 'gold';
-            node.__sprite.textHeight = 17;
-        }
-    }
-
-    highlightedNode = node;
-    highlightedNodes.clear();
-    highlightedLinks.clear();
-
-    if (node) {
-        highlightedNodes.add(node);
-
-        Graph.graphData().links.forEach(link => {
-            const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
-            const targetId = typeof link.target === 'object' ? link.target.id : link.target;
-
-            if (sourceId === node.id || targetId === node.id) {
-                highlightedLinks.add(link);
-                if (typeof link.source === 'object') highlightedNodes.add(link.source);
-                if (typeof link.target === 'object') highlightedNodes.add(link.target);
-            }
-        });
-    }
-
-        Graph
-                .linkColor(link => (highlightedLinks.has(link) ? 'gold' : (link.isGold ? 'gold' : '#CDCDCD')))
-                .linkWidth(link => ((highlightedLinks.has(link) || link.isGold) ? 3 : 0.08))
-        })
-        .linkColor("#CDCDCD")
-        .linkWidth(.08)
-        .linkDirectionalParticleColor('#007BFF')
-        .linkOpacity(link => link.isGold ? 1 : 0.06);
-
-    Graph.d3Force('charge').strength(-333);
-    Graph.d3Force('link').distance(333);
-    Graph.d3Force('center').strength(0.33);
-    Graph.cooldownTime(3333);
-
-    const sceneEl = container.querySelector('a-scene');
-
-    if (sceneEl) {
-        const bindRaycaster = () => {
-            setTimeout(() => {
-                window.dispatchEvent(new Event('resize'));
-                enableMouseRaycaster(sceneEl);
-            }, 100);
-        };
-
-        if (sceneEl.hasLoaded) {
-            bindRaycaster();
-        } else {
-            sceneEl.addEventListener('loaded', bindRaycaster);
-        }
-    }
-
-
-    // --- DRAG VS TAP DISTANCE THRESHOLD FIX ---
-    let pointerDownX = 0;
-    let pointerDownY = 0;
-    let hasDragged = false;
-    const DRAG_THRESHOLD = 10; // Pixels of movement allowed before considering it a drag/pan
-
-    container.addEventListener('pointerdown', (e) => {
-        pointerDownX = e.clientX;
-        pointerDownY = e.clientY;
-        hasDragged = false;
-    }, { passive: true });
-
-    container.addEventListener('pointermove', (e) => {
-        if (!hasDragged && (pointerDownX !== 0 || pointerDownY !== 0)) {
-            const dx = Math.abs(e.clientX - pointerDownX);
-            const dy = Math.abs(e.clientY - pointerDownY);
-            if (dx > DRAG_THRESHOLD || dy > DRAG_THRESHOLD) {
-                hasDragged = true;
-            }
-        }
-    }, { passive: true });
-
-    // Intercept clicks/taps on the graph canvas renderer to cancel if user panned
-    const rendererDom = container.querySelector('canvas') || container;
-    rendererDom.addEventListener('click', (e) => {
-        if (hasDragged) {
-            e.stopImmediatePropagation();
-            e.preventDefault();
-        }
-    }, true);
-}
-
-function isMobileDevice() {
-    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-    // Check common mobile device strings
-    const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
-    // Also check for modern touch-enabled iPads (iOS 13+ reporting as MacIntel)
-    const isTouchMac = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
-    
-    return mobileRegex || isTouchMac;
-}
-
-function graphRenderAR(selector) {
-    const container = document.querySelector(selector);
-    if (!container) return;
-
-    if (container.clientWidth === 0 || container.clientHeight === 0) {
-        requestAnimationFrame(() => graphRenderAR(selector));
-        return;
-    }
-
-    assertScrollPause();
-
-    // Uses ForceGraphAR instead of ForceGraphVR
-    const Graph = ForceGraphAR()(container)
-        .width(container.clientWidth)
-        .height(container.clientHeight)
-        .graphData({ nodes: Obelisk.nodes, links: Obelisk.links })
-        .backgroundColor('transparent') // AR usually benefits from a transparent background
-        .nodeRelSize(7)
-        .nodeLabel("")
-        .nodeColor(d => d.color)
-        .nodeThreeObject(node => {
-            const group = new THREE.Group();
-
-            if (node.group === "Hieroglyph") {
-                const sprite = new SpriteText(node.html_entity || '');
-                sprite.font = '360px Noto Sans Egyptian Hieroglyphs';
-                sprite.color = node.color || 'goldenrod';
-                sprite.textHeight = 360; 
-                sprite.position.set(0, 0, 0); 
-                sprite.padding = 45;
-                sprite.material.depthWrite = false;
-                sprite.renderOrder = 999;
-
-                node.__sprite = sprite;
-                group.add(sprite);
-
-                const hitbox = new THREE.Mesh(
-                    new THREE.SphereGeometry(18),
-                    new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false })
-                );
-                group.add(hitbox);
-                return group;
-            }
-
-            const sprite = new SpriteText(node.name || '');
-            sprite.font = '16px Share Tech Mono';
-            sprite.color = node.color;
-            sprite.textHeight = 6;
-            sprite.position.set(3, 6, 9);
-            sprite.material.depthWrite = false;
-            sprite.renderOrder = 999;
-
-            node.__sprite = sprite; 
-            node.__defaultColor = node.color;
-            group.add(sprite);
-
-            const dynamicRadius = Math.max(3, (node.count / 5));
-            const visibleMesh = new THREE.Mesh(
-                new THREE.SphereGeometry(dynamicRadius), 
-                new THREE.MeshLambertMaterial({ color: node.color })
-            );
-            group.add(visibleMesh);
-
-            const hitbox = new THREE.Mesh(
-                new THREE.SphereGeometry(dynamicRadius + 8),
-                new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false })
-            );
-            group.add(hitbox);
-
-            return group;
-        })
-        .onNodeClick((node) => {
-            handleNormalClick(node);
+        // Update Node mesh positions from D3 simulation data
+        nodeMeshes.forEach((mesh, id) => {
+            const node = mesh.userData;
+            mesh.position.set(node.x || 0, node.y || 0, node.z || 0);
         });
 
-    Graph.d3Force('charge').strength(-300);
-    Graph.d3Force('link').distance(137);
-    Graph.d3Force('center').strength(0.09);
+        // Update Link geometry buffer positions
+        const positions = [];
+        Obelisk.links.forEach(link => {
+            const source = link.source;
+            const target = link.target;
+            if (source && target && typeof source.x === 'number' && typeof target.x === 'number') {
+                positions.push(source.x, source.y, source.z || 0);
+                positions.push(target.x, target.y, target.z || 0);
+            }
+        });
+        lineGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+        lineGeometry.attributes.position.needsUpdate = true;
 
-    setupMobileFullscreen(Graph);
-}
-
-function enableMouseRaycaster(sceneEl) {
-    const cameraEl = sceneEl.querySelector('[camera]') || (sceneEl.camera && sceneEl.camera.el);
-    
-    if (cameraEl) {
-        cameraEl.setAttribute('cursor', 'rayOrigin: mouse');
-        cameraEl.setAttribute('raycaster', 'objects: *');
-
-        if (sceneEl.resize) {
-            sceneEl.resize();
-        }
-        
-        const cursorComp = cameraEl.components.cursor;
-        if (cursorComp && cursorComp.updateCanvasBounds) {
-            cursorComp.updateCanvasBounds();
-        }
+        renderer.render(scene, camera);
     }
-}
+    animate();
 
-let isRoutingNode = false;
+    // 5. Native Raycasting / Click Detection
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
 
-function handleNormalClick(clickedNode) {
-    if (isRoutingNode) return;
-    
-    if (clickedNode) {
-        isRoutingNode = true;
-        
-        const d = clickedNode;
-        const routeMap = { 
-            "Source": "source", 
-            "Author": "author", 
-            "Class": "class", 
-            "Publisher": "publisher", 
-            "Find Source": "source", 
-            "Find Author": "author", 
-            "Find Class": "class", 
-            "Find Publisher": "publisher",
-            "Hieroglyph": "hieroglyph"
-        };
-        const label = routeMap[d.group] || d.group.toLowerCase();
-        
-        exitFullscreenIfActive();
-        if(label === "hieroglyph"){
-            processAbacus(d);
-        }
-        else{
-            TEMPEST.route(`#node?label=${label}&uuid=${d.id}`);
-        }
-        
-        setTimeout(() => {
-            isRoutingNode = false;
-        }, 300);
-    }
-}
+    container.addEventListener('click', (event) => {
+        const rect = renderer.domElement.getBoundingClientRect();
+        mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
-function exitFullscreenIfActive() {
-    if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement) {
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        } else if (document.webkitExitFullscreen) {
-            document.webkitExitFullscreen();
-        } else if (document.mozCancelFullScreen) {
-            document.mozCancelFullScreen();
-        } else if (document.msExitFullscreen) {
-            document.msExitFullscreen();
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObjects(nodeGroup.children);
+
+        if (intersects.length > 0) {
+            const clickedNode = intersects[0].object.userData;
+            handleNormalClick(clickedNode);
         }
+    });
+
+    // Handle Window Resizing
+    window.addEventListener('resize', onWindowResize);
+    function onWindowResize() {
+        const newW = container.clientWidth || window.innerWidth;
+        const newH = container.clientHeight || window.innerHeight;
+        camera.aspect = newW / newH;
+        camera.updateProjectionMatrix();
+        renderer.setSize(newW, newH);
     }
 }

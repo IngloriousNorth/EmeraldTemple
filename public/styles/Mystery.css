@@ -76,8 +76,31 @@ footer{
   box-shadow:2px -2px 2px black;
 }
 
+@font-face {
+  font-family: 'Noto Sans Egyptian Hieroglyphs';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/vEF42-tODB8RrNDvZSUmRhcQHzx1s7y_F9-j3qSzEcbEYindSQ.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Rationale';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/9XUnlJ92n0_JFxHIfHcsdg.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Share Tech Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/J7aHnp1uDWRBEqV98dVQztYldFc7pA.ttf) format('truetype');
+}
+
+
 .gate{
-  font-family:"JetBrains Mono", sans-serif;
+  font-family:"Share Tech Mono", sans-serif;
   padding:0px 5px 0px 5px;
   padding-top:110px;
   height:333px;
@@ -274,7 +297,7 @@ div.webtorrent,
 }
 
 #hero, #hero option{
-  font-family:"JetBrains Mono", system-ui;
+  font-family:"Share Tech Mono", system-ui;
 }
 
 
@@ -421,7 +444,7 @@ h3{
   font-size:32px;
   text-decoration:underline;
   font-variant:small-caps;
-  font-family:  "JetBrains Mono", serif;
+  font-family:  "Share Tech Mono", serif;
   
 }
 
@@ -970,7 +993,7 @@ a.publishers{
 
 .removeAuthor{
   color:HOTPINK;
-  font-family:"JetBrains Mono",serif;
+  font-family:"Share Tech Mono",serif;
 }
 
 .sourceTab{
@@ -1056,7 +1079,7 @@ h2 a:hover{
 }
 
 #info{
-  font-family:"JetBrains Mono", sans-serif;
+  font-family:"Share Tech Mono", sans-serif;
   font-size:16px;
   color:white;
   background-color:black;
@@ -1078,7 +1101,7 @@ h1 a, h1 a:visited{
   letter-spacing:4px;
   height:92px;
   left:5px;
-  font-family:"Oswald", system-ui !important;
+  font-family:"Rationale", system-ui !important;
 
 
 }
@@ -1093,7 +1116,7 @@ h1 a, h1 a:visited{
   font-size:12px;
   left:5px;
   top:40px;
-  font-family:"JetBrains Mono", serif;
+  font-family:"Share Tech Mono", serif;
 }
 
 #total, #downloaded{
@@ -1108,7 +1131,7 @@ h1 a, h1 a:visited{
 }
 
 .adv_show select, .adv_show select option, .adv_show input::placeholder, .adv_show input{
-  font-family:"JetBrains Mono", "serif" !important;
+  font-family:"Share Tech Mono", "serif" !important;
   font-size:16px;
 }
 
@@ -1279,7 +1302,7 @@ label.adv_all, input.adv_all{
 }
 
 .torrentClasses a{
-  font-family:"JetBrains Mono", system-ui !important;
+  font-family:"Share Tech Mono", system-ui !important;
   font-size:14px;
 }
 
@@ -1350,7 +1373,7 @@ a.TEMPEST:hover{
 }
 
 .TEMPEST .about_us{
-  font-family:"JetBrains Mono", serif;
+  font-family:"Share Tech Mono", serif;
   text-align:justify;
   padding-left:5px;
   padding-right:5px;
@@ -1362,7 +1385,7 @@ input[type="file"]{
 
 h3{
   font-size:24px;
-  font-family:"JetBrains Mono", serif;
+  font-family:"Share Tech Mono", serif;
   text-align:center;
   width:100%;
   color:silver;
@@ -1421,7 +1444,7 @@ footer{
   position:fixed;
   left:5px;
   top:88px;
-  background:#1a1a1a; color:#00ccff; border:1px solid #00ccff; text-decoration:none; font-family:"JetBrains Mono", sans-serif; font-size:14px; border-radius:3px; cursor:pointer;
+  background:#1a1a1a; color:#00ccff; border:1px solid #00ccff; text-decoration:none; font-family:"Share Tech Mono", sans-serif; font-size:14px; border-radius:3px; cursor:pointer;
 }
 
 .output img{
@@ -1511,7 +1534,7 @@ footer{
   /* Margerine */
   position:relative;
 
-  font-family:"JetBrains Mono", serif;
+  font-family:"Share Tech Mono", serif;
 }
 
 .torrents .dt-container{
@@ -1545,7 +1568,7 @@ h3{
 }
 
 .search input{
-  font-family:"JetBrains Mono", "Pirata One";
+  font-family:"Share Tech Mono", "Pirata One";
 }
 
 .set a.publisher, .set a.class, .set a.author{
@@ -1618,7 +1641,7 @@ table.dataTable tr.dtrg-group th{
 
 
 .dataTable td{
-  font-family:"JetBrains Mono", system-ui !important;
+  font-family:"Share Tech Mono", system-ui !important;
   font-size:16px !important;
   text-align:justify;
 
@@ -1668,11 +1691,11 @@ div.TEMPEST {
 }
 
 .authors_area div a{
-  font-family:"JetBrains Mono", sans-serif;
+  font-family:"Share Tech Mono", sans-serif;
 }
 
 .upload input, .upload select, .upload option, .upload input::placeholder{
-  font-family:"JetBrains Mono", sans-serif;
+  font-family:"Share Tech Mono", sans-serif;
 
 }
 
@@ -1684,7 +1707,7 @@ div.TEMPEST {
   color:#000;
   text-align:center;
   font-size:16px;
-  font-family:"JetBrains Mono", sans-serif;
+  font-family:"Share Tech Mono", sans-serif;
   padding:0px 5px 0px 5px;
 }
 
@@ -1723,7 +1746,7 @@ canvas:-webkit-full-screen {
   background:dimgray;
   box-shadow:2px 2px 3px gold !important;
   color:#42f58c;
-  font-family:"JetBrains Mono", system-ui;
+  font-family:"Share Tech Mono", system-ui;
   font-size:21px;
   width:101px;
   margin-bottom:13px;
@@ -1782,7 +1805,7 @@ h2 span a{
 
 
 #status{
-  font-family:"JetBrains Mono", sans-serif;
+  font-family:"Share Tech Mono", sans-serif;
   color:darkgoldenrod !important;
 }
 
@@ -1792,7 +1815,7 @@ h2 span a{
 
 .panel li a, .panel li a:visited, .mobile_panel li a, .mobile_panel li a:visited{
   color:goldenrod;
-  font-family:"JetBrains Mono", sans-serif;
+  font-family:"Share Tech Mono", sans-serif;
 }
 
 .dataTable td:not(.torrentsTable td){
@@ -1834,7 +1857,7 @@ div.upload{
 }
 
 .upload_inst{
-  font-family:"JetBrains Mono", sans-serif;
+  font-family:"Share Tech Mono", sans-serif;
   color:dimgray;
 }
 

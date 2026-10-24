@@ -1,4 +1,4 @@
-const cb_scribe = {
+window.cb_scribe = {
 	obelisk : [],
 	mermaid : false,
 
@@ -6,7 +6,7 @@ const cb_scribe = {
 	sentinel : false
 }
 
-function insertObelisk(aten){
+window.insertObelisk = function insertObelisk(aten){
 	if(cb_scribe.obelisk.length >= 7){
 		//processSentinel(assertSentinelComplete);
 		clearObelisk();

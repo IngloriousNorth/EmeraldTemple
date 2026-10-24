@@ -11,9 +11,9 @@ import bodyParser from 'body-parser';
 
 import neo4j from 'neo4j-driver';
 
-import he from 'he';
 //import PDFParse from 'pdf-parse';
 import dotenv from 'dotenv';
+
 import { check, validationResult } from 'express-validator';
 
 // Load environment variables from .env file for local development
@@ -38,10 +38,10 @@ import Pyramid from "./engine/mermaid.js";
 
 // Initialize Neo4j Driver
 const driver = neo4j.driver(
-    process.env.URI || 'neo4j+s://your-instance.databases.neo4j.io',
+    process.env.URI,
     neo4j.auth.basic(
-        process.env.user || process.env.NEO4J_USERNAME || 'neo4j', 
-        process.env.password || 'your_password'
+        process.env.user,
+        process.env.password
     )
 );
 
@@ -53,6 +53,206 @@ const MetadataSchema = z.object({
     source_date: z.string().describe("The original composition or historical publication year of the work itself (e.g. '426 A.D.', '1651'). Use your historical knowledge for classical/historical works."),
     edition_date: z.string().describe("The specific copyright or publication year of THIS physical/digital edition found in the text chunks (e.g. '1888'), leave blank if modern reprint info is missing"),
     apa_citation: z.string().describe("A properly formatted APA 7th edition citation string")
+});
+
+import got from 'got'; // got handles the scrape
+import createTorrent from 'create-torrent';
+import parseTorrent from 'parse-torrent';
+import he from 'he';
+
+app.get("/torrent/:infoHash", check('infoHash').not().isEmpty().trim().escape(),function(req,res){
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.json({ errors: errors.array() });
+    }
+    var query = "MATCH (t:Torrent {infoHash : $infoHash}) RETURN t.hex AS HEX, t.webseeds AS webseeds "
+    const params = {infoHash : req.params.infoHash}
+    session.run(query,params).then(data=>{
+        if(!data.records[0]){
+            return res.end();
+        }
+        else{
+            return res.json({hex: data.records[0]._fields[0], webseeds: data.records[0]._fields[1]})
+        }        
+    })
+})
+
+const WHITELISTED_ARCHIVES = [
+    "famguardian.org",
+    "fpmt.org",
+    "ancient-buddhist-texts.net",
+    "archive.org",
+    "ibiblio.org",
+    "gutenberg.org",
+    "zenodo.org"
+];
+
+// Helper: Parse user-provided APA citation and extract author, year, clean title, and publisher
+function parseAPACitation(apaText) {
+    let author = "Unknown Author";
+    let year = "n.d.";
+    let sourceName = "Unknown Title";
+    let publisher = "Unknown Publisher";
+
+    const yearMatch = apaText.match(/\(\s*([a-zA-Z0-9–-]+)\s*\)\s*\./);
+    if (yearMatch) {
+        year = yearMatch[1].trim(); // Extract year (e.g., 426, 2020, 500 BCE)
+        const yearIndex = apaText.indexOf(yearMatch[0]);
+        author = apaText.substring(0, yearIndex).trim();
+        let afterYear = apaText.substring(yearIndex + yearMatch[0].length).trim();
+        
+        // Strip parenthetical descriptors like (Trans. ...), (Ed. ...) from the title scan
+        afterYear = afterYear.replace(/\((?:Trans|Trans|Ed|Eds|Vol|Vols|Rev)\.?\s*[^)]*\)/gi, '').trim();
+
+        // Split by period to separate components
+        const parts = afterYear.split('.').map(p => p.trim()).filter(Boolean);
+        
+        if (parts.length > 0) {
+            sourceName = parts[0].replace(/[*_]/g, '').trim();
+        }
+
+        // Search remaining parts for publisher, skipping role fragments
+        const validPublisherParts = parts.slice(1).filter(p => {
+            const lower = p.toLowerCase();
+            return !lower.startsWith("trans") && 
+                   !lower.startsWith("ed") && 
+                   !lower.startsWith("vol") && 
+                   !lower.startsWith("rev");
+        });
+
+        if (validPublisherParts.length > 0) {
+            publisher = validPublisherParts[validPublisherParts.length - 1].replace(/[*_]/g, '').trim();
+        } else if (parts.length > 1) {
+            publisher = parts[parts.length - 1].replace(/[*_]/g, '').trim();
+        }
+    } else {
+        author = apaText.split(',')[0] || "Unknown Author";
+        sourceName = apaText.replace(/\((?:Trans|Trans|Ed|Eds|Vol|Vols|Rev)\.?\s*[^)]*\)/gi, '').replace(/[*_]/g, '').trim();
+    }
+
+    return { author, year, sourceName, publisher };
+}
+
+
+
+app.post("/webseed_url", async (req, res) => {
+    console.log("=== /webseed_url route hit! ===");
+    console.log("Request body received:", req.body);
+
+    const { apa, url } = req.body;
+
+    if (!apa || !url) {
+        return res.status(400).json({ success: false, error: "Both APA citation and File URL are required." });
+    }
+
+    try {
+        // 1. Validate provided URL against whitelist
+        const parsedUrl = new URL(url);
+        const hostname = parsedUrl.hostname.toLowerCase();
+        const isWhitelisted = WHITELISTED_ARCHIVES.some(domain => 
+            hostname === domain || hostname.endsWith("." + domain)
+        );
+
+        if (!isWhitelisted) {
+            return res.status(403).json({ success: false, error: `Archive domain '${hostname}' is not whitelisted.` });
+        }
+
+        // 2. Parse APA citation for graph metadata (including year)
+        const { author, year, sourceName, publisher } = parseAPACitation(apa);
+        const format = url.toLowerCase().includes("epub") ? "epub" : "pdf";
+        const adjDate = new Date().toISOString();
+        console.log(`Parsed APA -> Author: ${author} | Year: ${year} | Title: ${sourceName} | Publisher: ${publisher}`);
+
+        // 3. Download file into a Node Buffer using got
+        console.log(`Downloading file from URL: ${url}`);
+        const response = await got(url, {
+            responseType: 'buffer'
+        });
+
+        const fileBuffer = Buffer.from(response.body);
+        console.log("GOT fileBuffer downloaded successfully");
+
+        // 4. Generate torrent buffer using create-torrent
+        const torrentBuffer = await new Promise((resolve, reject) => {
+            createTorrent(fileBuffer, {
+                name: he.decode(req.body.apa),
+                webSeeds: [url]
+            }, (err, torrent) => {
+                if (err) reject(err);
+                else resolve(torrent);
+            });
+        });
+
+        console.log("TORRENT CREATED!");
+
+        // 5. Safely parse and validate the torrent structure
+        let parsedTorrent = await parseTorrent(torrentBuffer);
+        let Hex = torrentBuffer.toString('hex');
+        console.log("Parsed Torrent successfully");
+        const infoHash = parsedTorrent.infoHash;
+        const size = fileBuffer.length;
+
+        if (!infoHash) {
+            return res.status(500).json({ success: false, error: "Failed to extract a valid infoHash from the torrent." });
+        }
+
+        console.log(`Validated Torrent InfoHash: ${infoHash}`);
+        console.log(`File Size: ${size} bytes`);
+
+        // 6. Save into Neo4j graph database
+        const session = driver.session();
+        try {
+            const cypherQuery = `
+                MERGE (a:Author {name: $author})
+                MERGE (p:Publisher {name: $publisher})
+                MERGE (src:Source {name: $sourceName, type: "Book", updated: DATETIME(), top10: TOFLOAT(TIMESTAMP()), adjDate: $adjDate})
+                CREATE (e:Edition {apa: $apa, year: $year})
+                CREATE (t:Torrent {
+                    created_at: TOFLOAT(TIMESTAMP()),
+                    webseeds: [$url], 
+                    hex: $Hex,
+                    snatches: TOFLOAT(0),
+                    deleted: false,
+                    format: $format,
+                    infoHash: $infoHash,
+                    size: TOFLOAT($size)
+                })
+                MERGE (e)-[:AUTHOR]->(a)
+                MERGE (e)-[:PUBLISHED_BY]->(p)
+                MERGE (e)<-[:PUB_AS]-(src)
+                MERGE (e)-[:DIST_AS]->(t)
+                RETURN e, t
+            `;
+
+            await session.run(cypherQuery, { 
+                apa, 
+                author, 
+                year,
+                sourceName, 
+                publisher,
+                url,
+                Hex,
+                format,
+                infoHash,
+                size,
+                adjDate
+            });
+
+            res.json({ 
+                success: true, 
+                message: "Source added with manual URL, torrented, and saved successfully!",
+                webseed: url,
+                infoHash
+            });
+
+        } finally {
+            await session.close();
+        }
+
+    } catch (error) {
+        console.error("Pipeline error:", error);
+        res.status(500).json({ success: false, error: error.message });
+    }
 });
 
 // P2P Graph Ingestion Route
@@ -146,7 +346,9 @@ app.post('/add_source/:infoHash', async (req, res) => {
             : "n.d.";
             
         const editionDate = (extractedMetadata && extractedMetadata.edition_date) ? String(extractedMetadata.edition_date).trim() : "";
-
+        if(!editionDate || editionDate > 1934){
+            return res.json({status: "Sorry, Not In Public Domain!"})
+        }
         const session = driver.session();
         try {
             await session.run(cypherQuery, {

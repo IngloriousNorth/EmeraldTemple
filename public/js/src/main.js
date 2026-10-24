@@ -1,32 +1,58 @@
-// public/js/src/main.js
+// ==========================================
+// 1. GLOBALS & DEPENDENCIES SETUP
+// ==========================================
+import 'jquery-ui/dist/jquery-ui.js'
 
-const $ = require('jquery');
-window.jQuery = $;
-window.$ = $;
+import DataTable from 'datatables.net';
+window.DataTable = DataTable;
+import 'datatables.net-responsive';
+import 'datatables.net-rowgroup';
 
-require('jquery-ui');
+import * as d3 from 'd3';
+window.d3 = d3;
 
-// DataTables & UI Extensions
-require('datatables.net-jqui')(window, $);
-require('datatables.net-rowgroup-jqui')(window, $);
-require('datatables.net-responsive-jqui')(window, $);
+import pdfjs from 'pdfjs';
+window.pdfjsLib = pdfjs;
 
-// Libraries (Targeting pre-built dist files for clean parsing)
-require('d3/dist/d3.min.js');
-require('aframe/dist/aframe-v1.8.0.js'); // <-- Pre-built minified dist bundle
-require('3d-force-graph-vr/dist/3d-force-graph-vr.min.js');
-require('three-spritetext/dist/three-spritetext.min.js');
-
-const dragDrop = require('drag-drop');
+import dragDrop from 'drag-drop';
 window.dragDrop = dragDrop;
-require('webtorrent');
-require('moment');
 
-// MVC Architecture & Router
-require('../controller/index.js');
-require('../model/index.js');
-require('../hook/index.js');
+import moment from 'moment';
+window.moment = moment;
 
-const { TEMPEST } = require('../lib/TEMPEST.js');
-window.TEMPEST = TEMPEST;
-require('../lib/util.js');
+// Core local utils & framework
+import util from '../lib/util.js';
+window.util = util;
+
+// ==========================================
+// 2. MODELS (Data & State Layer)
+// ==========================================
+import '../model/Category.js';
+import '../model/graph.js';
+import '../model/hero.js';
+import '../model/recommendation.js';
+import '../model/torrents.js';
+import '../model/webtorrent.js';
+
+// ==========================================
+// 3. HOOKS (DOM Bindings & Component Views)
+// ==========================================
+import '../hook/graph.js';
+import '../hook/header.js';
+import '../hook/Hero.js';
+import '../hook/node.js';
+import '../hook/recommendation.js';
+import '../hook/torrents.js';
+
+// ==========================================
+// 4. CONTROLLERS (Business Logic Layer)
+// ==========================================
+import '../controller/autocomplete.js';
+import '../controller/Category.js';
+import '../controller/graph.js';
+import '../controller/hero.js';
+import '../controller/recommendation.js';
+import '../controller/search.js';
+import '../controller/torrents.js';
+import '../controller/webtorrent.js';
+import '../controller/loader.js';

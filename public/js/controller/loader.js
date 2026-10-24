@@ -69,7 +69,7 @@ const config = {
 
                 });
                 
-                processGlyph();
+                processGlyph();;
                 
                 
 
@@ -83,7 +83,7 @@ const config = {
                     TEMPEST.route("#torrents");
                     return;
                 }  
-                crossWard(function(){
+                Select(function(){
                     switch(TEMPEST.paramREC().ward){
                         case "authors":
                             $("h2 span a").text("Authors").css("color", "gold").hide().fadeIn(1337);
@@ -146,7 +146,7 @@ const config = {
 function go() {
     $(".autosuggestBox").hide();
 
-    const params = TEMPEST.paramREC() ? TEMPEST.paramREC : {};
+    const params = TEMPEST.paramREC() ? TEMPEST.paramREC() : {};
     $.get("/fragment/header.html", function(data){
         $("header").html(data);            
         headerAutocomplete();
@@ -183,6 +183,7 @@ $(document).ready(function(){
 
     },222)
     go();
+    console.log("#")
     /*
         dragOn(selector, #pages, fullfile(bool) [ignores #pages], cb)
     */

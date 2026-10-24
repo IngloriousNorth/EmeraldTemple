@@ -1,4 +1,4 @@
-function processMahoo(){
+window.processMahoo = function processMahoo(){
     $.get("/mahoo", function(data){
       console.log(data);
         const uuid = data.uuid;
@@ -8,7 +8,7 @@ function processMahoo(){
     })
 }
 
-function processSentinel(){
+window.processSentinel = function processSentinel(){
 	$.post("/sentinel/" + TEMPEST.paramREC().uuid, {obelisk : JSON.stringify(cb_scribe.obelisk)}, function(data){
 
 	  if(data.mermaid){

@@ -1,4 +1,4 @@
-function initializeTorrents(table ,cb) {    
+window.initializeTorrents = function initializeTorrents(table, cb) {    
     if ($.fn.DataTable.isDataTable("#" + table)) {
         var oldTable = $("#" + table).DataTable();
         oldTable.clear().destroy(); 
@@ -11,24 +11,19 @@ function initializeTorrents(table ,cb) {
         $("#" + table).append('<thead><tr><th>Group</th><th>APA Citation</th><th>Revs</th><th>Date</th><th>Time</th><th class="none"></th></tr></thead><tbody></tbody>');
     }
 
-    assertGraphParamsPendingReset();    
-    assertGraphSearch();
-    assertAdvSearchUI();
-    assertAdvButton();
-
-    var hashes = [];
-    var url = "";
+    var hashes = []
+    var url = ""
     var checkTable = table;
     if (table === "torrents") {
         if (!TEMPEST.paramREC()) {
-            url = "/" + table;
+            url = "/" + table
         } else {
-            url = "/" + table + "/adv_search";
+            url = "/" + table + "/adv_search"
         }
     } else if (TEMPEST.pageREC() === "top10") {
-        url = "/top10/" + table;
+        url = "/top10/" + table
     } else if (table === "node") {
-        url = "/" + table + "/" + TEMPEST.paramREC().label + "?uuid=" + TEMPEST.paramREC().uuid;
+        url = "/" + table + "/" + TEMPEST.paramREC().label + "?uuid=" + TEMPEST.paramREC().uuid
     }
 
     dataTable = $("#" + table).DataTable({
@@ -44,16 +39,16 @@ function initializeTorrents(table ,cb) {
         pageLength: 10,
         columns: [
             { visible: false, searchable: false }, // Index 0: Grouping (Date/Title)
-            { width: "50%" },                      // Index 1: APA Citation
-            { width: "16.66%" },                   // Index 2: Revs
-            { width: "16.66%" },                   // Index 3: Date
-            { width: "16.66%" },                   // Index 4: Time
+            { width: "50%" },                 // Index 1: APA Citation
+            { width: "16.66%" },// Index 2: Revs (Right-align to keep icon tidy)
+            { width: "16.66%" },                 // Index 3: Date
+            { width: "16.66%" },                 // Index 4: Time
             { width: "100%", responsivePriority: 1 }// Index 5: Download
         ],
         columnDefs: [
             { targets: [0], visible: false }, // Grouping column
             { targets: [1], className: "text-left" }, // APA Citation
-            { targets: [2, 3, 4], className: "dt-left" }, // Revs, Date, Time
+            { targets: [2, 3, 4], className: "dt-left" }, // Revs, Date, Time (aligned left)
             { targets: 5, responsivePriority: 1 } // Download
         ],
         order: [[ 4, "desc" ]],
@@ -107,7 +102,7 @@ function initializeTorrents(table ,cb) {
                     var authorField = "";
                     record._fields[1].forEach(function(field, i) {
                         if(i===0)
-                            authorField += "<span class='silver'> by </span>";
+                            authorField += "<span class='silver'> by </span>"
                         if (record._fields[1].length === 1){                            
                             authorField += "<a class='TEMPEST node author' href='#node?label=author&uuid=" +
                             field.properties.uuid + "'>" + decodeEntities(field.properties.name);
@@ -116,10 +111,12 @@ function initializeTorrents(table ,cb) {
                             authorField += "<a class='TEMPEST node author' href='#node?label=author&uuid=" +
                             field.properties.uuid + "'>" + decodeEntities(field.properties.name);
                             if(i < record._fields[1].length - 1){
-                                authorField += "<span class='silver'>, </span>";
+                                authorField += "<span class='silver'>, </span>"
                             }                            
                         }
-                        authorField += "</a>";
+                        authorField += "</a>"
+                        
+                        
                     });
 
                     var dateField = "";
@@ -134,10 +131,10 @@ function initializeTorrents(table ,cb) {
                                 field.properties.uuid + "'>" + decodeEntities(field.properties.name);
                         }
                         if(record._fields[3].length > 1 && i < record._fields[3].length - 1){
-                            classesField += "<span class='classComma silver'>,</span></a>";
+                            classesField += "<span class='classComma silver'>,</span></a>"
                         }
                         else{
-                            classesField += "</a>";
+                            classesField += "</a>"
                         }
                     });
 
@@ -162,86 +159,145 @@ function initializeTorrents(table ,cb) {
                         }
                     });
                 });
-
-                // 2. Prepend the upload dropzone row at index 0
-                dtRecs.unshift(uploadBannerRow);
-
                 return dtRecs;
-            }
+            },
         },
-        drawCallback: function() {
+        drawCallback: function(settings) {
+            
+            //this sets graphParams in the graphModel so the graph can accumulate where the user left off.
+           
             cb();
 
-            if (TEMPEST.pageREC() === "top10") $('th').unbind('click.DT');
-            
-            $(document).off("click", "#torrent_infoHash").on("click", "#torrent_infoHash", function(e){
-              e.preventDefault();
-              
-              // Retrieve the infohash from the data-infohash attribute
-              const infoHash = $(this).data('infohash');
-              
-              if (!infoHash) {
-                console.warn('No data-infohash attribute found on this element.');
-                return;
-              }
+           // Inject elements into the first dtrg-group, or fallback above the table if empty
+            if (TEMPEST.pageREC() === "torrents" && $("#add_source").length === 0) {
+                const $firstGroup = $(".dtrg-group").first();
+                
+                if ($firstGroup.length) {
+                    // Normal case: Groups exist (table has data)
+                    $firstGroup.append(`
+                        <span class="source-inputs-wrapper" style="margin-left: 15px;">
+                            <input type="text" id="add_source_apa" placeholder="APA Citation" />
+                            <input type="text" id="add_source" placeholder="Archive URL" />
+                            <button id="add_source_btn">Add</button>
+                        </span>
+                    `);
+                } else {
+                    // Fallback case: Table is empty, so place the inputs above the table wrapper
+                    const $tableContainer = $("#torrents").closest(".dataTables_wrapper").length ? 
+                                            $("#torrents").closest(".dataTables_wrapper") : 
+                                            $("#torrents").parent();
+                                            
+                    if ($tableContainer.find("#add_source").length === 0) {
+                        $tableContainer.prepend(`
+                            <div class="empty-state-inputs" style="margin-bottom: 15px; padding: 10px; background: rgba(0,0,0,0.03); border: 1px dashed #ccc;">
+                                <span style="margin-right: 10px; font-size: 0.9em; color: #666;">No entries found. Add your first Source:</span>
+                                <input type="text" id="add_source_apa" placeholder="APA Citation" style="margin-right: 5px;" />
+                                <input type="text" id="add_source" placeholder="Archive URL" style="margin-right: 5px;" />
+                                <button id="add_source_btn">Add</button>
+                            </div>
+                        `);
+                    }
+                }
+            }
 
-              // Copy to clipboard using modern Navigator API
-              navigator.clipboard.writeText(infoHash)
-                .then(() => {
-                  // Optional: Give visual feedback to the user
-                  const $el = $(this);
-                  const originalText = $el.text();
-                  $el.text('[Copied!]');
-                  $el.css('color', '#50C777');
-                  setTimeout(() => { $el.text(originalText); $el.css('color', 'darkgoldenrod'); }, 2000);
-                })
-                .catch(err => {
-                  console.error('Failed to copy to clipboard:', err);
+            $("table tbody").off("click", ".magnetURI").on("click", ".magnetURI", function(){
+                const infoHash = $(this).data("infohash");
+                $.post("/rev/" + infoHash)
+            })
+
+            assertNodeNameFromData()
+            if (TEMPEST.pageREC() === "node") {
+                assertButtonTab();
+            }
+
+            var api = this.api();
+        
+            // Internal DataTables draw counter
+            // settings.iDraw > 1 ensures this doesn't run on the initial load
+            if (settings.iDraw > 1) {
+                // Use the wrapper to ensure we find the top of the table component
+                var tableWrapper = $(api.table().container());
+                
+                // Scroll to the top of the wrapper
+                tableWrapper[0].scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start' 
                 });
-            });
-
-            $(document).off("click", ".copy-citation-btn").on("click", ".copy-citation-btn", function(e) {
-              e.stopPropagation();
-              const uuid = $(this).data("uuid");
-              const $btn = $(this);
-              
-              // Extract clean text content from the citation element
-              const textToCopy = $("#edition_" + uuid + "_field").text().trim();
-
-              navigator.clipboard.writeText(textToCopy).then(() => {
-                // Visual indicator feedback (turns green briefly)
-                $btn.css("color", "#50C777");
-                setTimeout(() => $btn.css("color", "#a0a0a0"), 1200);
-              }).catch(err => {
-                console.error("Failed to copy citation: ", err);
-              });
-            });
+            }            
             
-            $(document).off("click", "a.webtorrent").on("click", "a.webtorrent", function(e) {
-                e.preventDefault();
-                const d = this.dataset;
-                
-                const $existing = $(`#hero option[value="${d.infohash}"]`);
+        },
+    })
 
-                // called on webtorrent route load, either refresh or a.webtorrent route()
-                if ($existing.length === 0){
-                    $(this).text("[Revving..!]");
-                    $(this).css('color', 'darkcyan');
-                }
-                else{
-                    $(this).text("[Already Revved.]");
-                    $(this).css('color', 'orange');
-                }
-                var that = $(this);
-                setTimeout(function(){
-                    that.text("[WebTorrent]");
-                    that.css("color", "darkgoldenrod");
-                }, 2360);
-                
-                assertHero(d);
-            });
+    if (TEMPEST.pageREC() === "top10") $('th').unbind('click.DT')
+    
+    $(document).off("click", "#torrent_infoHash").on("click", "#torrent_infoHash", function(e){
+      e.preventDefault();
+      
+      // Retrieve the infohash from the data-infohash attribute
+      const infoHash = $(this).data('infohash');
+      
+      if (!infoHash) {
+        console.warn('No data-infohash attribute found on this element.');
+        return;
+      }
 
-            $("a.webtorrent").text("[WebTorrent]");
-        }
+      // Copy to clipboard using modern Navigator API
+      navigator.clipboard.writeText(infoHash)
+        .then(() => {
+          
+          // Optional: Give visual feedback to the user
+          const $el = $(this);
+          const originalText = $el.text();
+          $el.text('[Copied!]');
+          $el.css('color', '#50C777');
+          setTimeout(() => { $el.text(originalText); $el.css('color', 'darkgoldenrod'); }, 2000);
+        })
+        .catch(err => {
+          console.error('Failed to copy to clipboard:', err);
+        });
     });
+
+    $(document).off("click", ".copy-citation-btn").on("click", ".copy-citation-btn", function(e) {
+      e.stopPropagation();
+      const uuid = $(this).data("uuid");
+      const $btn = $(this);
+      
+      // Extract clean text content from the citation element
+      const textToCopy = $("#edition_" + uuid + "_field").text().trim();
+
+      navigator.clipboard.writeText(textToTest = textToCopy).then(() => {
+        // Visual indicator feedback (turns green briefy)
+        $btn.css("color", "#50C777");
+        setTimeout(() => $btn.css("color", "#a0a0a0"), 1200);
+      }).catch(err => {
+        console.error("Failed to copy citation: ", err);
+      });
+    });
+    
+    $(document).off("click", "a.webtorrent").on("click", "a.webtorrent", function(e) {
+        e.preventDefault();
+        const d = this.dataset;
+        // Fix: Using d.infoHash (case sensitive) and adding quotes to selector        
+        
+        const $existing = $(`#hero option[value="${d.infohash}"]`);
+
+    //called on webtorrent route load, either refresh or a.webtorrent route()
+        if ($existing.length === 0){
+            $(this).text("[Revving..!]");
+            $(this).css('color', 'darkcyan');
+        }
+        else{
+            $(this).text("[Already Revved.]");
+            $(this).css('color', 'orange');
+        }
+        var that = $(this);
+        setTimeout(function(){
+            that.text("[WebTorrent]");
+            that.css("color", "darkgoldenrod");
+        },2360);
+        
+        webtorrent(d.infoHash);
+    });
+
+    $("a.webtorrent").text("[WebTorrent]");
 }
