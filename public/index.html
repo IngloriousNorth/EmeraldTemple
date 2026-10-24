@@ -15,89 +15,6 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.1/ethers.umd.min.js"></script>
         <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
-        <script>
-            let wallet_addr = null;
-            let authToken = null;
-            const ADMIN_WALLET_ADDRESS = "0xYOUR_ADMIN_WALLET_ADDRESS_HERE".toLowerCase();
-
-            async function authenticateAndLoadApp() {
-                if (typeof window.ethereum === 'undefined') {
-                    console.error("MetaMask not detected.");
-                    document.body.innerHTML = "<h1 style='color:white;background:#111;text-align:center;padding:50px;'>403 Forbidden: MetaMask Required</h1>";
-                    return;
-                }
-
-                try {
-                    // 1. Connect wallet via ethers.js
-                    const provider = new ethers.BrowserProvider(window.ethereum);
-                    await provider.send("eth_requestAccounts", []);
-                    const signer = await provider.getSigner();
-                    const address = await signer.getAddress();
-
-                    // Check wallet address against allowed admin wallet
-                    if (address.toLowerCase() !== ADMIN_WALLET_ADDRESS) {
-                        console.error("Unauthorized wallet address.");
-                        document.body.innerHTML = "<h1 style='color:white;background:#111;text-align:center;padding:50px;'>403 Forbidden: Unauthorized Wallet</h1>";
-                        return;
-                    }
-
-                    // 2. Request cryptographic signature (SIWE)
-                    wallet_addr = address;
-                    const message = `Authenticate EmeraldTemple Session\nTimestamp: ${Date.now()}`;
-                    const signature = await signer.signMessage(message);
-
-                    // 3. Send signature to server for verification
-                    const response = await $.ajax({
-                        url: "/api/verify-signature",
-                        type: "POST",
-                        contentType: "application/json",
-                        data: JSON.stringify({ address: wallet_addr, signature: signature, message: message })
-                    });
-
-                    if (response.success) {
-                        authToken = response.token;
-
-                        // Attach auth token to all future jQuery AJAX calls
-                        $.ajaxSetup({
-                            beforeSend: function(xhr) {
-                                xhr.setRequestHeader('x-auth-token', authToken);
-                            }
-                        });
-
-                        console.log("Authentication successful! Injecting bundle.js and loader.js...");
-
-                        // 4. Load bundle.js dynamically ONLY after verification passes
-                        loadScript("js/bundle.js", function() {
-                            // 5. Load loader.js dynamically after bundle.js completes
-                            loadScript("loader.js", function() {
-                                console.log("Application fully loaded and activated.");
-                            });
-                        });
-
-                    } else {
-                        throw new Error(response.error);
-                    }
-
-                } catch (err) {
-                    console.error("Authentication failed or was rejected:", err);
-                    document.body.innerHTML = "<h1 style='color:white;background:#111;text-align:center;padding:50px;'>Access Denied: Authentication Failed</h1>";
-                }
-            }
-
-            // Helper function to dynamically load scripts sequentially
-            function loadScript(src, callback) {
-                const script = document.createElement('script');
-                script.src = src;
-                script.onload = callback;
-                document.body.appendChild(script);
-            }
-
-            // Trigger authentication when the DOM is ready
-            $(document).ready(function() {
-                authenticateAndLoadApp();
-            });
-        </script>
-
         <!-- WebTorrent & Service Worker Setup -->
         <script type='module'>
             import WebTorrent from '/js/lib/webtorrent.min.js'
@@ -108,6 +25,50 @@
             window.client = client;         
         </script>
 
+        <div class="city">
+    <!-- Web3 Auth Module Script -->
+    <script type="module">
+        import EthersAuth from '../js/hook/web3-auth.js';
+
+        document.addEventListener('DOMContentLoaded', function() {
+                let isAuthenticated = false;
+
+                // 1. Login via MetaMask on page load
+                EthersAuth.initAuth(function(authenticated) {
+                    isAuthenticated = authenticated;
+                    if (authenticated) {
+                        const script = document.createElement('script');
+                        script.src = '../js/bundle.js';
+                        document.body.appendChild(script);
+                    }
+                });
+
+                // 2. Verify and route to #torrents when .GATE is clicked
+                const gateElement = document.querySelector('#gate');
+                if (gateElement) {
+                    gateElement.addEventListener('click', function() {
+                        if (isAuthenticated) {
+                            if (window.TEMPEST && typeof window.TEMPEST.route === 'function') {
+                                window.TEMPEST.route('#torrents');
+                            } else {
+                                window.location.hash = '#torrents';
+                            }
+                        } else {
+                            alert("Please complete MetaMask authentication first.");
+                        }
+                    });
+                }
+            });
+        </script>
+
+        <div class="GATE" style="cursor: pointer;">
+            <span id="stupa">&#x13296;</span>
+            <p id="inscription">
+                Here lies the solution to the great educational reform so necessary at this time. We can not hope to build a nobility of man upon the sterility of a narrow, competitive, materialistic educational policy. The ignorance of man has been his undoing. Only wisdom can restore him to his divine estate. 
+            </p> 
+        </div>
+    </div>
+
         <script type="module">
             import TEMPEST from '/js/lib/TEMPEST.js';
             window.TEMPEST = TEMPEST;
@@ -115,7 +76,7 @@
     </head>        
     <body>      
         <header></header>
-            <div class="TEMPEST gate"></div>
+            <div class="gate"></div>
             <div class="TEMPEST upload"></div>
             <div class="TEMPEST webtorrent"></div>
             <div class="TEMPEST top10"></div>

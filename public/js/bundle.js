@@ -36395,9 +36395,6 @@ ${str}>>`;
   // public/js/src/main.js
   init_jquery_shim();
 
-  // public/js/hook/ethers-login.js
-  init_jquery_shim();
-
   // node_modules/jquery-ui/dist/jquery-ui.js
   init_jquery_shim();
   (function(factory2) {

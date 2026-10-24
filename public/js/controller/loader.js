@@ -3,7 +3,7 @@ const config = {
     defaultPage: "gate",
     dir: "/fragment",
     fade: true,
-    pages: ["gate", "webtorrent", "torrents", "top10", "node", "Category", "upload", "privacy"],
+    pages: ["webtorrent", "torrents", "top10", "node", "Category", "upload", "privacy"],
     helm: [
         {
             page: "torrents",
@@ -130,14 +130,6 @@ const config = {
             page: "privacy",
             fn: function() {
                 $("h2 span a").text("Privacy Policy").css("color", "silver").hide().fadeIn(1337);;
-            }
-        },
-        {
-            page: "gate",
-            fn: function() {
-                $("#city").off("click").click(function(){
-                    TEMPEST.route("#torrents");
-                })
             }
         }
     ]

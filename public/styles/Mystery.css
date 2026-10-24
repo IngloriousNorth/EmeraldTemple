@@ -130,7 +130,7 @@ footer{
   color:whitesmoke !important;
 }
 
-.gate p{
+#inscription{
   background:radial-gradient(#CDCDCD, palegoldenrod, whitesmoke);
   display:block;
   margin:0 auto;
@@ -153,7 +153,7 @@ footer{
   text-shadow:2px 2px gold;
 }
 
-#city{
+#stupa{
   padding:0px 0px 0px 0px;
   display:block;
   color:#03fc6c;
@@ -165,10 +165,12 @@ footer{
   right:auto;
 }
 
-.TEMPEST .home{
+.city{
   position:fixed;
   z-index:9999;
   width:100%;
+  overflow-y:auto;
+  height:100%;
   top:0;
   bottom:0;
   background:linear-gradient(137deg, lightgoldenrodyellow, #03fc6c, whitesmoke);
@@ -888,13 +890,11 @@ td{
   display:block;
 }
 
-.TEMPLAR .home{
-  padding-left:5px;
-  padding-top:22px;
-  padding-bottom:23px;
+.city{
   font-size:22px;
   color:#83DAC0;;
   width:100%;
+  height:100%;
 }
 
 a.adv_toggle{
@@ -2067,7 +2067,7 @@ div.upload{
     box-sizing:border-box;
 
     position:fixed;
-    z-index:9999;
+    z-index:9998;
   }
 
   #slogan{
@@ -2245,8 +2245,9 @@ div.TEMPEST.webtorrent{
     position:relative;
   }
 
-  .gate p{
+  #inscription{
     width:299px;
+    font-size:20px;
   }
 
   .ui-autocomplete{
@@ -2335,10 +2336,6 @@ div.TEMPEST.webtorrent{
 
 .titleBreak{
   margin-top:3px;
-}
-
-.TEMPEST .home{
-
 }
 
 .stupa{

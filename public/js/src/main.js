@@ -1,6 +1,3 @@
-//ethers login
-import 'ethers'
-import '../hook/ethers-login.js'
 // ==========================================
 // 1. GLOBALS & DEPENDENCIES SETUP
 // ==========================================

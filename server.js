@@ -1,6 +1,10 @@
 //TODO: he.encode.
 ////
 import express from 'express';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
 import util from 'util';
 import { fileURLToPath } from 'url';
 import path from 'path';
@@ -31,10 +35,10 @@ import { ethers, verifyMessage } from 'ethers';
 const authenticatedSessions = new Set();
 
 // 1. SIWE Handshake Endpoint (/access-ctrl)
-app.post('/ethers-login', async (req, res) => {
+app.post('/ethers-login-auth', async (req, res) => {
     const { address, signature, message } = req.body;
 
-    const adminWallet = process.env.ETH_ADDRESS ? process.env.ETH_ADDRESS.toLowerCase() : "";
+    const adminWallet = process.env.ADMIN_ETH_ADDRESS ? process.env.ADMIN_ETH_ADDRESS.toLowerCase() : "";
     
     if (!address || address.toLowerCase() !== adminWallet) {
         return res.status(403).json({ success: false, error: "Unauthorized wallet address." });
