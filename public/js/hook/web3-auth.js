@@ -22,13 +22,12 @@ const EthersAuth = {
         }
 
         try {
-            // 2. Prompt MetaMask connection & Ethers provider
+            // 2. Get provider and signer assuming user is already logged in/connected
             const provider = new ethers.BrowserProvider(window.ethereum);
-            await provider.send("eth_requestAccounts", []);
             const signer = await provider.getSigner();
             const address = await signer.getAddress();
 
-            // 3. Sign message
+            // 3. Sign message for verification
             const message = `Authenticate EmeraldTemple Session\nTimestamp: ${Date.now()}`;
             const signature = await signer.signMessage(message);
 
