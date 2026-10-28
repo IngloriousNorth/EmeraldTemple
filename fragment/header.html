@@ -1,0 +1,78 @@
+<!-- maybe refactor so mobile and desktop isn't duplicated !-->
+<a href="#" id="mobile_menu">≡</a>
+	<!--<a href="#torrents" class="TEMPEST torrents"></a>!-->
+
+<h1><a class="TEMPEST torrents" href="#torrents">EmeraldTemple</a></h1>
+<a id='stupa' href="#" title="Sage's Ziggüratt"><span class = "stupa">&#78452;</span></a>
+<div class="mobile_menu">	
+	<div class="search">
+		<ul id="search_ul"> 
+			<li class="search_sources"><input id="search_sources_mobile" class="searchField search_sources_input" placeholder="Title"><ul class="autosuggestBox"></ul></li>
+			<li class="search_classes"><input id ="search_classes_mobile" class="searchField search_classes_input" placeholder="Classes"><ul class="autosuggestBox"></ul></li>
+			<li class="search_authors"><input id="search_authors_mobile" class="searchField search_authors_input" placeholder="People"><ul class="autosuggestBox"></ul></li>
+			<li class="search_publisher"><input id="search_publishers_mobile" class="searchField search_publishers_input" placeholder="Institutions"><ul class="autosuggestBox"></ul></li>
+
+		</ul>
+	</div>
+	<br>
+	<br>
+	<br>
+	<ul class="mobile_tabs">
+			<li><a href="#torrents" class="TEMPEST torrents">Torrents</a></li>
+			<li><a href="#Category?ward=classes" class="TEMPEST Category classes">Classes</a></li>
+			<li><a href="#Category?ward=authors" class="TEMPEST Category authors">People</a></li>
+			<li><a href="#Category?ward=publishers" class="TEMPEST Category publishers">Institutions</a></li>			
+			<li><a href="#top10" class="TEMPEST top10">Top 10</a></li>
+	</ul><br>
+	<ul class="mobile_panel">
+		<!--<li><a class="TEMPEST upload" href="#upload">Upload</a></li>	!-->
+		
+		<li><a class="TEMPEST privacy" href="#privacy">Privacy</a></li>
+		<li ><a class="DMCA" href="#">DMCA</a></li>
+		<!--<li><a class="TEMPEST mission" href="#mission">Mission Statement</a></li>!-->
+		<li><a class="git" href="https://github.com/IngloriousNorth/EmeraldTemple" target="_blank">GitHub</a></li>	
+	</ul>
+</div>
+	
+<div class="panel">
+	<ul>
+		<!--<li><a class="TEMPEST upload" href="#upload">Upload</a></li>!-->
+
+		<li><a class="TEMPEST privacy" href="#privacy">Privacy</a></li>
+		<li ><a class="DMCA" href="#">DMCA</a></li>
+
+		<!--<li><a class="TEMPEST webtorrent_seeding" href="#webtorrent_seeding">WebTorrent Seeding</a></li>!-->	
+		
+		<!--<li><a class="TEMPEST mission" href="#mission">Mission Statement</a></li>!-->	
+		<li><a class="git" href="https://github.com/IngloriousNorth/EmeraldTemple" target="_blank">GitHub</a></li>	
+	</ul>
+</div>
+<div id="header_stream">
+	<div class="tabs">	
+		<ul class="tabs">
+				<li><a href="#torrents" class="TEMPEST torrents">Torrents</a></li>
+				<li><a href="#Category?ward=authors" class="TEMPEST Category authors">Classes</a></li>
+				<li><a href="#Category?ward=classes" class="TEMPEST Category classes">People</a></li>
+				<li><a href="#Category?ward=publishers" class="TEMPEST Category publishers">Institutions</a></li>			<!--!-->
+				<li><a href="#top10" class="TEMPEST top10">Top 10</a></li>	
+		</ul>
+	</div>
+	<div class="search desktop_search">
+		<ul id="search_ul"> 
+			<li class="search_sources"><input id="search_sources" class="searchField search_sources_input" placeholder="Titles"><ul class="autosuggestBox"></ul></li>
+				<li class="search_classes"><input id="search_classes" class="searchField search_classes_input" placeholder="Classes"><ul class="autosuggestBox"></ul></li>
+				<li class="search_authors"><input id="search_authors" class="searchField search_authors_input" placeholder="People"><ul class="autosuggestBox"></ul></li>
+				<li class="search_publisher"><input id="search_publishers" class="searchField search_publishers_input" placeholder="Institutions"><ul class="autosuggestBox"></ul></li>
+		</ul>
+	</div>
+	
+
+	
+</div>
+
+<script>
+	$(".DMCA").on("click", function(e){
+	e.preventDefault();
+	alert("This is a legal torrent site which is intended to educate the public thru the indexing of public domain infoHashes. Please send DMCA complaints, including the torrent infoHash, to the Designated Copyright Agent at: ingloriousnorth@gmail.com, and propagate.info will promptly remove the infoHash from view.")
+})
+</script>

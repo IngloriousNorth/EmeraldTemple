@@ -1,0 +1,18 @@
+[
+  {
+    "group": "2026-10-27 - Sample Group A",
+    "apaCitation": "<span class='apa-text bold'>Smith, J. (2026). <i>Sample Research Title</i>. Emerald Temple Press.</span>",
+    "revs": 5,
+    "date": "2026-10-27",
+    "time": 1730000000,
+    "downloadHtml": "<table><tr><td><a data-id='15000000' data-release='v1' data-apa='Smith, J. (2026). Sample Research Title. Emerald Temple Press.' data-format='PDF' data-infohash='abc123hash' class='webtorrent' href='webtorrent'>[WebTorrent]</a><a href='magnet:?xt=urn:btih:abc123hash' class='magnetURI' data-infohash='abc123hash'>[magnetURI]</a><a href='#' id='torrent_infoHash' data-infohash='abc123hash'>[infoHash]</a></td><td>15 MB</td></tr></table>"
+  },
+  {
+    "group": "2026-10-26 - Sample Group B",
+    "apaCitation": "<span class='apa-text bold'>Doe, A. (2025). <i>Advanced Metadata Systems</i>. Temple Publications.</span>",
+    "revs": 12,
+    "date": "2026-10-26",
+    "time": 1729900000,
+    "downloadHtml": "<table><tr><td><a data-id='42000000' data-release='v2' data-apa='Doe, A. (2025). Advanced Metadata Systems. Temple Publications.' data-format='EPUB' data-infohash='def456hash' class='webtorrent' href='webtorrent'>[WebTorrent]</a><a href='magnet:?xt=urn:btih:def456hash' class='magnetURI' data-infohash='def456hash'>[magnetURI]</a><a href='#' id='torrent_infoHash' data-infohash='def456hash'>[infoHash]</a></td><td>42 MB</td></tr></table>"
+  }
+]

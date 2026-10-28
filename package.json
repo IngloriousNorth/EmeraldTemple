@@ -1,0 +1,37 @@
+{
+  "engines": {
+    "node": "24.x"
+  },
+  "name": "emerald-temple",
+  "type": "module",
+  "devDependencies": {
+    "@babel/core": "^8.0.9",
+    "@noble/hashes": "^2.4.0",
+    "async": "^3.2.6",
+    "browserify": "^17.0.1",
+    "d3": "^7.9.0",
+    "datatables.net": "^3.1.4",
+    "datatables.net-jqui": "^3.1.4",
+    "datatables.net-responsive-dt": "^4.1.1",
+    "datatables.net-rowgroup": "^2.1.1",
+    "datatables.net-scroller-dt": "^3.1.1",
+    "drag-drop": "^7.2.0",
+    "esmify": "^2.1.1",
+    "ethers": "^6.17.0",
+    "got": "^16.1.0",
+    "jquery": "^4.0.0",
+    "jquery-ui": "^1.14.2",
+    "moment": "^2.31.0",
+    "path-browserify": "^1.0.1",
+    "pdfjs": "^2.5.4",
+    "webtorrent": "^3.0.21"
+  },
+  "scripts": {
+    "build": "browserify main.js -p esmify -o ./src/bundle.js"
+  },
+  "browserify": {
+    "plugin": [
+      "esmify"
+    ]
+  }
+}

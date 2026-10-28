@@ -1,0 +1,27 @@
+<div class="torrents-view-container">
+    <!-- Upload & Webseed Dropzone Plugin Bar -->
+    <div id="emerald-upload-zone" style="border: 2px dashed #00ff00; padding: 1.5rem; text-align: center; margin-bottom: 1.5rem; background: rgba(0,0,0,0.2); font-family: 'Courier New', monospace; color: #00ff00;">
+        <p style="margin: 0 0 0.5rem 0; font-weight: bold;">[PEX SWARM INGESTION PORTAL]</p>
+        <p style="margin: 0 0 1rem 0; font-size: 0.9rem; color: #88ff88;">Drag & Drop Whitelisted PDF Archives here, or paste a direct webseed URL below:</p>
+        
+        <div style="display: flex; gap: 0.5rem; justify-content: center; max-width: 600px; margin: 0 auto;">
+            <input type="text" id="webseed-url-input" placeholder="https://oldsite.edu/archive-document.pdf" style="flex: 1; padding: 0.5rem; background: #111; border: 1px solid #00ff00; color: #00ff00; font-family: monospace;" />
+            <button id="webseed-submit-btn" style="padding: 0.5rem 1rem; background: #00ff00; color: #000; border: none; font-weight: bold; cursor: pointer;">SEED URL</button>
+        </div>
+    </div>
+
+    <!-- Existing DataTables Container -->
+    <table id="torrents" class="display" style="width:100%">
+        <thead>
+            <tr>
+                <th>Title / Source</th>
+                <th>Author</th>
+                <th>Edition / Release</th>
+                <th>Category</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Dynamic rows populated by Torrents.js controller -->
+        </tbody>
+    </table>
+</div>
