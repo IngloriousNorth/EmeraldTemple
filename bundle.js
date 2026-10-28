@@ -94181,7 +94181,7 @@ module.exports = {
 		//processSentinel(assertSentinelComplete);
 			clearObelisk();
 		}
-		MVC.Base.Sentinel.cb_scribe.obelisk.push({name : aten.name, html_entity : aten.html_entity})
+		MVC.Ramosa.Sentinel.cb_scribe.obelisk.push({name : aten.name, html_entity : aten.html_entity})
 	},
 	refresh : function(){
 		cb_scribe.obelisk = [];
@@ -94429,15 +94429,15 @@ module.exports = {
       obelisk: JSON.stringify(cb_scribe.obelisk)
     }, function (data) {
       if (data.mermaid) {
-        MVC.Base.Sentinel.mermaidCtrl(true);
+        MVC.Ramosa.Sentinel.mermaidCtrl(true);
       } else {
-        MVC.Base.Sentinel.mermaidCtrl(false);
+        MVC.Ramosa.Sentinel.mermaidCtrl(false);
       }
       const uuid = data.uuid;
 
       //faster without re-route
 
-      _TEMPEST.default.route(`#node?label=${label}&uuid=${uuid}&from_meramid=${MVC.Base.Sentinel.cb_scribe.mermaid}`);
+      _TEMPEST.default.route(`#node?label=${label}&uuid=${uuid}&from_meramid=${MVC.Ramosa.Sentinel.cb_scribe.mermaid}`);
       $('body').css('cursor', "pointer");
     });
   },
@@ -94868,7 +94868,7 @@ module.exports = {
     const nodeGroup = new THREE.Group();
     scene.add(nodeGroup);
     const nodeMeshes = new Map();
-    MVC.Base.graph.Obelisk.nodes.forEach(node => {
+    MVC.Ramosa.graph.Obelisk.nodes.forEach(node => {
       const radius = node.group === "Hieroglyph" ? 6 : Math.max(3, node.count / 4);
       const geometry = new THREE.SphereGeometry(radius, 16, 16);
       const material = new THREE.MeshLambertMaterial({

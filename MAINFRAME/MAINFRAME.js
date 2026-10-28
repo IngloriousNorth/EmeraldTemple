@@ -1,10 +1,9 @@
 import TEMPEST from "../lib/TEMPEST.js"
 
 const MVC = {
-        Base: {
-            Category : require("../Hook/Category"),
-            Graph: require("../Base/Graph"),
-            Torrents: require("../Base/Torrents"),
+        Ramosa: {
+            Graph: require("../Ramosa/Graph"),
+            Torrents: require("../Ramosa/Torrents"),
         },
         Control: {
             Search: require("../Control/Search"),
@@ -21,3 +20,6 @@ const MVC = {
 };
 
 export default MVC;
+
+//so the language allows: 
+//MVC.Ramosa.Swarm.put(metadata)

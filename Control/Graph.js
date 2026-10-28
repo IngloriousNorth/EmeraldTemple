@@ -91,7 +91,7 @@ module.exports = {
             });
         }
 
-        MVC.Base.graph.Obelisk.putNodes();
+        MVC.Ramosa.graph.Obelisk.putNodes();
 
         const addedLinkKeys = new Set();
 
@@ -180,6 +180,6 @@ module.exports = {
             });
         }
 
-        MVC.Base.Graph.Obelisk.putLinks(links)
+        MVC.Ramosa.Graph.Obelisk.putLinks(links)
         MVC.Hook.Graph.render("." + TEMPEST.pageREC() + "_graph");
 }

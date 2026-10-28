@@ -11,7 +11,7 @@ module.exports = {
 		//processSentinel(assertSentinelComplete);
 			clearObelisk();
 		}
-		MVC.Base.Sentinel.cb_scribe.obelisk.push({name : aten.name, html_entity : aten.html_entity})
+		MVC.Ramosa.Sentinel.cb_scribe.obelisk.push({name : aten.name, html_entity : aten.html_entity})
 	},
 	refresh : function(){
 		cb_scribe.obelisk = [];

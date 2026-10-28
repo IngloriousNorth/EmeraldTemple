@@ -1,1 +1,3 @@
 Validate using institutional RIEPMD key. Press Enter & there is Webtorrent PEX graph visualization of .torrent swarm metadata  using whitelist-approved webseeds. Serverless DMCA Safe-Harbor Conduit. Working on it first as a Chrome Browser Extension. Work in progress.
+
+Developing a PEX IndexedDB Query-language called Ramosa.

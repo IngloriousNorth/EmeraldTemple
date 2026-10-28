@@ -2,7 +2,7 @@ const TEMPEST = window.TEMPEST;
 const MVC = window.MVC;
 module.exports = {
     initialize : function(){
-        MVC.Base.Graph.remove(".node_graph");
+        MVC.Ramosa.Graph.remove(".node_graph");
 
         if (TEMPEST.pageREC() === "torrents" && TEMPEST.paramREC().search) {
         $.post("/graph_search", TEMPEST.paramREC(), function(data) {
@@ -56,7 +56,7 @@ module.exports = {
         scene.add(nodeGroup);
 
         const nodeMeshes = new Map();
-        MVC.Base.graph.Obelisk.nodes.forEach(node => {
+        MVC.Ramosa.graph.Obelisk.nodes.forEach(node => {
             const radius = node.group === "Hieroglyph" ? 6 : Math.max(3, (node.count / 4));
             const geometry = new THREE.SphereGeometry(radius, 16, 16);
             const material = new THREE.MeshLambertMaterial({ color: node.color || '#333333' });

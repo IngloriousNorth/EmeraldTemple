@@ -12,17 +12,17 @@ module.exports = {
   $.post("/sentinel/" + TEMPEST.paramREC().uuid, {obelisk : JSON.stringify(cb_scribe.obelisk)}, function(data){
 
     if(data.mermaid){
-      MVC.Base.Sentinel.mermaidCtrl(true);
+      MVC.Ramosa.Sentinel.mermaidCtrl(true);
     }
     else{
-      MVC.Base.Sentinel.mermaidCtrl(false);
+      MVC.Ramosa.Sentinel.mermaidCtrl(false);
     }
     
       const uuid = data.uuid;
 
       //faster without re-route
 
-      TEMPEST.route(`#node?label=${label}&uuid=${uuid}&from_meramid=${MVC.Base.Sentinel.cb_scribe.mermaid}`);
+      TEMPEST.route(`#node?label=${label}&uuid=${uuid}&from_meramid=${MVC.Ramosa.Sentinel.cb_scribe.mermaid}`);
 
       $('body').css('cursor', "pointer");
     })
