@@ -1,1 +1,1 @@
-Validate using institutional RIEPMD key from @noble/hashes. Enter & there is Webtorrent PEX graph visualization using (whitelisted) webseeds. Chrome Browser Extension. Work in progress.
+Validate using institutional RIEPMD key from @noble/hashes. Enter & there is Webtorrent PEX graph visualization using (whitelisted) webseeds. Serverless Chrome Browser Extension. Work in progress.

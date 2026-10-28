@@ -8,7 +8,7 @@
   },
   "background": {
     "service_worker": "background.js",
-    "type" : "module"
+    "type": "module"
   },
   "permissions": [
     "activeTab",
@@ -21,8 +21,15 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["fragment/*", "styles/*", "lib/*", "src/*"],
-      "matches": ["<all_urls>"]
+      "resources": [
+        "fragment/*",
+        "styles/*",
+        "lib/*",
+        "src/*"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
     }
   ]
 }
