@@ -1,1 +1,1 @@
-Validate using institutional RIEPMD key. Press Enter & there is Webtorrent PEX graph visualization of .torrent swarm metadata  using (whitelisted) webseeds. Serverless Chrome Browser Extension. Work in progress.
+Validate using institutional RIEPMD key. Press Enter & there is Webtorrent PEX graph visualization of .torrent swarm metadata  using (whitelisted) webseeds. Serverless DMCA Safe-Harbor Conduit. Working on it first as a Chrome Browser Extension. Work in progress.
