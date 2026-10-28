@@ -1,7 +1,7 @@
 import TEMPEST from './lib/TEMPEST'
 window.TEMPEST = TEMPEST; 
 
-const async = require('async');
+import async from 'async';
 window.async = async;
 
 import MVC from "./MAINFRAME/MAINFRAME";

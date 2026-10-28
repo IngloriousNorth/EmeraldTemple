@@ -8,7 +8,7 @@ const async = window.async;
     window.__TEMPEST_INDEX_INITIALIZED__ = true;
 
     async function boot() {
-        try {
+//tthere is no try
             // 2. Inject structural template container safely inside .city
             $(".EmeraldTemple").html(`
                     <header></header>
@@ -88,9 +88,7 @@ const async = window.async;
             
             console.info("[TEMPEST KERNEL] Router initialized successfully.");
 
-        } catch (err) {
-            console.error("[KERNEL ERROR] Native bootstrap failed:", err);
-        }
+        //do, or do not
     }
 
     boot();
