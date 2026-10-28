@@ -163,10 +163,16 @@ module.exports = {
             searching: false,
             info: true,
             rowGroup: {
-                dataSrc: 0, // Or point to a dedicated hidden grouping column index
+                dataSrc: 0, // Groups cleanly using the hidden identifier in Column 0
                 startRender: function (rows, group) {
-                    // Extract just the source title text or let DataTables group cleanly without raw markup
-                    return $('<tr class="group"><td colspan="5">Source Group</td></tr>');
+                    // rows.data()[0][0] holds the rich HTML string we pushed into Column 0
+                    var htmlPayload = rows.data()[0][0];
+                    
+                    // Wrapping the HTML string in jQuery ($) forces DataTables 
+                    // to render it as actual DOM elements (images, links) instead of text.
+                    return $('<tr class="dtrg-group">' +
+                                '<td colspan="5">' + htmlPayload + '</td>' +
+                             '</tr>');
                 }
             }
             ,
