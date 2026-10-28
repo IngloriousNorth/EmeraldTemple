@@ -4,39 +4,10 @@ chrome.action.onClicked.addListener((tab) => {
     chrome.tabs.create({ url: chrome.runtime.getURL("Mu.html") });
 });
 
+import WebTorrent from './lib/webtorrent.min.js';
+
 console.info("[BACKGROUND] EmeraldTemple PEX Service Worker active.");
 
-// Reasonable Whitelist Guidelines by Google / Extension Store Standards:
-const ALLOWED_DOMAINS = [
-    ".edu",
-    "arxiv.org",
-    "jstor.org",
-    "gutenberg.org",
-    "archive.org",
-    "doaj.org",
-    "plato.stanford.edu",
-    "zenodo.org",
-    "osf.io"
-];
-
-function isWhitelistedUrl(urlStr) {
-    try {
-        const parsed = new URL(urlStr);
-        const hostname = parsed.hostname.toLowerCase();
-        
-        return ALLOWED_DOMAINS.some(domain => {
-            if (domain.startsWith('.')) {
-                return hostname.endsWith(domain);
-            }
-            return hostname === domain || hostname.endsWith('.' + domain);
-        });
-    } catch (err) {
-        console.warn("[SECURITY] Malformed URL rejected:", urlStr);
-        return false;
-    }
-}
-
-// Initialize WebTorrent client in the background worker scope
 const client = new WebTorrent({
     dht: false,
     tracker: false,
@@ -44,32 +15,47 @@ const client = new WebTorrent({
 });
 
 self.client = client;
+window.client = client;
+// Immediately seed the base foobar container/torrent on startup
+// This ensures client.torrents[0] is always available and acts as the universal harbor base
+// inside background.js
+self.infoHash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4"; // Default fallback before gate unlocks
 
-// Listen for ingestion messages from popup UI
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.type === "ADD_WEBSEED") {
-        const targetUrl = request.url;
+    if (request.type === "UPDATE_BACKGROUND_SEED_INFOHASH" && request.infoHash) {
+        self.infoHash = request.infoHash;
+        console.info(`[BACKGROUND] Gate unlocked! Swarm infoHash updated to: ${self.infoHash}`);
 
-        if (!isWhitelistedUrl(targetUrl)) {
-            console.warn(`[REJECTED] URL failed safety/whitelist policy: ${targetUrl}`);
-            sendResponse({ 
-                success: false, 
-                error: "Policy Violation: URL domain must be an accredited educational (.edu) or verified public research archive." 
-            });
-            return true;
-        }
-
-        console.info(`[APPROVED] Whitelist check passed. Mounting webseed: ${targetUrl}`);
+        // Optional: Dynamically add or restart the seed torrent with the new institutional infoHash
+        const institutionalMagnet = `magnet:?xt=urn:btih:${self.infoHash}&dn=EmeraldTemple_PEX_seed`;
         
-        client.add(targetUrl, { announce: [] }, (torrent) => {
-            console.info(`[WEBTORRENT] Webseed active in background. InfoHash: ${torrent.infoHash}`);
-            sendResponse({ success: true, infoHash: torrent.infoHash });
+        client.add(institutionalMagnet, { announce: [], pex: true }, (torrent) => {
+            console.info(`[BACKGROUND] Institutional PEX seed swarm mounted: ${torrent.infoHash}`);
         });
 
+        window.infoHash = null;
+        self.infoHash = null;
+
+        sendResponse({ success: true });
+        return true;
+    }
+
+    if (request.type === "GET_SEED_INFOHASH") {
+        sendResponse({ success: true, infoHash: self.infoHash });
         return true;
     }
 });
 
-chrome.runtime.onInstalled.addListener(() => {
-    console.info("[BACKGROUND] EmeraldTemple extension initialized with academic whitelist.");
+
+// Message listener for scripts requesting the active seed infoHash
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.type === "GET_SEED_INFOHASH") {
+        // Fallback to client.torrents[0]?.infoHash if initialized, or default
+        const seedInfoHash = (client.torrents && client.torrents.length > 0) 
+            ? client.torrents[0].infoHash 
+            : "e3b0c44298fc1c149afbf4c8996fb92427ae41e4";
+
+        sendResponse({ success: true, infoHash: seedInfoHash });
+        return true;
+    }
 });

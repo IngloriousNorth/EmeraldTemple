@@ -1,1 +1,0 @@
-//Ramosa Archetype Array
