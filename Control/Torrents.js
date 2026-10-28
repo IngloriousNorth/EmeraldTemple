@@ -1,3 +1,6 @@
+import TEMPEST from '../lib/TEMPEST.js';
+import MVC from '../MAINFRAME/MAINFRAME.js';
+
 module.exports = {
     table: function(table, cb) {
         const $target = $("#" + table);
@@ -12,53 +15,52 @@ module.exports = {
             oldTable.clear().destroy(); 
             $target.empty(); 
             $target.removeAttr('style').removeClass('dtr-inline collapsed');
-            $target.append('<thead><tr><th>Group</th><th>APA Citation</th><th>Revs</th><th>Date</th><th>Time</th><th class="none"></th></tr></thead><tbody></tbody>');
         }
 
         var dataTable = $target.DataTable({
             scroller: true,
             responsive: {
                 details: {
-                    display: $.fn.dataTable.Responsive.display.childRowImmediate,
-                    type: 'none'
+                    type: 'column',
+                    target: 'tr',
+                    renderer: function (api, rowIdx, columns) {
+                        var data = api.row(rowIdx).data();
+                        var tortables = data ? data[5] : "";
+                        return tortables ? $('<div class="slider"/>').append(tortables) : false;
+                    }
                 }
             },
             serverSide: false,
             bSort: true,
             columns: [
-                { visible: false, searchable: false }, 
-                { width: "50%" },                      
-                { width: "16.66%" },                   
-                { width: "16.66%" },                   
-                { width: "16.66%" },                   
-                { width: "100%", responsivePriority: 1 } 
+                { visible: false, searchable: false }, // Index 0: Hidden rowGroup source key (renders via startRender)
+                { width: "50%" },                      // Index 1: APA Citation (First visible column)
+                { width: "16.66%" },                   // Index 2: Date
+                { width: "16.66%" },                   // Index 3: Revs
+                { width: "16.66%" },                   // Index 4: Time (Timesince)
+                { visible: false, searchable: false }  // Index 5: TorrentsTable payload rendered in responsive child row
             ],
             columnDefs: [
                 { targets: [0], visible: false }, 
                 { targets: [1], className: "text-left" }, 
-                { targets: [2, 3, 4], className: "dt-left" }, 
-                { targets: 5, responsivePriority: 1 } 
+                { targets: [2, 3, 4], className: "dt-left" },
+                { targets: [5], visible: false, searchable: false }
             ],
-            order: [[ 3, "desc" ]],
+            order: [[ 2, "desc" ]], // Order by Date (Index 2) by default
             processing: true,
             searching: false,
-            info: true,
+            info: false,
             rowGroup: {
-                dataSrc: 0, // Groups cleanly using the hidden identifier in Column 0
+                dataSrc: 0,
                 startRender: function (rows, group) {
-                    // rows.data()[0][0] holds the rich HTML string we pushed into Column 0
                     var htmlPayload = rows.data()[0][0];
-                    
-                    // Wrapping the HTML string in jQuery ($) forces DataTables 
-                    // to render it as actual DOM elements (images, links) instead of text.
+                    // colspan="4" covers the 4 visible data columns (APA Citation, Date, Revs, Time)
                     return $('<tr class="dtrg-group">' +
-                                '<td colspan="5">' + htmlPayload + '</td>' +
+                                '<td colspan="4">' + htmlPayload + '</td>' +
                              '</tr>');
                 }
-            }
-            ,
+            },
             ajax: function(data, callback, settings) {
-                // Ensure path points correctly to your static dummy.json asset location
                 $.getJSON("Ramosa/foobar.json", function(json) {
                     processTableData(json, callback);
                 }).fail(function(err) {
@@ -129,21 +131,19 @@ module.exports = {
 };
 
 function processTableData(json, callback) {
-    var uploadBannerRow = [
-        "", 
-        "<div class='upload-dropzone-row' style='text-align: center; padding: 14px; font-weight: bold; cursor: pointer; border: 2px dashed #888; border-radius: 6px; margin: 4px 0; background: rgba(0,0,0,0.01);'>📄 Drag & Drop a PDF to seed the Graph</div>", 
-        "", "", "", ""
-    ];
-
     var records = json && json.records ? json.records : (Array.isArray(json) ? json : []);
-    window.dtRecs = [uploadBannerRow];
+    
+    // Ensure the namespace container exists
+    if (!MVC.Ramosa) MVC.Ramosa = {};
+    if (!MVC.Ramosa.Torrents) MVC.Ramosa.Torrents = {};
+    MVC.Ramosa.Torrents.dtRecs = [];
 
     if (!records || records.length === 0) {
         callback({
             draw: 1,
-            recordsTotal: window.dtRecs.length,
-            recordsFiltered: window.dtRecs.length,
-            data: window.dtRecs
+            recordsTotal: MVC.Ramosa.Torrents.dtRecs.length,
+            recordsFiltered: MVC.Ramosa.Torrents.dtRecs.length,
+            data: MVC.Ramosa.Torrents.dtRecs
         });
         return;
     }
@@ -169,18 +169,17 @@ function processTableData(json, callback) {
             dateField += "<b class='silver'>[" + decodeEntities(record._fields[0].properties.date) + "]</b>";
         }
 
-        var classesField = " ";
+        var classesField = "";
         if (record._fields[3]) {
             record._fields[3].forEach(function(field, i) {
                 if (field.properties.uuid) {
-                    classesField += "<a class='TEMPEST node class' href='#node?label=class&uuid=" +
-                        field.properties.uuid + "'>" + decodeEntities(field.properties.name);
+                    classesField += "<li><a class='TEMPEST node class' href='#node?label=class&uuid=" +
+                        field.properties.uuid + "'>" + decodeEntities(field.properties.name) + "</a>";
                 }
                 if (record._fields[3].length > 1 && i < record._fields[3].length - 1) {
-                    classesField += "<span class='classComma silver'>,</span></a>";
-                } else {
-                    classesField += "</a>";
+                    classesField += "<span class='classComma silver'>,</span>";
                 }
+                classesField += "</li>";
             });
         }
 
@@ -201,9 +200,9 @@ function processTableData(json, callback) {
 
     callback({
         draw: 1,
-        recordsTotal: window.dtRecs.length,
-        recordsFiltered: window.dtRecs.length,
-        data: window.dtRecs
+        recordsTotal: MVC.Ramosa.Torrents.dtRecs.length,
+        recordsFiltered: MVC.Ramosa.Torrents.dtRecs.length,
+        data: MVC.Ramosa.Torrents.dtRecs
     });
 }
 
@@ -216,9 +215,9 @@ function decodeEntities(encodedString) {
 
 function assertExistingEditionRow(edition_torrent, editionsAdded, newRows) {
     var index = editionsAdded.indexOf(edition_torrent.edition.properties.uuid);
-    if (window.dtRecs && window.dtRecs[index]) {
-        var existingHtml = window.dtRecs[index][5];
-        window.dtRecs[index][5] = existingHtml.replace("</tbody></table>", newRows + "</tbody></table>");
+    if (MVC.Ramosa && MVC.Ramosa.Torrents && MVC.Ramosa.Torrents.dtRecs && MVC.Ramosa.Torrents.dtRecs[index]) {
+        var existingHtml = MVC.Ramosa.Torrents.dtRecs[index][5];
+        MVC.Ramosa.Torrents.dtRecs[index][5] = existingHtml.replace("</tbody></table>", newRows + "</tbody></table>");
     }
 }
 
@@ -227,7 +226,7 @@ function assertFirstEditionRow(record, edition_torrent, editionsAdded, citationH
 
   const editionUuid = edition_torrent.edition.properties.uuid;
   const sourceUuid = record._fields[0].properties.uuid;
-  const finalCoverUrl = typeof resolveCoverUrl === 'function' ? resolveCoverUrl(record, sourceUuid, '') : '';
+  const finalCoverUrl = (typeof resolveCoverUrl === 'function' ? resolveCoverUrl(record, sourceUuid, '') : '') || record._fields[0].properties.cover || '';
 
   const copyBtnHtml = 
     "<button class='copy-citation-btn' data-uuid='" + editionUuid + "' title='Copy APA Citation' style='background:transparent; border:none; cursor:pointer; padding:0 0 0 6px; color:#a0a0a0; display:inline-flex; align-items:center; vertical-align:middle; line-height:1;'>" +
@@ -237,24 +236,37 @@ function assertFirstEditionRow(record, edition_torrent, editionsAdded, citationH
       "</svg>" +
     "</button>";
 
-  window.dtRecs.push([
+  MVC.Ramosa.Torrents.dtRecs.push([
+    // Index 0: Grouping HTML Payload (Source name, date, author, classes list ul)
     "<img class='tableImg' id='source_" + sourceUuid + "' src='" + finalCoverUrl + "'>" +
     "<span class='sourceType'>" + decodeEntities(record._fields[0].properties.type) + "</span>" +
     "<div class='torrentSource'>" +
-    "<div class='tableHeading'><a id='sourceTab' class='TEMPEST node source' href='#node?label=source&uuid=" + sourceUuid + "'>" +
-    decodeEntities(record._fields[0].properties.name) +
-    "</a>" + dateField + authorField + "</div><br><div class='torrentClasses'>" + classesField + "</div></div>",
+      "<div class='tableHeading'>" +
+        "<a id='sourceTab' class='TEMPEST node source' href='#node?label=source&uuid=" + sourceUuid + "'>" +
+          decodeEntities(record._fields[0].properties.name) +
+        "</a> " + dateField + authorField +
+      "</div><br>" +
+      "<ul class='torrentClasses' style='list-style:none; padding:0; margin:0; display:inline-flex; gap:4px;'>" + classesField + "</ul>" +
+    "</div>",
 
+    // Index 1: APA Citation (First visible column)
     "<div class='apa-container' style='display:inline-flex; align-items:baseline; max-width:100%;'>" +
       "<span class='apa-text bold' id='edition_" + editionUuid + "_field'>" + citationHtml + "</span>" +
       copyBtnHtml +
     "</div>",
 
-    edition_torrent.edition.properties.snatches,
+    // Index 2: Date
     "<span id='edition_date'>" + 
     (edition_torrent.edition.properties.date && edition_torrent.edition.properties.date !== "undefined" && edition_torrent.edition.properties.date !== record._fields[0].properties.date ? record._fields[0].properties.date + "/" + edition_torrent.edition.properties.date : record._fields[0].properties.date) +
     "</span>",
+
+    // Index 3: Revs
+    edition_torrent.edition.properties.snatches,
+
+    // Index 4: Time (Timesince)
     typeof timeSince === 'function' ? timeSince(edition_torrent.edition.properties.created_at) + " ago" : "",
+
+    // Index 5: TorrentsTable (Loaded in Responsive child row)
     tortables
   ]);
 }

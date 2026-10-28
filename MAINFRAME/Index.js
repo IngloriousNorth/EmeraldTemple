@@ -41,6 +41,7 @@ const async = require ('async');
                     {
                         page: "top10",
                         fn: function() {
+                            //RAID...if we use async.parallel, etc. with Ramosa we get Graph RAID()
                             async.parallel([
                                 MVC.Control.Torrents.table("day"),
                                 MVC.Control.Torrents.table("week"),

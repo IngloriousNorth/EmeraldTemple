@@ -1,5 +1,9 @@
 import WebTorrent from './lib/webtorrent.min.js';
 
+chrome.action.onClicked.addListener((tab) => {
+    chrome.tabs.create({ url: chrome.runtime.getURL("Mu.html") });
+});
+
 console.info("[BACKGROUND] EmeraldTemple PEX Service Worker active.");
 
 // Reasonable Whitelist Guidelines by Google / Extension Store Standards:

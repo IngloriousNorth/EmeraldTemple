@@ -1,10 +1,9 @@
 {
   "manifest_version": 3,
   "name": "EmeraldTemple RIPEMD PEX",
-  "version": "0.4",
+  "version": "0.5",
   "description": "Serverless Web3 PEX WebTorrent academic graph indexer.",
   "action": {
-    "default_popup": "Mu.html"
   },
   "background": {
     "service_worker": "background.js",

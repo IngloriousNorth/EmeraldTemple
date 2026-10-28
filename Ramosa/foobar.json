@@ -23,8 +23,8 @@
             "edition": {
               "properties": {
                 "uuid": "ed_kant_1",
-                "date": "1998",
                 "snatches": 142,
+                "date": "1998",
                 "created_at": "1719446400"
               }
             },
@@ -40,6 +40,7 @@
                 "res": "HQ Scan",
                 "infoHash": "cc8799fd074352c0120f44e373c3100805d8fd86",
                 "snatches": 142,
+                "date": "1998",
                 "size": 15728640,
                 "release": "Cambridge-1998-Kant"
               }
@@ -85,8 +86,8 @@
             "edition": {
               "properties": {
                 "uuid": "ed_plato_1",
-                "date": "2000",
                 "snatches": 289,
+                "date": "2000",
                 "created_at": "1719360000"
               }
             },
@@ -102,6 +103,7 @@
                 "res": "Digital Original",
                 "infoHash": "1234567890abcdef1234567890abcdef12345678",
                 "snatches": 289,
+                "date": "2000",
                 "size": 4194304,
                 "release": "Hackett-2000-Plato"
               }
@@ -147,8 +149,8 @@
             "edition": {
               "properties": {
                 "uuid": "ed_newton_1",
-                "date": "1999",
                 "snatches": 95,
+                "date": "1999",
                 "created_at": "1719273600"
               }
             },
@@ -164,6 +166,7 @@
                 "res": "Restored Facsimile",
                 "infoHash": "abcdef1234567890abcdef1234567890abcdef12",
                 "snatches": 95,
+                "date": "1999",
                 "size": 31457280,
                 "release": "UC-1999-Principia"
               }
@@ -177,6 +180,348 @@
               "name": "Classical Mechanics"
             }
           },
+          {
+            "properties": {
+              "uuid": "class_math_01",
+              "name": "Calculus & Geometry"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "_fields": [
+        {
+          "properties": {
+            "uuid": "src_critique_pure_reason_04",
+            "name": "Critique of Pure Reason (Copy II)",
+            "type": "Book",
+            "date": "1781"
+          }
+        },
+        [
+          {
+            "properties": {
+              "uuid": "auth_kant_01",
+              "name": "Immanuel Kant"
+            }
+          }
+        ],
+        [
+          {
+            "edition": {
+              "properties": {
+                "uuid": "ed_kant_2",
+                "snatches": 88,
+                "date": "2003",
+                "created_at": "1719446500"
+              }
+            },
+            "publisher": {
+              "properties": {
+                "uuid": "pub_cambridge_01",
+                "name": "Cambridge University Press"
+              }
+            },
+            "torrent": {
+              "properties": {
+                "format": "EPUB",
+                "res": "Digital Clean",
+                "infoHash": "cc8799fd074352c0120f44e373c3100805d8fd87",
+                "snatches": 88,
+                "date": "2003",
+                "size": 12288000,
+                "release": "Cambridge-2003-Kant"
+              }
+            }
+          }
+        ],
+        [
+          {
+            "properties": {
+              "uuid": "class_epistemology_01",
+              "name": "Epistemology"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "_fields": [
+        {
+          "properties": {
+            "uuid": "src_republic_plat_05",
+            "name": "The Republic (Copy II)",
+            "type": "Book",
+            "date": "-375"
+          }
+        },
+        [
+          {
+            "properties": {
+              "uuid": "auth_plato_01",
+              "name": "Plato"
+            }
+          }
+        ],
+        [
+          {
+            "edition": {
+              "properties": {
+                "uuid": "ed_plato_2",
+                "snatches": 312,
+                "date": "2010",
+                "created_at": "1719360100"
+              }
+            },
+            "publisher": {
+              "properties": {
+                "uuid": "pub_hackett_01",
+                "name": "Hackett Publishing Company"
+              }
+            },
+            "torrent": {
+              "properties": {
+                "format": "PDF",
+                "res": "Annotated Scan",
+                "infoHash": "1234567890abcdef1234567890abcdef12345679",
+                "snatches": 312,
+                "date": "2010",
+                "size": 5242880,
+                "release": "Hackett-2010-Plato"
+              }
+            }
+          }
+        ],
+        [
+          {
+            "properties": {
+              "uuid": "class_ethics_01",
+              "name": "Ethics"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "_fields": [
+        {
+          "properties": {
+            "uuid": "src_mathematical_principles_06",
+            "name": "Philosophiæ Naturalis Principia Mathematica (Copy II)",
+            "type": "Book",
+            "date": "1687"
+          }
+        },
+        [
+          {
+            "properties": {
+              "uuid": "auth_newton_01",
+              "name": "Isaac Newton"
+            }
+          }
+        ],
+        [
+          {
+            "edition": {
+              "properties": {
+                "uuid": "ed_newton_2",
+                "snatches": 44,
+                "date": "2005",
+                "created_at": "1719273700"
+              }
+            },
+            "publisher": {
+              "properties": {
+                "uuid": "pub_uc_press_01",
+                "name": "University of California Press"
+              }
+            },
+            "torrent": {
+              "properties": {
+                "format": "EPUB",
+                "res": "Modern Typeset",
+                "infoHash": "abcdef1234567890abcdef1234567890abcdef13",
+                "snatches": 44,
+                "date": "2005",
+                "size": 18874368,
+                "release": "UC-2005-Principia"
+              }
+            }
+          }
+        ],
+        [
+          {
+            "properties": {
+              "uuid": "class_physics_01",
+              "name": "Classical Mechanics"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "_fields": [
+        {
+          "properties": {
+            "uuid": "src_critique_pure_reason_07",
+            "name": "Critique of Pure Reason (Archive Edition)",
+            "type": "Book",
+            "date": "1781"
+          }
+        },
+        [
+          {
+            "properties": {
+              "uuid": "auth_kant_01",
+              "name": "Immanuel Kant"
+            }
+          }
+        ],
+        [
+          {
+            "edition": {
+              "properties": {
+                "uuid": "ed_kant_3",
+                "snatches": 61,
+                "date": "1985",
+                "created_at": "1719446600"
+              }
+            },
+            "publisher": {
+              "properties": {
+                "uuid": "pub_cambridge_01",
+                "name": "Cambridge University Press"
+              }
+            },
+            "torrent": {
+              "properties": {
+                "format": "PDF",
+                "res": "Library Archive",
+                "infoHash": "cc8799fd074352c0120f44e373c3100805d8fd88",
+                "snatches": 61,
+                "date": "1985",
+                "size": 22020096,
+                "release": "Cambridge-1985-Kant"
+              }
+            }
+          }
+        ],
+        [
+          {
+            "properties": {
+              "uuid": "class_metaphysics_01",
+              "name": "Metaphysics"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "_fields": [
+        {
+          "properties": {
+            "uuid": "src_republic_plat_08",
+            "name": "The Republic (Study Edition)",
+            "type": "Book",
+            "date": "-375"
+          }
+        },
+        [
+          {
+            "properties": {
+              "uuid": "auth_plato_01",
+              "name": "Plato"
+            }
+          }
+        ],
+        [
+          {
+            "edition": {
+              "properties": {
+                "uuid": "ed_plato_3",
+                "snatches": 175,
+                "date": "1992",
+                "created_at": "1719360200"
+              }
+            },
+            "publisher": {
+              "properties": {
+                "uuid": "pub_hackett_01",
+                "name": "Hackett Publishing Company"
+              }
+            },
+            "torrent": {
+              "properties": {
+                "format": "PDF",
+                "res": "Student Scan",
+                "infoHash": "1234567890abcdef1234567890abcdef12345680",
+                "snatches": 175,
+                "date": "1992",
+                "size": 6291456,
+                "release": "Hackett-1992-Plato"
+              }
+            }
+          }
+        ],
+        [
+          {
+            "properties": {
+              "uuid": "class_political_theory_01",
+              "name": "Political Theory"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "_fields": [
+        {
+          "properties": {
+            "uuid": "src_mathematical_principles_09",
+            "name": "Philosophiæ Naturalis Principia Mathematica (First English Translation)",
+            "type": "Book",
+            "date": "1687"
+          }
+        },
+        [
+          {
+            "properties": {
+              "uuid": "auth_newton_01",
+              "name": "Isaac Newton"
+            }
+          }
+        ],
+        [
+          {
+            "edition": {
+              "properties": {
+                "uuid": "ed_newton_3",
+                "snatches": 120,
+                "date": "1934",
+                "created_at": "1719273800"
+              }
+            },
+            "publisher": {
+              "properties": {
+                "uuid": "pub_uc_press_01",
+                "name": "University of California Press"
+              }
+            },
+            "torrent": {
+              "properties": {
+                "format": "PDF",
+                "res": "Vintage Scan",
+                "infoHash": "abcdef1234567890abcdef1234567890abcdef14",
+                "snatches": 120,
+                "date": "1934",
+                "size": 41943040,
+                "release": "UC-1934-Principia"
+              }
+            }
+          }
+        ],
+        [
           {
             "properties": {
               "uuid": "class_math_01",

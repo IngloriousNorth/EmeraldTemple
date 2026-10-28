@@ -1,3 +1,5 @@
+//.is-seed
+
 module.exports = {
         categorize : function(hero){
                 const $selected = hero.find("option:selected");

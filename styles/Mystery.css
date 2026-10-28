@@ -439,7 +439,7 @@ label{
 
 
 div.TEMPEST{
-    overflow-y: auto;
+    overflow-y:auto;
     color:black;
     width: 100%;
     height: calc(100% - 169px);
@@ -1563,10 +1563,6 @@ footer{
   position:relative;
 
   font-family:"Share Tech Mono", serif;
-}
-
-.torrents .dt-container{
-  top:237px;
 }
 
 
