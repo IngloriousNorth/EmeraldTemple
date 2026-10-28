@@ -1,6 +1,7 @@
-(function() {
-    const async = window.async;
+import TEMPEST from '../lib/TEMPEST';
+const async = require ('async');
 
+(function() {
     if (window.__TEMPEST_INDEX_INITIALIZED__) {
         console.warn("[KERNEL] Index.js execution skipped: Already initialized.");
         return;
@@ -12,6 +13,7 @@
 //tthere is no try
             // 2. Inject structural template container safely inside .city
             $(".EmeraldTemple").html(`
+                    <header></header>
                     <div class="TEMPEST upload"></div>
                     <div class="TEMPEST webtorrent"></div>
                     <div class="TEMPEST top10"></div>
@@ -19,6 +21,7 @@
                     <div class="TEMPEST Category"></div>
                     <div class="TEMPEST torrents"></div>
                     <div class="TEMPEST privacy"></div>
+                    <footer></footer>
                 `);
 
             // 3. Build TEMPEST Config Object
@@ -73,7 +76,7 @@
 
             async.parallel([
                 function(cb){
-                    $.get("fragment/footer.html", function(html){
+                    $.get("fragment/Hero.html", function(html){
                         $("footer").html(html);
                     })
                     cb(null)

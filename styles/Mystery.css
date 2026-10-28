@@ -1,7 +1,12 @@
 /* BLUE BIRD STYLE */
 html, body{
     width:1337px !important;
-    min-height:1000px !important;
+    min-height:980px !important;
+    overflow:hidden;
+}
+
+.crossRoad{
+  overflow:hidden;
 }
 
 .cross-road div p{

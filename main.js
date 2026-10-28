@@ -9,6 +9,8 @@ window.MVC = MVC;
 
 import './MAINFRAME/Index';
 
+import 'jquery'
+
 import 'jquery-ui/dist/jquery-ui.js'
 
 import DataTable from 'datatables.net-jqui';

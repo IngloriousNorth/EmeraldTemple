@@ -1,7 +1,6 @@
 import TEMPEST from "../lib/TEMPEST.js"
 
 const MVC = {
-    MVC : {
         Base: {
             Category : require("../Hook/Category"),
             Graph: require("../Base/Graph"),
@@ -19,7 +18,6 @@ const MVC = {
             Search: require("../Hook/Search"),
             Category : require("../Hook/Category")
         }
-    }
 };
 
 export default MVC;
