@@ -1,4 +1,5 @@
 (function() {
+    const async = window.async;
 
     if (window.__TEMPEST_INDEX_INITIALIZED__) {
         console.warn("[KERNEL] Index.js execution skipped: Already initialized.");
@@ -7,7 +8,6 @@
     window.__TEMPEST_INDEX_INITIALIZED__ = true;
 
     async function boot() {
-        const async = window.async;
 
 //tthere is no try
             // 2. Inject structural template container safely inside .city
