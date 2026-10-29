@@ -3,7 +3,8 @@
   "name": "EmeraldTemple",
   "version": "1.0.0",
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type" : "module"
   },
   "action": {
     "default_popup": "Mu.html"
