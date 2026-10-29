@@ -1,34 +1,21 @@
 {
   "manifest_version": 3,
-  "name": "EmeraldTemple RIPEMD PEX",
-  "version": "0.5",
-  "description": "Serverless Web3 PEX WebTorrent academic graph indexer.",
-  "action": {
-  },
+  "name": "EmeraldTemple",
+  "version": "1.0.0",
   "background": {
-    "service_worker": "background.js",
-    "type": "module"
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "Mu.html"
   },
   "permissions": [
-    "activeTab",
     "storage",
-    "scripting"
-  ],
-  "host_permissions": [
-    "*://*.arxiv.org/*",
-    "*://*/*"
+    "activeTab"
   ],
   "web_accessible_resources": [
     {
-      "resources": [
-        "fragment/*",
-        "styles/*",
-        "lib/*",
-        "src/*"
-      ],
-      "matches": [
-        "<all_urls>"
-      ]
+      "resources": ["src/Gate.bundle.enc"],
+      "matches": ["<all_urls>"]
     }
   ]
 }

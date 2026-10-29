@@ -14,7 +14,7 @@ const __dirname = path.dirname(__filename);
 async function runBuild() {
     console.info('[BUILD] Initializing unified GFQM (AES-256-GCM) compilation & encryption pipeline for Gate.bundle.enc...');
 
-    const targetClientDir = path.join(__dirname, './src');
+    const targetClientDir = path.join(__dirname, '../src');
     fs.mkdirSync(targetClientDir, { recursive: true });
 
     // Compile main source bundle from Gate.js using Browserify + esmify

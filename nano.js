@@ -6,63 +6,62 @@ import crypto from 'crypto';
 import { ripemd160 } from './lib/@noble/hashes/ripemd160.js';
 import { fileURLToPath } from 'url';
 
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Native zero-dependency byte-to-hex helper
-function bytesToHex(uint8Array) {
-    return Array.from(uint8Array)
-        .map(b => b.toString(16).padStart(2, '0'))
-        .join('');
-}
-
-async function decryptAndVerifyGate() {
-    console.info('[NANO] Initializing TEMPEST kernel decryption and verification pipeline...');
-
-    const encPath = path.join(__dirname, 'client/src/bundle.enc');
-    
-    if (!fs.existsSync(encPath)) {
-        console.error(`[NANO ERROR] Encrypted bundle not found at: ${encPath}`);
-        process.exit(1);
-    }
+// nano.js
+(async function() {
+    console.info('[nano.js] Initializing gate decryption & compilation pipeline...');
 
     try {
-        // 1. Read sealed package
-        const rawPackage = fs.readFileSync(encPath, 'utf8');
-        const pkg = JSON.parse(rawPackage);
+        // 1. Fetch the encrypted bundle package
+        const res = await fetch(chrome.runtime.getURL('src/Gate.bundle.enc'));
+        const packageData = await res.json();
 
-        console.info(`[NANO] Cipher Protocol: ${pkg.cipherProtocol} [Active]`);
-
-        const ciphertextBuffer = Buffer.from(pkg.ciphertext, 'base64');
-        const ivBuffer = Buffer.from(pkg.iv, 'hex');
-        const authTagBuffer = Buffer.from(pkg.authTag, 'hex');
-        const secretKeyBuffer = Buffer.from(pkg.secretKeyMock, 'hex');
-
-        // 2. Perform RIPEMD-160 integrity verification
-        const computedHashDigest = ripemd160(ciphertextBuffer);
-        const computedHashHex = bytesToHex(computedHashDigest);
-
-        if (computedHashHex !== pkg.ripemd160Hash) {
-            throw new Error(`[SECURITY ALERT] RIPEMD-160 integrity verification failed! Expected ${pkg.ripemd160Hash}, got ${computedHashHex}`);
+        if (packageData.cipherProtocol !== 'GFQM') {
+            throw new Error('Unsupported cipher protocol');
         }
 
-        console.info('[NANO] RIPEMD-160 integrity verification passed securely.');
+        // 2. Parse hex strings back into Uint8Arrays for Web Crypto
+        const iv = Uint8Array.from(matchHex(packageData.iv));
+        const keyBytes = Uint8Array.from(matchHex(packageData.secretKeyMock));
+        const authTag = Uint8Array.from(matchHex(packageData.authTag));
+        
+        // Decode base64 ciphertext
+        const rawCiphertext = Uint8Array.from(atob(packageData.ciphertext), c => c.charCodeAt(0));
+        
+        // Append authTag to ciphertext for Web Crypto GCM compliance
+        const encryptedData = new Uint8Array(rawCiphertext.length + authTag.length);
+        encryptedData.set(rawCiphertext);
+        encryptedData.set(authTag, rawCiphertext.length);
 
-        // 3. Perform AES-256-GCM Decryption
-        const decipher = crypto.createDecipheriv('aes-256-gcm', secretKeyBuffer, ivBuffer);
-        decipher.setAuthTag(authTagBuffer);
+        // 3. Import key and decrypt via SubtleCrypto
+        const cryptoKey = await window.crypto.subtle.importKey(
+            'raw',
+            keyBytes,
+            { name: 'AES-GCM' },
+            false,
+            ['decrypt']
+        );
 
-        let decryptedCode = decipher.update(ciphertextBuffer, undefined, 'utf8');
-        decryptedCode += decipher.final('utf8');
+        const decryptedBuffer = await window.crypto.subtle.decrypt(
+            { name: 'AES-GCM', iv: iv, tagLength: 128 },
+            cryptoKey,
+            encryptedData
+        );
 
-        console.info('[NANO SUCCESS] bundle.enc decrypted and verified successfully.');
-        return decryptedCode;
+        const decoder = new TextDecoder();
+        const decryptedCode = decoder.decode(decryptedBuffer);
+
+        // 4. Compile/Inject the decrypted IIFE bundle into the DOM
+        const scriptEl = document.createElement('script');
+        scriptEl.textContent = decryptedCode;
+        document.head.appendChild(scriptEl);
+        
+        console.info('[nano.js SUCCESS] Gate.bundle.enc successfully compiled and executed.');
 
     } catch (err) {
-        console.error('[NANO ERROR] Decryption or verification failed:', err);
-        process.exit(1);
+        console.error('[nano.js ERROR]: Failed to decrypt/compile Gate.bundle.enc:', err);
     }
-}
+})();
 
-decryptAndVerifyGate();
+function matchHex(hexString) {
+    return hexString.match(/.{1,2}/g).map(byte => parseInt(byte, 16));
+}
