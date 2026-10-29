@@ -1,5 +1,3 @@
-Validate using institutional RIEPMD key. Press Enter & there is Webtorrent PEX graph visualization of .torrent swarm metadata  using whitelist-approved webseeds. Serverless DMCA Safe-Harbor Conduit. Working on it first as a Chrome Browser Extension. Work in progress.
-
 ## Institutional Deployment: FCQM-GSM Encrypted Gates & Dark PEX Swarms
 
 `EmeraldTemple` enforces absolute network sovereignty and swarm privacy through a zero-server distribution model:
