@@ -2,23 +2,12 @@ Validate using institutional RIEPMD key. Press Enter & there is Webtorrent PEX g
 
 # Architectural Notice & Legal Framework: EmeraldTemple / Ramosa Protocol
 
-## 1. System Overview & Architecture
-`EmeraldTemple` is a fully client-side, serverless, peer-to-peer knowledge transmission protocol and browser extension. The system operates without any centralized backend servers, cloud databases, or API infrastructure[cite: 4, 8]. 
+## Architectural Paradigm: The Open Ramosa Protocol
 
-Data discovery, metadata parsing, and state management are governed entirely by the open **Ramosa Protocol** (structured around the Ramosa Array Archetype / RAY schema). All data packets, graph nodes, and cryptographic states exist exclusively within local browser storage (IndexedDB) or are transmitted directly peer-to-peer across decentralized swarms.
+`EmeraldTemple` models its data distribution layer on an open protocol philosophy: *What if the BitTorrent protocol natively accommodated rigorous, structured graph metadata?*
 
-## 2. Statutory Legal Classification: Transitory Communications & P2P Conduit
-From a regulatory and intellectual property compliance perspective, `EmeraldTemple` functions strictly as a neutral, autonomous communication and transport conduit rather than a traditional hosted content library or "Document Locator"[cite: 4, 8]:
+Rather than relying on centralized databases or manual user-submission web forms, the system treats data discovery and file transmission as a unified, protocol-driven standard:
 
-* **Serverless Operation:** Because the system maintains no central servers, backend databases, or commercial hosting infrastructure, operators cannot inspect, curate, modify, or store user-transmitted data[cite: 4, 8].
-* **DMCA Section 512(a) Alignment:** The architecture aligns with the structural mechanics of **Transitory Digital Network Communications** (DMCA § 512(a)). Transmissions are initiated entirely at the direction of users via automated technical processes, carrying data across decentralized protocol layers without editorial selection or retention by a service provider[cite: 4].
-* **Protocol Neutrality:** Much like underlying open-source transport mechanisms (e.g., TCP/IP or core BitTorrent specifications), the software serves as a dual-use, general-purpose utility designed for sovereign, local-first data indexing and peer-to-peer cryptographic synchronization.
-
-## 3. Sovereign Compliance & Operational Boundaries
-This repository and its associated client code are published under open-source software licenses for research, archival integrity, and decentralized protocol development. Participation in any associated decentralized swarm or local execution enclave is managed autonomously by the end-user on their local machine or portable enclave.
-
-# BUILD INSTRUCTIONS
-npm install
-browserify 'Gate.js' -p esmify -o "./src/Gate.js"
-npm run build
-then add the EmeraldTemple to Chrome Extensions in Developer mode. 
+1. **Self-Describing Torrents:** Every torrent packaged within the network carries its ontological context—structured around the Ramosa Array Yard (RAy) pillars of Source, Person, Class, and Institution—as part of its companion swarm metadata.
+2. **The Swarm *Is* the Database:** Nodes do not query a remote backend to discover library updates or bibliographic mappings. The act of joining the peer-exchange (PEX) swarm automatically ingests and indexes graph nodes directly into local IndexedDB storage.
+3. **Eliminating Administrative Friction:** By decoupling data indexing from manual administrative labor, the protocol enables autonomous, local-first synchronization. Creators package their assets, the metadata travels natively with the swarm, and users boot zero-server DataTables and VR graph views instantly upon connection.
