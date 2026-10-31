@@ -22,10 +22,11 @@ export const Gate = {
         if (this.authTriggered) return;
         this.authTriggered = true;
 
+        const that = this;
         alert("Enter Key.");
-        $(document).on("keypress", function(e){
+        $(document).on("keypress", async function(e){
             if(e.key === "Enter"){
-                loadSovereignBundle();
+                await that.loadSovereignBundle();
             }
         })
     },
