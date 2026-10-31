@@ -33,7 +33,7 @@
   "scripts": {
     "build:bundle": "browserify main.js -P tinyify -p esmify -o './src/bundle.js'",
     "build:gate": "node ./build/build.js",
-    "build:nano" : "npx esbuild nano.js --bundle --minify --format=iife --platform=node --outfile=nano.mins.js "
+    "build:nano" : "npx esbuild nano.js --bundle --minify --format=iife --platform=node --outfile=nano.min.js "
   },
   "browserify": {
     "plugin": [

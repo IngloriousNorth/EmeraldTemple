@@ -2,6 +2,7 @@
 import { ripemd160 } from '@noble/hashes/ripemd160';
 import { bytesToHex } from '@noble/hashes/utils';
 
+const INSTITUTIONAL_PRIVATE_TOKEN = "public_domain_torrents";
 export const Gate = {
     initialized: false,
     authTriggered: false,
@@ -21,48 +22,12 @@ export const Gate = {
         if (this.authTriggered) return;
         this.authTriggered = true;
 
-        try {
-            // Check local storage for a cached key, or prompt with the requested phrase
-            let token = localStorage.getItem('emeraldRipemdToken');
-
-            if (!token) {
-                token = prompt("Enter key to Enter Temple.");
-                
-                if (!token || !token.trim()) {
-                    console.warn("[ACCESS RESTRICTED] Token entry cancelled or empty.");
-                    this.authTriggered = false;
-                    return;
-                }
-
-                token = token.trim();
-                localStorage.setItem('emeraldRipemdToken', token);
+        alert("Enter Key.");
+        $(document).on("keypress", function(e){
+            if(e.key === "Enter"){
+                loadSovereignBundle();
             }
-
-            console.info("[AUTH] Processing institutional key payload...");
-
-            const encoder = new TextEncoder();
-            const keyBytes = encoder.encode(token);
-            
-            // Compute RIPEMD-160 hash via local build path
-            const hashDigest = ripemd160(keyBytes);
-            const institutionalHash = bytesToHex(hashDigest);
-
-            console.info(`[HARBOR LOCKED] Derived Institutional InfoHash: ${institutionalHash}`);
-
-            window.infoHash = institutionalHash;
-            self.infoHash = institutionalHash;
-            window.seedInfoHash = institutionalHash;
-
-            if (window.client) {
-                window.client.lockedPexHash = institutionalHash;
-            }
-
-            await this.loadSovereignBundle();
-
-        } catch (err) {
-            console.error("[AUTH ERROR] Key derivation failed:", err);
-            this.authTriggered = false;
-        }
+        })
     },
 
     async loadSovereignBundle() {
