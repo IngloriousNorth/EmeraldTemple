@@ -1,7 +1,7 @@
 npm install
 
-browserify main.js -p esmify -o "./src/bundle.js" //public MVC bundle
+browserify main.js -P tinyify -p esmify -o "./src/bundle.js" //public MVC bundle
 
-npx esbuild nano.js --bundle --minify --format=esm --platform=node --target=esnext --outfile=src/nano.js 
+npx esbuild nano.js --bundle --minify --format=iife --platform=node --outfile=nano.mins.js 
 
 npm run build //builds Gate.bundle.enc

@@ -27,10 +27,13 @@
     "path": "^0.12.7",
     "path-browserify": "^1.0.1",
     "pdfjs": "^2.5.4",
+    "tinyify": "^4.0.0",
     "webtorrent": "^3.0.21"
   },
   "scripts": {
-    "build": "node ./build/build.js"
+    "build:bundle": "browserify main.js -P tinyify -p esmify -o './src/bundle.js'",
+    "build:gate": "node ./build/build.js",
+    "build:nano" : "npx esbuild nano.js --bundle --minify --format=iife --platform=node --outfile=nano.mins.js "
   },
   "browserify": {
     "plugin": [

@@ -61,31 +61,45 @@ export const Gate = {
         }
     },
 
-    injectBundleAndUnlock() {
+    async injectBundleAndUnlock() {
         console.info("[SUCCESS] Enclave gate unlocked via hardcoded institutional credentials.");
 
-        if (!document.querySelector('script[src="src/bundle.js"]')) {
-            const bundleScript = document.createElement('script');
-            bundleScript.type = 'module';
-            bundleScript.src = 'src/bundle.js';
-            
-            bundleScript.onload = async () => {
-                console.info("[GATE] bundle.js loaded successfully.");
-                try {
-                    await import('./Index.js');
-                } catch (e) {
-                    console.info("[GATE] Index.js execution bound.");
-                }
-            };
+        const scriptSrc = "src/bundle.js";
 
-            bundleScript.onerror = (err) => {
-                console.error("[GATE ERROR] Failed to load bundle.js:", err);
-            };
+        if (!document.querySelector(`script[data-gate-bundle]`)) {
+            try {
+                // 1. Fetch the compiled bundle text from your extension package
+                const response = await fetch(scriptSrc);
+                const bundleCode = await response.text();
 
-            document.head.appendChild(bundleScript);
-            console.info("[GATE] bundle.js dynamically injected into HTML head.");
+                // 2. Wrap the code into a Blob URL to satisfy Chrome's MV3 CSP ('script-src 'self'')
+                const blob = new Blob([bundleCode], { type: 'text/javascript' });
+                const blobUrl = URL.createObjectURL(blob);
+
+                const bundleScript = document.createElement('script');
+                bundleScript.type = 'module';
+                bundleScript.src = blobUrl;
+                bundleScript.setAttribute('data-gate-bundle', 'true');
+
+                bundleScript.onload = () => {
+                    console.info("[GATE] bundle.js loaded successfully via secure Blob URL.");
+                    // Clean up the blob reference once execution begins
+                    URL.revokeObjectURL(blobUrl);
+                };
+
+                bundleScript.onerror = (err) => {
+                    console.error("[GATE ERROR] Failed to load bundle.js:", err);
+                    URL.revokeObjectURL(blobUrl);
+                };
+
+                document.head.appendChild(bundleScript);
+                console.info("[GATE] bundle.js dynamically injected into HTML head.");
+
+            } catch (fetchErr) {
+                console.error("[GATE ERROR] Could not fetch bundle.js for Blob injection:", fetchErr);
+            }
         } else {
-            import('./Index.js').catch(() => {});
+            console.info("[GATE] bundle.js already injected.");
         }
 
         if (typeof $ !== 'undefined' && $(".crossRoad").length) {

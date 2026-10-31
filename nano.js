@@ -3,7 +3,7 @@ import './lib/util.js'
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
-import { ripemd160 } from './lib/@noble/hashes/ripemd160.js';
+import { ripemd160 } from '@noble/hashes/ripemd160';
 import { fileURLToPath } from 'url';
 
 // nano.js
@@ -50,9 +50,22 @@ import { fileURLToPath } from 'url';
         const decoder = new TextDecoder();
         const decryptedCode = decoder.decode(decryptedBuffer);
 
-        // 4. Compile/Inject the decrypted IIFE bundle into the DOM
+                // ✅ CSP-COMPLIANT MV3 INJECTION (Base64 Data URL)
+        const base64Code = btoa(unescape(encodeURIComponent(decryptedCode)));
+        const dataUrl = `data:text/javascript;base64,${base64Code}`;
+
         const scriptEl = document.createElement('script');
-        scriptEl.textContent = decryptedCode;
+        scriptEl.type = 'module'; // Keeps ESM support active
+        scriptEl.src = dataUrl;
+
+        scriptEl.onload = () => {
+            console.info('[nano.js SUCCESS] Decrypted bundle executed securely via Data URL.');
+        };
+
+        scriptEl.onerror = (err) => {
+            console.error('[nano.js ERROR] Failed to execute Data URL script:', err);
+        };
+
         document.head.appendChild(scriptEl);
         
         console.info('[nano.js SUCCESS] Gate.bundle.enc successfully compiled and executed.');
