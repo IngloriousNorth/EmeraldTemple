@@ -57,30 +57,11 @@ export const Gate = {
                 window.client.lockedPexHash = institutionalHash;
             }
 
-            this.injectBundleAndUnlock();
+            await this.loadSovereignBundle();
 
         } catch (err) {
             console.error("[AUTH ERROR] Key derivation failed:", err);
             this.authTriggered = false;
-        }
-    },
-
-    async injectBundleAndUnlock() {
-        console.info("[SUCCESS] Enclave gate unlocked via institutional credentials.");
-
-        if (!document.querySelector(`script[data-gate-bundle]`)) {
-            try {
-                console.info("[GATE] Initiating sovereign bundle ingestion.");
-                await this.loadSovereignBundle();
-            } catch (fetchErr) {
-                console.error("[GATE ERROR] Could not load sovereign bundle:", fetchErr);
-            }
-        } else {
-            console.info("[GATE] Bundle already injected.");
-        }
-
-        if (typeof $ !== 'undefined' && $(".crossRoad").length) {
-            $(".crossRoad").fadeOut(777);
         }
     },
 
@@ -92,10 +73,9 @@ export const Gate = {
             const bundle = await import('./src/bundle.min.js');
             
             console.info("[TEMPLE SUCCESS] bundle.min.js loaded and executed successfully.", bundle);
-            
-            if (bundle && typeof bundle.init === 'function') {
-                bundle.init();
-            }
+
+            $(".crossRoad").fadeOut(777);
+
             
         } catch (err) {
             console.error("[TEMPLE FATAL ERROR] Failed to load bundle.min.js:", err);
