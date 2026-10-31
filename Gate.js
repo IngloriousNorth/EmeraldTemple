@@ -1,4 +1,7 @@
 // Gate.js
+import { ripemd160 } from '@noble/hashes/ripemd160';
+import { bytesToHex } from '@noble/hashes/utils';
+
 export const Gate = {
     initialized: false,
     authTriggered: false,
@@ -10,22 +13,35 @@ export const Gate = {
         }
         this.initialized = true;
 
-        console.info("[GATE] Initializing Emerald Temple Institutional Enclave (Foobar Test Mode)...");
-        this.authenticateWithHardcodedKey();
+        console.info("[GATE] Initializing Emerald Temple Institutional Enclave...");
+        this.authenticateWithKey();
     },
 
-    async authenticateWithHardcodedKey() {
+    async authenticateWithKey() {
         if (this.authTriggered) return;
         this.authTriggered = true;
 
         try {
-            // HARDCODED "FOOBAR" UNIVERSITY PRIVATE KEY / TOKEN FOR TESTING
-            const HARDCODED_UNIVERSITY_KEY = "public_domain_torrents";
-            
-            console.info("[AUTH] Processing hardcoded institutional key payload...");
+            // Check local storage for a cached key, or prompt with the requested phrase
+            let token = localStorage.getItem('emeraldRipemdToken');
+
+            if (!token) {
+                token = prompt("Enter key to Enter Temple.");
+                
+                if (!token || !token.trim()) {
+                    console.warn("[ACCESS RESTRICTED] Token entry cancelled or empty.");
+                    this.authTriggered = false;
+                    return;
+                }
+
+                token = token.trim();
+                localStorage.setItem('emeraldRipemdToken', token);
+            }
+
+            console.info("[AUTH] Processing institutional key payload...");
 
             const encoder = new TextEncoder();
-            const keyBytes = encoder.encode(HARDCODED_UNIVERSITY_KEY);
+            const keyBytes = encoder.encode(token);
             
             // Compute RIPEMD-160 hash via local build path
             const hashDigest = ripemd160(keyBytes);
@@ -41,69 +57,48 @@ export const Gate = {
                 window.client.lockedPexHash = institutionalHash;
             }
 
-            // Broadcast infoHash to background service worker
-            if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
-                chrome.runtime.sendMessage(
-                    { type: "UPDATE_BACKGROUND_SEED_INFOHASH", infoHash: institutionalHash },
-                    (response) => {
-                        if (response && response.success) {
-                            console.info("[GATE] Background service worker synchronized with infoHash.");
-                        }
-                    }
-                );
-            }
-
             this.injectBundleAndUnlock();
 
         } catch (err) {
-            console.error("[AUTH ERROR] Hardcoded key derivation failed:", err);
+            console.error("[AUTH ERROR] Key derivation failed:", err);
             this.authTriggered = false;
         }
     },
 
     async injectBundleAndUnlock() {
-        console.info("[SUCCESS] Enclave gate unlocked via hardcoded institutional credentials.");
-
-        const scriptSrc = "src/bundle.js";
+        console.info("[SUCCESS] Enclave gate unlocked via institutional credentials.");
 
         if (!document.querySelector(`script[data-gate-bundle]`)) {
             try {
-                // 1. Fetch the compiled bundle text from your extension package
-                const response = await fetch(scriptSrc);
-                const bundleCode = await response.text();
-
-                // 2. Wrap the code into a Blob URL to satisfy Chrome's MV3 CSP ('script-src 'self'')
-                const blob = new Blob([bundleCode], { type: 'text/javascript' });
-                const blobUrl = URL.createObjectURL(blob);
-
-                const bundleScript = document.createElement('script');
-                bundleScript.type = 'module';
-                bundleScript.src = blobUrl;
-                bundleScript.setAttribute('data-gate-bundle', 'true');
-
-                bundleScript.onload = () => {
-                    console.info("[GATE] bundle.js loaded successfully via secure Blob URL.");
-                    // Clean up the blob reference once execution begins
-                    URL.revokeObjectURL(blobUrl);
-                };
-
-                bundleScript.onerror = (err) => {
-                    console.error("[GATE ERROR] Failed to load bundle.js:", err);
-                    URL.revokeObjectURL(blobUrl);
-                };
-
-                document.head.appendChild(bundleScript);
-                console.info("[GATE] bundle.js dynamically injected into HTML head.");
-
+                console.info("[GATE] Initiating sovereign bundle ingestion.");
+                await this.loadSovereignBundle();
             } catch (fetchErr) {
-                console.error("[GATE ERROR] Could not fetch bundle.js for Blob injection:", fetchErr);
+                console.error("[GATE ERROR] Could not load sovereign bundle:", fetchErr);
             }
         } else {
-            console.info("[GATE] bundle.js already injected.");
+            console.info("[GATE] Bundle already injected.");
         }
 
         if (typeof $ !== 'undefined' && $(".crossRoad").length) {
             $(".crossRoad").fadeOut(777);
+        }
+    },
+
+    async loadSovereignBundle() {
+        try {
+            console.info("[TEMPLE] Awaiting sovereign bundle ingestion...");
+            
+            // Dynamically import your compiled bundle as an ES module
+            const bundle = await import('./src/bundle.min.js');
+            
+            console.info("[TEMPLE SUCCESS] bundle.min.js loaded and executed successfully.", bundle);
+            
+            if (bundle && typeof bundle.init === 'function') {
+                bundle.init();
+            }
+            
+        } catch (err) {
+            console.error("[TEMPLE FATAL ERROR] Failed to load bundle.min.js:", err);
         }
     }
 };

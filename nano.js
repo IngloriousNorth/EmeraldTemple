@@ -19,7 +19,7 @@ import { fileURLToPath } from 'url';
             throw new Error('Unsupported cipher protocol');
         }
 
-        // 2. Parse hex strings back into Uint8Arrays for Web Crypto
+        // 2. Parse hex strings back inzzto zzUint8Arrays for Web Crypto
         const iv = Uint8Array.from(matchHex(packageData.iv));
         const keyBytes = Uint8Array.from(matchHex(packageData.secretKeyMock));
         const authTag = Uint8Array.from(matchHex(packageData.authTag));
@@ -51,21 +51,9 @@ import { fileURLToPath } from 'url';
         const decryptedCode = decoder.decode(decryptedBuffer);
 
                 // ✅ CSP-COMPLIANT MV3 INJECTION (Base64 Data URL)
-        const base64Code = btoa(unescape(encodeURIComponent(decryptedCode)));
-        const dataUrl = `data:text/javascript;base64,${base64Code}`;
-
+    
         const scriptEl = document.createElement('script');
-        scriptEl.type = 'module'; // Keeps ESM support active
-        scriptEl.src = dataUrl;
-
-        scriptEl.onload = () => {
-            console.info('[nano.js SUCCESS] Decrypted bundle executed securely via Data URL.');
-        };
-
-        scriptEl.onerror = (err) => {
-            console.error('[nano.js ERROR] Failed to execute Data URL script:', err);
-        };
-
+        scriptEl.textContent = decryptedCode;
         document.head.appendChild(scriptEl);
         
         console.info('[nano.js SUCCESS] Gate.bundle.enc successfully compiled and executed.');
