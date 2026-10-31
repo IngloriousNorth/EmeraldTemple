@@ -12,7 +12,7 @@ import { fileURLToPath } from 'url';
 
     try {
         // 1. Fetch the encrypted bundle package
-        const res = await fetch('/src/Gate.bundle.enc');
+        const res = await fetch('./src/Gate.bundle.enc');
         const packageData = await res.json();
 
         if (packageData.cipherProtocol !== 'GFQM') {
