@@ -20,7 +20,7 @@ export const Gate = {
 
         try {
             // HARDCODED "FOOBAR" UNIVERSITY PRIVATE KEY / TOKEN FOR TESTING
-            const HARDCODED_UNIVERSITY_KEY = "foobar-institutional-harbor-master-key-2026";
+            const HARDCODED_UNIVERSITY_KEY = "public_domain_torrents";
             
             console.info("[AUTH] Processing hardcoded institutional key payload...");
 
