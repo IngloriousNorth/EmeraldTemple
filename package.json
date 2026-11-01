@@ -15,6 +15,7 @@
     "datatables.net-jqui": "^3.1.4",
     "datatables.net-responsive-dt": "^4.1.1",
     "datatables.net-responsive-jqui": "^4.1.1",
+    "datatables.net-rowgroup-dt": "^2.1.1",
     "datatables.net-rowgroup-jqui": "^2.1.1",
     "datatables.net-scroller-dt": "^3.1.1",
     "datatables.net-scroller-jqui": "^3.1.1",

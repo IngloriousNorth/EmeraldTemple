@@ -1,327 +1,271 @@
-import TEMPEST from '../TEMPEST/TEMPEST.js';
-import MVC from '../MAINFRAME/MAINFRAME.js';
+/**
+ * Torrents.js Controller
+ */
 
-module.exports = {
-    table: function(table, cb) {
-        const $target = $("#" + table);
-        if ($target.length === 0) {
-            console.warn(`[TORRENTS] Table element #${table} not found in DOM yet. Retrying...`);
-            setTimeout(() => module.exports.table(table, cb), 50);
-            return;
+const TorrentsController = {
+  
+  /**
+   * Formats raw bytes to human-readable string
+   */
+  formatBytes(bytes, decimals = 2) {
+    if (!+bytes) return '0 Bytes';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+  },
+
+  /**
+   * Normalizes the response schema into flat edition rows grouped by clean source name
+   */
+  parseData(json) {
+    const rows = [];
+
+    (json.records || []).forEach(record => {
+      const fields = record._fields || [];//GEMINI
+      const source = fields[0]?.properties || {};
+      const authors = (fields[1] || []).map(a => a.properties?.name).filter(Boolean);
+      const items = fields[2] || [];
+      const categories = (fields[3] || []).map(c => c.properties?.name).filter(Boolean);
+
+      // Clean up source name to strip out (Copy II), (Archive Edition), etc. for unified grouping
+      const cleanSourceName = (source.name || '').replace(/\s*\([^)]*\)/g, '').trim();
+      const groupKey = source.uuid || cleanSourceName;
+
+      const editionMap = new Map();
+
+      items.forEach(item => {
+        const edProps = item.edition?.properties || {};
+        const pubProps = item.publisher?.properties || {};
+        const torProps = item.torrent?.properties || {};
+
+        const edUuid = edProps.uuid;
+        if (!edUuid) return;
+
+        if (!editionMap.has(edUuid)) {
+          const title = edProps.title || cleanSourceName;
+          const publisher = pubProps.name || '';
+          const apaCitation = publisher && publisher !== 'Unknown Publisher' ? `${title}. ${publisher}.` : title;
+
+          editionMap.set(edUuid, {
+            source: {
+              uuid: groupKey,
+              name: cleanSourceName,
+              date: source.date,
+              type: source.type,
+              cover: source.cover,
+              authors: authors,
+              categories: categories
+            },
+            edition: {
+              uuid: edProps.uuid,
+              title: edProps.title,
+              date: edProps.date,
+              snatches: edProps.snatches || 0,
+              created_at: edProps.created_at || Date.now(),
+              publisher: publisher,
+              apaCitation: apaCitation
+            },
+            torrents: []
+          });
         }
 
-        if ($.fn.DataTable.isDataTable($target)) {
-            var oldTable = $target.DataTable();
-            oldTable.clear().destroy(); 
-            $target.empty(); 
-            $target.removeAttr('style').removeClass('dtr-inline collapsed');
+        if (torProps.infoHash) {
+          editionMap.get(edUuid).torrents.push({
+            format: torProps.format,
+            res: torProps.res,
+            size: torProps.size,
+            release: torProps.release,
+            snatches: torProps.snatches,
+            infoHash: torProps.infoHash
+          });
         }
+      });
 
-        // Re-inject the skeleton structure matching the 6 defined columns
-        $target.append('<thead><tr><th>Group</th><th>APA Citation</th><th>Revs</th><th>Date</th><th>Time</th><th class="none"></th></tr></thead><tbody></tbody>');
+      editionMap.forEach(editionData => {
+        rows.push(editionData);
+      });
+    });
 
-        var dataTable = $target.DataTable({
-            scroller: {
-                loadingIndicator: true
-            },
-            scrollY: "500px",
-            scrollCollapse: true,
-            deferRender: true,
-            paging: true,
-            searching: false,
-            info: false,
-            processing: true,
-            bSort: true,
-            order: [[ 3, "desc" ]],
-            dom: 'rt<"clear">',
-            responsive: {
-                details: {
-                    type: 'column',
-                    target: 5,
-                    renderer: function (api, rowIdx, columns) {
-                        var data = api.row(rowIdx).data();
-                        var tortables = data ? data[5] : "";
-                        return tortables ? $('<div class="slider"/>').append(tortables) : false;
-                    }
-                }
-            },
-            columns: [
-                { visible: false, searchable: false }, // Index 0: Hidden rowGroup source key
-                { width: "50%" },                      // Index 1: APA Citation
-                { width: "16.66%" },                   // Index 2: Revs
-                { width: "16.66%" },                   // Index 3: Date
-                { width: "16.66%" },                   // Index 4: Time
-                { width: "100%", responsivePriority: 1 } // Index 5: TorrentsTable payload
-            ],
-            columnDefs: [
-                { targets: [0], visible: false }, 
-                { targets: [1], className: "text-left" }, 
-                { targets: [2, 3, 4], className: "dt-left" },
-                { targets: 5, responsivePriority: 1 }
-            ],
-            rowGroup: {
-                dataSrc: 0,
-                ordering: true,
-                orderable: true,
-                startRender: function (rows, group) {
-                    var htmlPayload = rows.data()[0][0];
-                    return $('<tr class="dtrg-group">' +
-                                '<td colspan="4">' + htmlPayload + '</td>' +
-                             '</tr>');
-                }
-            },
-            ajax: function(data, callback, settings) {
-                $.getJSON("Base/foo.json", function(json) {
-                    processTableData(json, callback);
-                }).fail(function(err) {
-                    console.error("[TORRENTS ERROR] Failed to load foobar.json:", err);
-                    callback({ draw: 1, recordsTotal: 0, recordsFiltered: 0, data: [] });
-                });
-            },
-            drawCallback: function(settings) {
-                const currentPage = TEMPEST.pageREC();
-                const capitalizedPage = currentPage ? (currentPage.charAt(0).toUpperCase() + currentPage.slice(1)) : "";
-                
-                if (window.MVC && window.MVC.Hook && window.MVC.Hook[capitalizedPage] && typeof window.MVC.Hook[capitalizedPage].header === "function") {
-                    window.MVC.Hook[capitalizedPage].header();
-                }
+    return rows;
+  },
 
-                $("table tbody").off("click", ".magnetURI").on("click", ".magnetURI", function(e) {
-                    e.preventDefault();
-                    const infoHash = $(this).data("infohash");
-                    console.info("[PEX] Local rev increment recorded for infoHash:", infoHash);
-                });
-            }
-        });
-        
-        // WebTorrent action handler
-        $(document).off("click", "a.webtorrent").on("click", "a.webtorrent", function(e) {
-            e.preventDefault();
-            const d = this.dataset;
-            
-            $(this).text("[Revving..!]");
-            $(this).css('color', 'darkcyan');
-            
-            var that = $(this);
-            setTimeout(function() {
-                that.text("[WebTorrent]");
-                that.css("color", "darkgoldenrod");
-            }, 2360);
-            
-            if (window.MVC && window.MVC.Controller && window.MVC.Controller.webtorrent) {
-                window.MVC.Controller.webtorrent.propagate(d.infoHash);
-            }
-        });
-
-        $("a.webtorrent").text("[WebTorrent]");
-        
-        if (typeof cb === "function") cb();
+  /**
+   * Renders the HTML inside the expanded Edition child row
+   */
+  renderChildTorrentsTable(torrents) {
+    if (!torrents || torrents.length === 0) {
+      return '<div class="torrent-details-wrapper"><p>No torrents available.</p></div>';
     }
+
+    let rowsHtml = torrents.map(t => `
+      <tr>
+        <td><span class="ui-icon ui-icon-document"></span> <strong>${t.format}</strong></td>
+        <td>${t.res || 'N/A'}</td>
+        <td>${this.formatBytes(t.size)}</td>
+        <td>${t.release || '-'}</td>
+        <td>${t.snatches}</td>
+        <td><code>${t.infoHash}</code></td>
+      </tr>
+    `).join('');
+
+    return `
+      <div class="torrent-details-wrapper" style="padding: 10px; background: #f9f9f9; border: 1px solid #ddd; margin: 5px 0; border-radius: 4px;">
+        <h4 style="margin: 0 0 8px 0; font-size: 0.9em; text-transform: uppercase; color: #555;">Available Downloads</h4>
+        <table class="torrentsSubTable display compact cell-border" style="width:100%; text-align: left;">
+          <thead>
+            <tr class="ui-widget-header">
+              <th>Format</th>
+              <th>Quality / Resolution</th>
+              <th>Size</th>
+              <th>Release Year</th>
+              <th>Snatches</th>
+              <th>InfoHash</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsHtml}
+          </tbody>
+        </table>
+      </div>
+    `;
+  },
+
+  /**
+   * DataTable constructor matching your required signature: table(table, cb)
+   * @param {string|HTMLElement} table Table selector or element (e.g., "torrents" or "#torrents")
+   * @param {Function} [cb] Optional callback function
+   */
+  table: function(table, cb) {
+    const self = TorrentsController;
+
+    // Ensure selector has proper prefix if passed as ID string without '#' or '.'
+    const tableSelector = (typeof table === 'string' && !table.startsWith('#') && !table.startsWith('.')) 
+      ? `#${table}` 
+      : table;
+
+    // Safely destroy existing DataTable instance and clean DOM to prevent header sync mismatches
+    if ($.fn.DataTable.isDataTable(tableSelector)) {
+      const oldTable = $(tableSelector).DataTable();
+      oldTable.clear().destroy();
+      $(tableSelector).empty();
+      $(tableSelector).removeAttr('style').removeClass('dtr-inline collapsed');
+    }
+
+    // Inject matching <thead> structure for the configured columns
+    $(tableSelector).html(`
+      <thead>
+        <tr class="ui-widget-header">
+          <th></th>
+          <th>Source UUID</th>
+          <th>APA Citation</th>
+          <th>Edition Date</th>
+          <th>Revs</th>
+          <th>Time Since</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    `);
+
+    // Fetch dummy.json or source dataset
+    $.getJSON('../Base/dummy.json', function(rawJson) {
+      const tableData = self.parseData(rawJson);
+
+      const tableInstance = $(tableSelector).DataTable({
+        data: tableData,
+        jQueryUI: true,
+        responsive: true,
+        scroller: true,
+        scrollY: '600px',
+        scrollCollapse: true,
+        paging: true,
+        columns: [
+          {
+            className: 'dt-control',
+            orderable: false,
+            data: null,
+            defaultContent: '<span class="ui-icon ui-icon-circle-plus expand-btn" style="cursor:pointer; display:inline-block;"></span>',
+            width: '30px'
+          },
+          { 
+            data: 'source.uuid',
+            className: 'dt-src',
+            visible: false 
+          },
+          { 
+            title: 'APA Citation',
+            data: 'edition.apaCitation',
+            className: 'apa-citation-column',
+            render: (data) => `<strong>${data}</strong>`
+          },
+          { 
+            title: 'Edition Date',
+            data: 'edition.date',
+            className: 'dt-center'
+          },
+          { 
+            title: 'Revs',
+            data: 'edition.snatches',
+            className: 'dt-center'
+          },
+          { 
+            title: 'Time Since',
+            data: 'edition.created_at',
+            className: 'dt-center',
+            render: (data) => typeof timeSince === 'function' ? timeSince(data) : (data ? data : '-')
+          }
+        ],
+        order: [[1, 'asc']],
+        rowGroup: {
+          dataSrc: 'source.uuid',
+          startRender: function (rows, group) {
+            const firstRow = rows.data()[0];
+            const src = firstRow.source;
+            const authorsList = src.authors.join(', ') || 'Unknown Author';
+            const categories = src.categories.map(c => `<span class="ui-widget-header ui-corner-all" style="padding: 1px 5px; font-size: 0.8em; margin-right: 4px;">${c}</span>`).join('');
+
+            return $(`
+              <tr class="group-header ui-widget-header" style="background: #e9e9e9; font-size: 1.05em;">
+                <td colspan="5" style="padding: 8px;">
+                  <div style="display: flex; align-items: center; gap: 12px;">
+                    <img src="${src.cover}" alt="${src.name}" style="height: 55px; width: auto; border-radius: 3px; box-shadow: 0 1px 3px rgba(0,0,0,0.3);" />
+                    <div>
+                      <div style="font-weight: bold; font-size: 1.1em;">${src.name} <span style="font-weight: normal; font-size: 0.9em; opacity: 0.85;">[${src.date}]</span></div>
+                      <div style="margin: 2px 0;">by <em>${authorsList}</em></div>
+                      <div>${categories}</div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            `);
+          }
+        }
+      });
+
+      // Expand/Collapse Child Row handler for Torrent Details
+      $(tableSelector).off('click', 'td.dt-control').on('click', 'td.dt-control', function () {
+        const tr = $(this).closest('tr');
+        const row = tableInstance.row(tr);
+        const icon = $(this).find('.expand-btn');
+
+        if (row.child.isShown()) {
+          row.child.hide();
+          tr.removeClass('shown');
+          icon.removeClass('ui-icon-circle-minus').addClass('ui-icon-circle-plus');
+        } else {
+          const rowData = row.data();
+          row.child(self.renderChildTorrentsTable(rowData.torrents)).show();
+          tr.addClass('shown');
+          icon.removeClass('ui-icon-circle-plus').addClass('ui-icon-circle-minus');
+        }
+      });
+
+      if (typeof cb === 'function') {
+        cb(tableInstance);
+      }
+    });
+  }
 };
 
-function processTableData(json, callback) {
-    var records = json && json.records ? json.records : (Array.isArray(json) ? json : []);
-    
-    if (!MVC.Ramosa) MVC.Ramosa = {};
-    if (!MVC.Ramosa.Torrents) MVC.Ramosa.Torrents = {};
-    MVC.Ramosa.Torrents.dtRecs = [];
-
-    if (!records || records.length === 0) {
-        callback({
-            draw: 1,
-            recordsTotal: MVC.Ramosa.Torrents.dtRecs.length,
-            recordsFiltered: MVC.Ramosa.Torrents.dtRecs.length,
-            data: MVC.Ramosa.Torrents.dtRecs
-        });
-        return;
-    }
-
-    var editionsAdded = [];
-
-    records.forEach(function(record) {
-        if (!record._fields || record._fields.length === 0) return;
-
-        var authorField = "";
-        record._fields[1].forEach(function(field, i) {
-            if (i === 0) authorField += "<span class='silver'> by </span>";
-            authorField += "<a class='TEMPEST node author' href='#node?label=author&uuid=" +
-                field.properties.uuid + "'>" + decodeEntities(field.properties.name);
-            if (record._fields[1].length > 1 && i < record._fields[1].length - 1) {
-                authorField += "<span class='silver'>, </span>";
-            }
-            authorField += "</a>";
-        });
-
-        var dateField = "";
-        if (record._fields[0] && record._fields[0].properties.date) {
-            dateField += "<b class='silver'>[" + decodeEntities(record._fields[0].properties.date) + "]</b>";
-        }
-
-        var classesField = "";
-        if (record._fields[3]) {
-            record._fields[3].forEach(function(field, i) {
-                if (field.properties.uuid) {
-                    classesField += "<li><a class='TEMPEST node class' href='#node?label=class&uuid=" +
-                        field.properties.uuid + "'>" + decodeEntities(field.properties.name) + "</a>";
-                }
-                if (record._fields[3].length > 1 && i < record._fields[3].length - 1) {
-                    classesField += "<span class='classComma silver'>,</span>";
-                }
-                classesField += "</li>";
-            });
-        }
-
-        record._fields[2].forEach(function(edition_torrent) {
-            var currentApa = assertAPACitation(record, edition_torrent);
-            var singleTrRow = assertTr(record, edition_torrent, currentApa);
-
-            if (editionsAdded.indexOf(edition_torrent.edition.properties.uuid) === -1) {
-                var fullTable = "<table class='torrentsTable'><thead><tr><th>File</th><th>Download</th><th>Revs</th><th>Size</th></tr></thead><tbody>" + 
-                    singleTrRow + "</tbody></table>";
-                
-                assertFirstEditionRow(record, edition_torrent, editionsAdded, currentApa, dateField, authorField, classesField, fullTable);
-            } else {
-                assertExistingEditionRow(edition_torrent, editionsAdded, singleTrRow);
-            }
-        });
-    });
-
-    callback({
-        draw: 1,
-        recordsTotal: MVC.Ramosa.Torrents.dtRecs.length,
-        recordsFiltered: MVC.Ramosa.Torrents.dtRecs.length,
-        data: MVC.Ramosa.Torrents.dtRecs
-    });
-}
-
-function decodeEntities(encodedString) {
-    if (!encodedString) return "";
-    var textArea = document.createElement('textarea');
-    textArea.innerHTML = encodedString;
-    return textArea.value;
-}
-
-function assertExistingEditionRow(edition_torrent, editionsAdded, newRows) {
-    var index = editionsAdded.indexOf(edition_torrent.edition.properties.uuid);
-    if (MVC.Ramosa && MVC.Ramosa.Torrents && MVC.Ramosa.Torrents.dtRecs && MVC.Ramosa.Torrents.dtRecs[index]) {
-        var existingHtml = MVC.Ramosa.Torrents.dtRecs[index][5];
-        MVC.Ramosa.Torrents.dtRecs[index][5] = existingHtml.replace("</tbody></table>", newRows + "</tbody></table>");
-    }
-}
-
-function assertFirstEditionRow(record, edition_torrent, editionsAdded, citationHtml, dateField, authorField, classesField, tortables) { 
-  editionsAdded.push(edition_torrent.edition.properties.uuid);
-
-  const editionUuid = edition_torrent.edition.properties.uuid;
-  const sourceUuid = record._fields[0].properties.uuid;
-  const finalCoverUrl = (typeof resolveCoverUrl === 'function' ? resolveCoverUrl(record, sourceUuid, '') : '') || record._fields[0].properties.cover || '';
-
-  const copyBtnHtml = 
-    "<button class='copy-citation-btn' data-uuid='" + editionUuid + "' title='Copy APA Citation' style='background:transparent; border:none; cursor:pointer; padding:0 0 0 6px; color:#a0a0a0; display:inline-flex; align-items:center; vertical-align:middle; line-height:1;'>" +
-      "<svg width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'>" +
-        "<rect x='9' y='9' width='13' height='13' rx='2' ry='2'></rect>" +
-        "<path d='M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1'></path>" +
-      "</svg>" +
-    "</button>";
-
-  MVC.Ramosa.Torrents.dtRecs.push([
-    // Index 0: Grouping HTML Payload
-    "<img class='tableImg' id='source_" + sourceUuid + "' src='" + finalCoverUrl + "'>" +
-    "<span class='sourceType'>" + decodeEntities(record._fields[0].properties.type) + "</span>" +
-    "<div class='torrentSource'>" +
-      "<div class='tableHeading'>" +
-        "<a id='sourceTab' class='TEMPEST node source' href='#node?label=source&uuid=" + sourceUuid + "'>" +
-          decodeEntities(record._fields[0].properties.name) +
-        "</a> " + dateField + authorField +
-      "</div><br>" +
-      "<ul class='torrentClasses' style='list-style:none; padding:0; margin:0; display:inline-flex; gap:4px;'>" + classesField + "</ul>" +
-    "</div>",
-
-    // Index 1: APA Citation
-    "<div class='apa-container' style='display:inline-flex; align-items:baseline; max-width:100%;'>" +
-      "<span class='apa-text bold' id='edition_" + editionUuid + "_field'>" + citationHtml + "</span>" +
-      copyBtnHtml +
-    "</div>",
-
-    // Index 2: Revs
-    edition_torrent.edition.properties.snatches,
-
-    // Index 3: Date
-    edition_torrent.edition.properties.date || record._fields[0].properties.date,
-
-    // Index 4: Time
-    typeof timeSince === 'function' ? timeSince(edition_torrent.edition.properties.created_at) + " ago" : "",
-
-    // Index 5: Torrents Table payload
-    tortables
-  ]);
-}
-
-function assertAPACitation(record, edition_torrent) {
-    var publisherHtml = "";
-    var formerPart = ""; 
-
-    record._fields[1].forEach(function(field, i) {
-        formerPart += decodeEntities(field.properties.name);
-        if (record._fields[1][i + 1]) formerPart += ", ";
-        else formerPart += (field.properties.name && !field.properties.name.endsWith(".")) ? ". " : " ";
-    });
-
-    if (!record._fields[0].properties.date && edition_torrent.edition.properties.date) {
-        formerPart += "(" + decodeEntities(edition_torrent.edition.properties.date) + "). ";
-    } else {
-        formerPart += record._fields[0].properties.date ?
-            "(" + decodeEntities(record._fields[0].properties.date) +
-            (edition_torrent.edition.properties.date && edition_torrent.edition.properties.date !== record._fields[0].properties.date ?
-                "/" + decodeEntities(edition_torrent.edition.properties.date) + "). " : "). ") : "";
-    }
-
-    formerPart += !["Journal Article", "Essay"].includes(record._fields[0].properties.type) ?
-        "<span class='italics'>" + decodeEntities(record._fields[0].properties.name) + "</span>. " :
-        decodeEntities(record._fields[0].properties.name) + ". ";
-
-    if (edition_torrent.publisher && edition_torrent.publisher.properties.name) {
-        var pubName = typeof toTitleCase === 'function' ? toTitleCase(decodeEntities(edition_torrent.publisher.properties.name)) : edition_torrent.publisher.properties.name;
-        publisherHtml = "<a id='edition_span_publisher' class='TEMPEST node publisher' href='#node?label=publisher&uuid=" +
-            edition_torrent.publisher.properties.uuid + "'>" + pubName + "</a>" +
-            (pubName.endsWith(".") ? "" : (record._fields[0].properties.type !== "Journal Article" ? ". " : ", "));
-    }
-
-    var remainderPart = "";
-    if (edition_torrent.edition.properties.title && edition_torrent.edition.properties.title !== "") {
-        remainderPart += decodeEntities(edition_torrent.edition.properties.title);
-        if (!edition_torrent.edition.properties.title.endsWith(".")) remainderPart += (record._fields[0].properties.type !== "Journal Article" ? ". " : "");
-        else remainderPart += " ";
-    }
-
-    var citationHtml = "<span class='apa-former'>" + formerPart + "</span>";
-    if (record._fields[0].properties.type === "Journal Article") {
-        citationHtml += " <span class='apa-publisher-wrap'>" + publisherHtml + remainderPart + "</span>";
-    } else {
-        citationHtml += " <span class='apa-publisher-wrap'>" + remainderPart + publisherHtml + "</span>";
-    }
-    return citationHtml;
-}
-
-function assertTr(record, edition_torrent, apaHtml) {
-    if (edition_torrent.torrent) {
-        const cleanApa = apaHtml.replace(/<[^>]*>?/gm, '');
-        var tr = "<tr>";
-        tr += "<td>" + edition_torrent.torrent.properties.format + "<br>" + (edition_torrent.torrent.properties.res ? edition_torrent.torrent.properties.res : "") + "</td>";        
-        tr += "<td>" +
-              "<a" +
-               " data-id='" + edition_torrent.torrent.properties.size + "'" +
-               " data-release='" + edition_torrent.torrent.properties.release + "'" + 
-               " data-apa='" + cleanApa + "'" + 
-               " data-format='" + edition_torrent.torrent.properties.format + "'" +
-               " data-infohash = '" + edition_torrent.torrent.properties.infoHash + "'" +
-               " class='webtorrent' href='webtorrent'>[WebTorrent]</a>" +
-              "<a href='#' class='magnetURI' data-infohash='" + edition_torrent.torrent.properties.infoHash + "'>[magnetURI]</a>" + 
-              "<a href='#' id='torrent_infoHash' data-infohash='" + edition_torrent.torrent.properties.infoHash + "'>[infoHash]</a>" +
-            "</td>";
-        tr += "<td>" + edition_torrent.torrent.properties.snatches + "</td>";
-        tr += "<td>" + (typeof prettyBytes === 'function' ? prettyBytes(edition_torrent.torrent.properties.size) : edition_torrent.torrent.properties.size) + "</td>";
-        tr += "</tr>";
-        return tr;
-    }
-}
+module.exports = TorrentsController;

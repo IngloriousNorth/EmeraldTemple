@@ -1,0 +1,820 @@
+{
+  "records": [
+    {
+      "_fields": [
+        {
+          "properties": {
+            "uuid": "src_critique_pure_reason_01",
+            "name": "Critique of Pure Reason",
+            "type": "Book",
+            "date": "1781",
+            "cover": "https://via.placeholder.com/55x80?text=Kant"
+          }
+        },
+        [
+          {
+            "properties": {
+              "uuid": "auth_kant_01",
+              "name": "Immanuel Kant"
+            }
+          }
+        ],
+        [
+          {
+            "edition": {
+              "properties": {
+                "uuid": "ed_kant_1",
+                "title": "Critique of Pure Reason",
+                "snatches": 142,
+                "date": "1998",
+                "created_at": 1719446400000
+              }
+            },
+            "publisher": {
+              "properties": {
+                "uuid": "pub_cambridge_01",
+                "name": "Cambridge University Press"
+              }
+            },
+            "torrent": {
+              "properties": {
+                "format": "PDF",
+                "res": "HQ Scan",
+                "infoHash": "cc8799fd074352c0120f44e373c3100805d8fd86",
+                "snatches": 142,
+                "date": "1998",
+                "size": 15728640,
+                "release": "Cambridge-1998-Kant"
+              }
+            }
+          },
+          {
+            "edition": {
+              "properties": {
+                "uuid": "ed_kant_2",
+                "title": "Critique of Pure Reason (Copy II)",
+                "snatches": 88,
+                "date": "2003",
+                "created_at": 1719446500000
+              }
+            },
+            "publisher": {
+              "properties": {
+                "uuid": "pub_cambridge_01",
+                "name": "Cambridge University Press"
+              }
+            },
+            "torrent": {
+              "properties": {
+                "format": "EPUB",
+                "res": "Digital Clean",
+                "infoHash": "cc8799fd074352c0120f44e373c3100805d8fd87",
+                "snatches": 88,
+                "date": "2003",
+                "size": 12288000,
+                "release": "Cambridge-2003-Kant"
+              }
+            }
+          },
+          {
+            "edition": {
+              "properties": {
+                "uuid": "ed_kant_3",
+                "title": "Critique of Pure Reason (Archive Edition)",
+                "snatches": 61,
+                "date": "1985",
+                "created_at": 1719446600000
+              }
+            },
+            "publisher": {
+              "properties": {
+                "uuid": "pub_cambridge_01",
+                "name": "Cambridge University Press"
+              }
+            },
+            "torrent": {
+              "properties": {
+                "format": "PDF",
+                "res": "Library Archive",
+                "infoHash": "cc8799fd074352c0120f44e373c3100805d8fd88",
+                "snatches": 61,
+                "date": "1985",
+                "size": 22020096,
+                "release": "Cambridge-1985-Kant"
+              }
+            }
+          }
+        ],
+        [
+          {
+            "properties": {
+              "uuid": "class_epistemology_01",
+              "name": "Epistemology"
+            }
+          },
+          {
+            "properties": {
+              "uuid": "class_metaphysics_01",
+              "name": "Metaphysics"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "_fields": [
+        {
+          "properties": {
+            "uuid": "src_republic_plat_02",
+            "name": "The Republic",
+            "type": "Book",
+            "date": "-375",
+            "cover": "https://via.placeholder.com/55x80?text=Plato"
+          }
+        },
+        [
+          {
+            "properties": {
+              "uuid": "auth_plato_01",
+              "name": "Plato"
+            }
+          }
+        ],
+        [
+          {
+            "edition": {
+              "properties": {
+                "uuid": "ed_plato_1",
+                "title": "The Republic",
+                "snatches": 289,
+                "date": "2000",
+                "created_at": 1719360000000
+              }
+            },
+            "publisher": {
+              "properties": {
+                "uuid": "pub_hackett_01",
+                "name": "Hackett Publishing Company"
+              }
+            },
+            "torrent": {
+              "properties": {
+                "format": "EPUB",
+                "res": "Digital Original",
+                "infoHash": "1234567890abcdef1234567890abcdef12345678",
+                "snatches": 289,
+                "date": "2000",
+                "size": 4194304,
+                "release": "Hackett-2000-Plato"
+              }
+            }
+          },
+          {
+            "edition": {
+              "properties": {
+                "uuid": "ed_plato_2",
+                "title": "The Republic (Study Edition)",
+                "snatches": 175,
+                "date": "1992",
+                "created_at": 1719360200000
+              }
+            },
+            "publisher": {
+              "properties": {
+                "uuid": "pub_hackett_01",
+                "name": "Hackett Publishing Company"
+              }
+            },
+            "torrent": {
+              "properties": {
+                "format": "PDF",
+                "res": "Student Scan",
+                "infoHash": "1234567890abcdef1234567890abcdef12345680",
+                "snatches": 175,
+                "date": "1992",
+                "size": 6291456,
+                "release": "Hackett-1992-Plato"
+              }
+            }
+          }
+        ],
+        [
+          {
+            "properties": {
+              "uuid": "class_political_theory_01",
+              "name": "Political Theory"
+            }
+          },
+          {
+            "properties": {
+              "uuid": "class_ethics_01",
+              "name": "Ethics"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "_fields": [
+        {
+          "properties": {
+            "uuid": "src_mathematical_principles_03",
+            "name": "Philosophiæ Naturalis Principia Mathematica",
+            "type": "Book",
+            "date": "1687",
+            "cover": "https://via.placeholder.com/55x80?text=Newton"
+          }
+        },
+        [
+          {
+            "properties": {
+              "uuid": "auth_newton_01",
+              "name": "Isaac Newton"
+            }
+          }
+        ],
+        [
+          {
+            "edition": {
+              "properties": {
+                "uuid": "ed_newton_1",
+                "title": "Philosophiæ Naturalis Principia Mathematica",
+                "snatches": 95,
+                "date": "1999",
+                "created_at": 1719273600000
+              }
+            },
+            "publisher": {
+              "properties": {
+                "uuid": "pub_uc_press_01",
+                "name": "University of California Press"
+              }
+            },
+            "torrent": {
+              "properties": {
+                "format": "PDF",
+                "res": "Restored Facsimile",
+                "infoHash": "abcdef1234567890abcdef1234567890abcdef12",
+                "snatches": 95,
+                "date": "1999",
+                "size": 31457280,
+                "release": "UC-1999-Principia"
+              }
+            }
+          }
+        ],
+        [
+          {
+            "properties": {
+              "uuid": "class_physics_01",
+              "name": "Classical Mechanics"
+            }
+          },
+          {
+            "properties": {
+              "uuid": "class_math_01",
+              "name": "Calculus & Geometry"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "_fields": [
+        {
+          "properties": {
+            "uuid": "src_ethics_spinoza_04",
+            "name": "Ethics",
+            "type": "Book",
+            "date": "1677",
+            "cover": "https://via.placeholder.com/55x80?text=Spinoza"
+          }
+        },
+        [
+          {
+            "properties": {
+              "uuid": "auth_spinoza_01",
+              "name": "Baruch Spinoza"
+            }
+          }
+        ],
+        [
+          {
+            "edition": {
+              "properties": {
+                "uuid": "ed_spinoza_1",
+                "title": "Ethics Demonstrated in Geometrical Order",
+                "snatches": 110,
+                "date": "1994",
+                "created_at": 1719187200000
+              }
+            },
+            "publisher": {
+              "properties": {
+                "uuid": "pub_penguin_01",
+                "name": "Penguin Classics"
+              }
+            },
+            "torrent": {
+              "properties": {
+                "format": "EPUB",
+                "res": "Digital Clean",
+                "infoHash": "9876543210fedcba9876543210fedcba98765432",
+                "snatches": 110,
+                "date": "1994",
+                "size": 2097152,
+                "release": "Penguin-1994-Spinoza"
+              }
+            }
+          }
+        ],
+        [
+          {
+            "properties": {
+              "uuid": "class_ethics_01",
+              "name": "Ethics"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "_fields": [
+        {
+          "properties": {
+            "uuid": "src_leviathan_hobbes_05",
+            "name": "Leviathan",
+            "type": "Book",
+            "date": "1651",
+            "cover": "https://via.placeholder.com/55x80?text=Hobbes"
+          }
+        },
+        [
+          {
+            "properties": {
+              "uuid": "auth_hobbes_01",
+              "name": "Thomas Hobbes"
+            }
+          }
+        ],
+        [
+          {
+            "edition": {
+              "properties": {
+                "uuid": "ed_hobbes_1",
+                "title": "Leviathan",
+                "snatches": 204,
+                "date": "1985",
+                "created_at": 1719100800000
+              }
+            },
+            "publisher": {
+              "properties": {
+                "uuid": "pub_penguin_01",
+                "name": "Penguin Classics"
+              }
+            },
+            "torrent": {
+              "properties": {
+                "format": "PDF",
+                "res": "Scanned Book",
+                "infoHash": "5544332211eeddcc5544332211eeddcc55443322",
+                "snatches": 204,
+                "date": "1985",
+                "size": 14680064,
+                "release": "Penguin-1985-Hobbes"
+              }
+            }
+          }
+        ],
+        [
+          {
+            "properties": {
+              "uuid": "class_political_theory_01",
+              "name": "Political Theory"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "_fields": [
+        {
+          "properties": {
+            "uuid": "src_prince_machiavelli_06",
+            "name": "The Prince",
+            "type": "Book",
+            "date": "1532",
+            "cover": "https://via.placeholder.com/55x80?text=Machiavelli"
+          }
+        },
+        [
+          {
+            "properties": {
+              "uuid": "auth_machiavelli_01",
+              "name": "Niccolò Machiavelli"
+            }
+          }
+        ],
+        [
+          {
+            "edition": {
+              "properties": {
+                "uuid": "ed_machiavelli_1",
+                "title": "The Prince",
+                "snatches": 340,
+                "date": "2003",
+                "created_at": 1719014400000
+              }
+            },
+            "publisher": {
+              "properties": {
+                "uuid": "pub_univ_chicago_02",
+                "name": "University of Chicago Press"
+              }
+            },
+            "torrent": {
+              "properties": {
+                "format": "EPUB",
+                "res": "Retail Edition",
+                "infoHash": "aabbccddeeff00112233445566778899aabbccdd",
+                "snatches": 340,
+                "date": "2003",
+                "size": 3145728,
+                "release": "Chicago-2003-Machiavelli"
+              }
+            }
+          }
+        ],
+        [
+          {
+            "properties": {
+              "uuid": "class_political_theory_01",
+              "name": "Political Theory"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "_fields": [
+        {
+          "properties": {
+            "uuid": "src_meditations_descartes_07",
+            "name": "Meditations on First Philosophy",
+            "type": "Book",
+            "date": "1641",
+            "cover": "https://via.placeholder.com/55x80?text=Descartes"
+          }
+        },
+        [
+          {
+            "properties": {
+              "uuid": "auth_descartes_01",
+              "name": "René Descartes"
+            }
+          }
+        ],
+        [
+          {
+            "edition": {
+              "properties": {
+                "uuid": "ed_descartes_1",
+                "title": "Meditations on First Philosophy",
+                "snatches": 165,
+                "date": "1996",
+                "created_at": 1718928000000
+              }
+            },
+            "publisher": {
+              "properties": {
+                "uuid": "pub_cambridge_01",
+                "name": "Cambridge University Press"
+              }
+            },
+            "torrent": {
+              "properties": {
+                "format": "PDF",
+                "res": "Clean OCR",
+                "infoHash": "11223344556677889900aabbccddeeff11223344",
+                "snatches": 165,
+                "date": "1996",
+                "size": 8388608,
+                "release": "Cambridge-1996-Descartes"
+              }
+            }
+          }
+        ],
+        [
+          {
+            "properties": {
+              "uuid": "class_epistemology_01",
+              "name": "Epistemology"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "_fields": [
+        {
+          "properties": {
+            "uuid": "src_treatise_human_nature_08",
+            "name": "A Treatise of Human Nature",
+            "type": "Book",
+            "date": "1739",
+            "cover": "https://via.placeholder.com/55x80?text=Hume"
+          }
+        },
+        [
+          {
+            "properties": {
+              "uuid": "auth_hume_01",
+              "name": "David Hume"
+            }
+          }
+        ],
+        [
+          {
+            "edition": {
+              "properties": {
+                "uuid": "ed_hume_1",
+                "title": "A Treatise of Human Nature",
+                "snatches": 128,
+                "date": "2007",
+                "created_at": 1718841600000
+              }
+            },
+            "publisher": {
+              "properties": {
+                "uuid": "pub_oxford_01",
+                "name": "Oxford University Press"
+              }
+            },
+            "torrent": {
+              "properties": {
+                "format": "PDF",
+                "res": "Digital Facsimile",
+                "infoHash": "eeddccbbaa99887766554433221100ffeeeeddcc",
+                "snatches": 128,
+                "date": "2007",
+                "size": 19922944,
+                "release": "Oxford-2007-Hume"
+              }
+            }
+          }
+        ],
+        [
+          {
+            "properties": {
+              "uuid": "class_epistemology_01",
+              "name": "Epistemology"
+            }
+          },
+          {
+            "properties": {
+              "uuid": "class_ethics_01",
+              "name": "Ethics"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "_fields": [
+        {
+          "properties": {
+            "uuid": "src_phenomenology_spirit_09",
+            "name": "The Phenomenology of Spirit",
+            "type": "Book",
+            "date": "1807",
+            "cover": "https://via.placeholder.com/55x80?text=Hegel"
+          }
+        },
+        [
+          {
+            "properties": {
+              "uuid": "auth_hegel_01",
+              "name": "G. W. F. Hegel"
+            }
+          }
+        ],
+        [
+          {
+            "edition": {
+              "properties": {
+                "uuid": "ed_hegel_1",
+                "title": "Phenomenology of Spirit",
+                "snatches": 92,
+                "date": "1977",
+                "created_at": 1718755200000
+              }
+            },
+            "publisher": {
+              "properties": {
+                "uuid": "pub_oxford_01",
+                "name": "Oxford University Press"
+              }
+            },
+            "torrent": {
+              "properties": {
+                "format": "PDF",
+                "res": "Archive Scan",
+                "infoHash": "778899aabbccddeeff0011223344556677889900",
+                "snatches": 92,
+                "date": "1977",
+                "size": 25165824,
+                "release": "Oxford-1977-Hegel"
+              }
+            }
+          }
+        ],
+        [
+          {
+            "properties": {
+              "uuid": "class_metaphysics_01",
+              "name": "Metaphysics"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "_fields": [
+        {
+          "properties": {
+            "uuid": "src_beyond_good_evil_10",
+            "name": "Beyond Good and Evil",
+            "type": "Book",
+            "date": "1886",
+            "cover": "https://via.placeholder.com/55x80?text=Nietzsche"
+          }
+        },
+        [
+          {
+            "properties": {
+              "uuid": "auth_nietzsche_01",
+              "name": "Friedrich Nietzsche"
+            }
+          }
+        ],
+        [
+          {
+            "edition": {
+              "properties": {
+                "uuid": "ed_nietzsche_1",
+                "title": "Beyond Good and Evil",
+                "snatches": 245,
+                "date": "2002",
+                "created_at": 1718668800000
+              }
+            },
+            "publisher": {
+              "properties": {
+                "uuid": "pub_penguin_01",
+                "name": "Penguin Classics"
+              }
+            },
+            "torrent": {
+              "properties": {
+                "format": "EPUB",
+                "res": "Digital Clean",
+                "infoHash": "3344556677889900aabbccddeeff112233445566",
+                "snatches": 245,
+                "date": "2002",
+                "size": 3670016,
+                "release": "Penguin-2002-Nietzsche"
+              }
+            }
+          }
+        ],
+        [
+          {
+            "properties": {
+              "uuid": "class_ethics_01",
+              "name": "Ethics"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "_fields": [
+        {
+          "properties": {
+            "uuid": "src_critique_practical_reason_11",
+            "name": "Critique of Practical Reason",
+            "type": "Book",
+            "date": "1788",
+            "cover": "https://via.placeholder.com/55x80?text=Kant"
+          }
+        },
+        [
+          {
+            "properties": {
+              "uuid": "auth_kant_01",
+              "name": "Immanuel Kant"
+            }
+          }
+        ],
+        [
+          {
+            "edition": {
+              "properties": {
+                "uuid": "ed_kant_prakt_1",
+                "title": "Critique of Practical Reason",
+                "snatches": 115,
+                "date": "1997",
+                "created_at": 1718582400000
+              }
+            },
+            "publisher": {
+              "properties": {
+                "uuid": "pub_cambridge_01",
+                "name": "Cambridge University Press"
+              }
+            },
+            "torrent": {
+              "properties": {
+                "format": "PDF",
+                "res": "HQ Scan",
+                "infoHash": "99887766554433221100ffeeeeddccbbaa998877",
+                "snatches": 115,
+                "date": "1997",
+                "size": 11534336,
+                "release": "Cambridge-1997-Kant"
+              }
+            }
+          }
+        ],
+        [
+          {
+            "properties": {
+              "uuid": "class_ethics_01",
+              "name": "Ethics"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "_fields": [
+        {
+          "properties": {
+            "uuid": "src_tao_te_ching_12",
+            "name": "Tao Te Ching",
+            "type": "Book",
+            "date": "-400",
+            "cover": "https://via.placeholder.com/55x80?text=Laozi"
+          }
+        },
+        [
+          {
+            "properties": {
+              "uuid": "auth_laozi_01",
+              "name": "Laozi"
+            }
+          }
+        ],
+        [
+          {
+            "edition": {
+              "properties": {
+                "uuid": "ed_laozi_1",
+                "title": "Tao Te Ching: A New Translation",
+                "snatches": 310,
+                "date": "1988",
+                "created_at": 1718496000000
+              }
+            },
+            "publisher": {
+              "properties": {
+                "uuid": "pub_harper_01",
+                "name": "Harper Perennial"
+              }
+            },
+            "torrent": {
+              "properties": {
+                "format": "EPUB",
+                "res": "Digital Original",
+                "infoHash": "aabbcc11223344556677889900ffeeeeddccbbaa",
+                "snatches": 310,
+                "date": "1988",
+                "size": 2621440,
+                "release": "Harper-1988-Laozi"
+              }
+            }
+          }
+        ],
+        [
+          {
+            "properties": {
+              "uuid": "class_metaphysics_01",
+              "name": "Metaphysics"
+            }
+          }
+        ]
+      ]
+    }
+  ]
+}
