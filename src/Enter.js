@@ -16,6 +16,7 @@ document.addEventListener('keydown', async (e) => {
     }
 });
 
+/*
 // Listen for the decrypted code response from nano.js
 navigator.serviceWorker.addEventListener('message', async (event) => {
     if (event.data && event.data.type === "BUNDLE_READY") {
@@ -35,4 +36,4 @@ navigator.serviceWorker.addEventListener('message', async (event) => {
             console.error("[UI ERROR] Failed to inject bundle code:", err);
         }
     }
-});
+});*/

@@ -17,6 +17,19 @@ const TorrentsController = {
   },
 
   /**
+   * Formats raw year/date strings or ints, converting negative years to B.C.
+   */
+  adjDate(dateVal) {
+    if (!dateVal && dateVal !== 0) return '-';
+    const strVal = String(dateVal).trim();
+    if (strVal.startsWith('-')) {
+      const positiveYear = strVal.substring(1);
+      return `${positiveYear} B.C.`;
+    }
+    return strVal;
+  },
+
+  /**
    * Normalizes the response schema into flat edition rows grouped by clean source name
    */
   parseData(json) {
@@ -29,7 +42,6 @@ const TorrentsController = {
       const items = fields[2] || [];
       const categories = (fields[3] || []).map(c => c.properties?.name).filter(Boolean);
 
-      // Clean up source name to strip out (Copy II), (Archive Edition), etc. for unified grouping
       const cleanSourceName = (source.name || '').replace(/\s*\([^)]*\)/g, '').trim();
       const groupKey = source.uuid || cleanSourceName;
 
@@ -76,7 +88,6 @@ const TorrentsController = {
             format: torProps.format,
             res: torProps.res,
             size: torProps.size,
-            release: torProps.release,
             snatches: torProps.snatches,
             infoHash: torProps.infoHash
           });
@@ -104,9 +115,12 @@ const TorrentsController = {
         <td><span class="ui-icon ui-icon-document"></span> <strong>${t.format}</strong></td>
         <td>${t.res || 'N/A'}</td>
         <td>${this.formatBytes(t.size)}</td>
-        <td>${t.release || '-'}</td>
         <td>${t.snatches}</td>
-        <td><code>${t.infoHash}</code></td>
+        <td>
+          <button class="webtorrent-download-btn ui-button ui-widget ui-corner-all" data-infohash="${t.infoHash}" style="font-size: 0.85em; padding: 2px 8px;">
+            <span class="ui-icon ui-icon-arrowthick-1-s" style="display:inline-block; vertical-align:middle; margin-right:3px;"></span> Download
+          </button>
+        </td>
       </tr>
     `).join('');
 
@@ -117,11 +131,10 @@ const TorrentsController = {
           <thead>
             <tr class="ui-widget-header">
               <th>Format</th>
-              <th>Quality / Resolution</th>
+              <th>Resolution</th>
               <th>Size</th>
-              <th>Release Year</th>
-              <th>Snatches</th>
-              <th>InfoHash</th>
+              <th>Revs</th>
+              <th>Stream</th>
             </tr>
           </thead>
           <tbody>
@@ -140,12 +153,10 @@ const TorrentsController = {
   table: function(table, cb) {
     const self = TorrentsController;
 
-    // Ensure selector has proper prefix if passed as ID string without '#' or '.'
     const tableSelector = (typeof table === 'string' && !table.startsWith('#') && !table.startsWith('.')) 
       ? `#${table}` 
       : table;
 
-    // Safely destroy existing DataTable instance and clean DOM to prevent header sync mismatches
     if ($.fn.DataTable.isDataTable(tableSelector)) {
       const oldTable = $(tableSelector).DataTable();
       oldTable.clear().destroy();
@@ -153,7 +164,6 @@ const TorrentsController = {
       $(tableSelector).removeAttr('style').removeClass('dtr-inline collapsed');
     }
 
-    // Inject matching <thead> structure for the configured columns
     $(tableSelector).html(`
       <thead>
         <tr class="ui-widget-header">
@@ -168,7 +178,6 @@ const TorrentsController = {
       <tbody></tbody>
     `);
 
-    // Fetch dummy.json or source dataset
     $.getJSON('../Base/dummy.json', function(rawJson) {
       const tableData = self.parseData(rawJson);
 
@@ -177,8 +186,9 @@ const TorrentsController = {
         jQueryUI: true,
         responsive: true,
         scroller: true,
-        scrollY: '600px',
-        scrollCollapse: true,
+        scrollY: 'calc(100vh - 169px)',
+        scrollCollapse: false,
+        dom : 'rt<"clear">',
         paging: true,
         columns: [
           {
@@ -202,7 +212,8 @@ const TorrentsController = {
           { 
             title: 'Edition Date',
             data: 'edition.date',
-            className: 'dt-center'
+            className: 'dt-center',
+            render: (data) => self.adjDate(data)
           },
           { 
             title: 'Revs',
@@ -224,6 +235,7 @@ const TorrentsController = {
             const src = firstRow.source;
             const authorsList = src.authors.join(', ') || 'Unknown Author';
             const categories = src.categories.map(c => `<span class="ui-widget-header ui-corner-all" style="padding: 1px 5px; font-size: 0.8em; margin-right: 4px;">${c}</span>`).join('');
+            const formattedDate = self.adjDate(src.date);
 
             return $(`
               <tr class="group-header ui-widget-header" style="background: #e9e9e9; font-size: 1.05em;">
@@ -231,7 +243,7 @@ const TorrentsController = {
                   <div style="display: flex; align-items: center; gap: 12px;">
                     <img src="${src.cover}" alt="${src.name}" style="height: 55px; width: auto; border-radius: 3px; box-shadow: 0 1px 3px rgba(0,0,0,0.3);" />
                     <div>
-                      <div style="font-weight: bold; font-size: 1.1em;">${src.name} <span style="font-weight: normal; font-size: 0.9em; opacity: 0.85;">[${src.date}]</span></div>
+                      <div style="font-weight: bold; font-size: 1.1em;">${src.name} <span style="font-weight: normal; font-size: 0.9em; opacity: 0.85;">[${formattedDate}]</span></div>
                       <div style="margin: 2px 0;">by <em>${authorsList}</em></div>
                       <div>${categories}</div>
                     </div>

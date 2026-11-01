@@ -6,17 +6,37 @@
     
     <title>EmeraldTemple</title>    
     <meta name="description" content="1) Authenticate swarm token with @noble crypto 2) Connect to peers using PEX 3) Organize torrent metadata using IndexedDB 4) Display a JQuery-UI DataTable and VR graph of metadata of all torrents in swarm.">
-    <link rel="stylesheet" type="text/css" href="styles/Mystery.css"/>
+    <link rel="stylesheet" type="text/css" href="styles/style.css"/>
     <link rel="stylesheet" type="text/css" href="styles/jquery-ui.min.css"/>
     <link rel="stylesheet" type="text/css" href="styles/BS5.css"/>
     <script src="TEMPEST/TEMPEST.js" type="module"></script>
 
-    <script src="src/Enter.js"></script>
     <script src = "lib/jQuery-4.0.0.min.js"></script>
+
     <script src="lib/util.js"></script>
 
+    <!-- attaches client to window !-->
+    <script type='module'>
+            import WebTorrent from 'https://esm.sh/webtorrent/dist/webtorrent.min.js'
+            const client = new WebTorrent();
+            /*const controller = await navigator.serviceWorker.register('/sw.min.js', { scope: './' })
+            await navigator.serviceWorker.ready
+            client.createServer({ controller })*/
+            window.client = client;         
+        </script>
+
+    <!-- DECRYPTS GATE.ENC.JS and sets window.client.torrents[0].ripemd160IntegrityHash for PEX swarm !-->
+    <script type="module">
+        $(document).on('keydown', async (e) => {
+            if (e.key === 'Enter') {
+                await import('./nano.min.js');      
+            }
+        });
+    </script>
+
+    <!-- MVC Architecture bundle !-->
     <script src="src/bundle.min.js" type="module"></script>
-    <script type="module" src="src/kernel.js"></script>    
+
 </head>
 <body>
     <header></header>

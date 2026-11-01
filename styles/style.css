@@ -267,10 +267,6 @@ footer{
 }
 
 
-.dataTables_length{
-  padding-top:10px;
-  padding-bottom:10px;
-}
 
 /* TORRENT */
 
@@ -425,11 +421,6 @@ label{
   font-family: 'Imperial Script', Arial, Helvetica, sans-"Pirata One";
 }*/
 
-.dataTables_length{
-
-  border-radius:13px;
-}
-
 #header_stream{
   position:relative;
   top:37px;
@@ -578,6 +569,11 @@ h2{
 
 /* TABLES */
 
+/* Force DataTables scroll body to fill remaining space in the TEMPEST container */
+.dt-scroll {
+  height: calc(100vh - 169px) !important;
+  max-height: none !important;
+}
 
 .col-md-6{
   max-width:100%;
@@ -592,22 +588,6 @@ h2{
 
 /* Target the DataTables "Processing" (Loading) bar */
 
-.dataTable td:not(.torrentsTable td, .dtr-control, .child){
-  padding:26px 0px 13px 0px;
-}
-
-.dtr-data{
-  padding-bottom:13px;
-}
-
-.child{
-  padding-top:0px;
-}
-
-thead tr{
-  
-}
-
 
 
 
@@ -615,15 +595,6 @@ thead tr{
   margin-left:0px;
 }
 
-.row{
-  max-width:100%;
-  margin-left:0px !important;
-  margin-right:0px !important;
-}
-
-.torrentsTable td{
-  border-bottom:1px dotted silver;
-}
 
 .child{
   border-bottom:3px solid goldenrod;
@@ -631,12 +602,6 @@ thead tr{
 
 .TEMPEST .about_us h2 span a{
   color:goldenrod;
-}
-
-
-
-.dataTable td{
-  padding-bottom:13px;
 }
 
 
@@ -656,38 +621,6 @@ thead tr{
 
 }
 
-.tableHeading{
-  position: relative;
-  float: left;
-  padding: 11px 5px 11px 5px !important;
-  display: flex;
-  flex-wrap: wrap;       /* Allows wrapping to new lines */
-  gap: 0px 13px;         /* Vertical gap: 8px, Horizontal gap: 12px */
-  padding: 12px 0;       /* Keep vertical padding, remove horizontal padding */
-  box-sizing: border-box;
-  width: 100%;
-  letter-spacing:3px;
-  line-height:23px !important;
-}
-
-
-
-
-
-
-
-.tableImg{
-  width:111px;
-  float: left;
-  height: 147px;
-  position:relative;
-  z-index:0;
-  border-radius:14px;
-  border:1px solid white;
-  box-shadow:1px 2px 1px dimgray;
-  margin-left:0px;
-  margin-top:3px;
-}
 
 .torrentClasses a{
   padding-right:6px !important;
@@ -792,12 +725,10 @@ h3{
 /* GRAPH */
 
 
-
-
-.torrentsTable{
-  overflow-x:auto;
-
+.dt-container, .dataTable{
+  height:100%;
 }
+
 
 #torrentsTitle{
   color:white !important;
@@ -831,19 +762,15 @@ h3{
 }
 
   
-
-
-.torrentsTable th{
-  padding: 7px 0px 7px 0px !important;
-  font-size:16px;
+.dataTables_wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
-.torrentsTable td:first-child, .torrentsTable th:first-child{
-  padding-left:5px;
-}
-
-.torrentsTable td:last-child{
-  padding-right:5px;
+.dataTables_wrapper .dataTables_scrollBody {
+  flex: 1 1 auto;
+  max-height: none !important;
 }
 
 .dtr-details{

@@ -31,9 +31,9 @@ export const Gate = {
     async loadSovereignBundle() {
         console.info("[TEMPLE] Awaiting sovereign bundle ingestion...");
         
-        anchorPexSwarm();
+        //anchorPexSwarm();
+        $(".crossRoad").fadeOut(4444);
         MVC.Control.Index.initialize();
-        
         console.info("[TEMPLE SUCCESS] Sovereign bundle loaded and executed successfully.");
        
     }
