@@ -11,20 +11,8 @@ module.exports = {
 
         async function boot() {
 
-    //tthere is no try
                 // 2. Inject structural template container safely inside .city
-                $(".EmeraldTemple").html(`
-                        <header></header>
-                        <div class="TEMPEST upload"></div>
-                        <div class="TEMPEST webtorrent"></div>
-                        <div class="TEMPEST top10"></div>
-                        <div class="TEMPEST node"></div>
-                        <div class="TEMPEST Category"></div>
-                        <div class="TEMPEST torrents"></div>
-                        <div class="TEMPEST privacy"></div>
-                        <footer></footer>
-                    `);
-
+            
                 // 3. Build TEMPEST Config Object
                 const tempestConfig = {
                     defaultPage: "torrents",

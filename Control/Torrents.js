@@ -59,7 +59,7 @@ module.exports = {
                 }
             },
             ajax: function(data, callback, settings) {
-                $.getJSON("Base/dummy.json", function(json) {
+                $.getJSON("Base/foobar.json", function(json) {
                     processTableData(json, callback);
                 }).fail(function(err) {
                     console.error("[TORRENTS ERROR] Failed to load dummy.json:", err);
