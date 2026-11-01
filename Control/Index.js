@@ -57,29 +57,40 @@ module.exports = {
                     ]
                 };
 
-                // 4. Fade out crossRoad / splash and initialize TEMPEST Router
-                if (typeof $(".crossRoad").fadeOut === 'function') {
-                    $(".crossRoad").fadeOut(3333);
-                }
+
+                // Automatically detect GitHub Pages subpath vs local root
+                const isGitHubPages = window.location.hostname.includes('github.io');
+                const repoPath = isGitHubPages 
+                    ? (window.location.pathname.split('/')[1] ? `/${window.location.pathname.split('/')[1]}` : '') 
+                    : '';
+
+                // Construct your safe base directory for fragments
+                // Assuming your fragments live in /TEMPEST/fragment/ relative to root
+                const fragmentBase = `${repoPath}/TEMPEST/fragment`;
 
                 async.parallel([
                     function(cb){
-                        $.get("../TEMPEST/fragment/Hero.html", function(html){
+                        $.get(`${fragmentBase}/Hero.html`, function(html){
                             $("footer").html(html);
-                        })
-                        cb(null)
+                        }).always(() => cb(null)); // Ensures cb always fires even if request fails
                     },
-                    function(err, cb){
-                        $.get("../TEMPEST/fragment/header.html", function(html){
+                    function(cb){
+                        $.get(`${fragmentBase}/header.html`, function(html){
                             $("header").html(html);
-                        })
+                        }).always(() => cb(null));
                     }
-                ],TEMPEST.initialize(tempestConfig));
+                ], function(err) {
+                    // This executes once both parallel tasks finish
+                    TEMPEST.initialize(tempestConfig, ()=>{ // 4. Fade out crossRoad / splash and initialize TEMPEST Router
+                        $(".crossRoad").fadeOut(4444)
+                    }
+                    )
+                });
                 
                 console.info("[TEMPEST KERNEL] Router initialized successfully.");
 
-            //do, or do not
         }
+        //there is no try
 
         boot();    
     }

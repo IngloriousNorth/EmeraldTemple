@@ -35,12 +35,6 @@ export const Gate = {
         MVC.Control.Index.initialize();
         
         console.info("[TEMPLE SUCCESS] Sovereign bundle loaded and executed successfully.");
-
-        // 3. Fade out the overlay
-        if (typeof $ !== 'undefined' && $(".crossRoad").length) {
-            $(".crossRoad").fadeOut(777);
-        }
-
        
     }
 }

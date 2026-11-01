@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import async from 'async';
 window.async = async;
 
-import MVC from "./MAINFRAME/MAINFRAME";
+import MVC from "../MAINFRAME/MAINFRAME";
 window.MVC = MVC;
 
 import 'jquery';
@@ -25,8 +25,8 @@ import dragDrop from 'drag-drop';
 
 import moment from 'moment';
 
-import './Base/Form';
+import '../Base/Form';
 
-import './Hook/Mobile';
+import '../Hook/Mobile';
 
-import './Hook/Search'
+import '../Hook/Search'

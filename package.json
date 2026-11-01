@@ -31,7 +31,7 @@
     "webtorrent": "^3.0.21"
   },
   "scripts": {
-    "build:bundle": "browserify main.js -P tinyify -p esmify -o './src/bundle.min.js'",
+    "build:bundle": "browserify ./build/main.js -P tinyify -p esmify -o './src/bundle.min.js'",
     "build:gate": "node ./build/build.js",
     "build:nano": "npx esbuild kernel/nano.js --bundle --minify --format=iife --platform=node --outfile=./nano.min.js "
   },
