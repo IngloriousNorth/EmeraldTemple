@@ -120,6 +120,7 @@ var TEMPEST = {
                 }, 0);
             });
         } else {
+            const fileTarget = `${page}.html`
             // Automatically detect if we are on GitHub Pages and extract the repo subpath (/EmeraldTemple), or default to empty for local root
             const repoPath = window.location.hostname.includes('github.io') 
                 ? window.location.pathname.split('/')[1] ? `/${window.location.pathname.split('/')[1]}` : '' 
