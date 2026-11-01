@@ -16,7 +16,6 @@ module.exports = {
                 // 3. Build TEMPEST Config Object
                 const tempestConfig = {
                     defaultPage: "torrents",
-                    directory: "/fragment",
                     fade: true,
                     pages: ["webtorrent", "torrents", "top10", "node", "Category", "privacy"],
                     helm: [
@@ -65,13 +64,13 @@ module.exports = {
 
                 async.parallel([
                     function(cb){
-                        $.get("fragment/Hero.html", function(html){
+                        $.get("../TEMPEST/fragment/Hero.html", function(html){
                             $("footer").html(html);
                         })
                         cb(null)
                     },
                     function(err, cb){
-                        $.get("fragment/header.html", function(html){
+                        $.get("../TEMPEST/fragment/header.html", function(html){
                             $("header").html(html);
                         })
                     }

@@ -121,7 +121,7 @@ var TEMPEST = {
             });
         } else {
             var fileTarget = page + ".html";
-            fetch(`./fragment/${fileTarget}`)
+            fetch(`../TEMPEST/fragment/${fileTarget}`)
                 .then(response => response.text())
                 .then(data => {
                     targetDiv.innerHTML = data;
