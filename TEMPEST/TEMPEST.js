@@ -4,7 +4,7 @@
  */
 
 var TEMPEST = { 
-    _dir: "fragment",
+    _dir: "TEMPEST/fragment",
     _fade: false,
     _helm: [],
     _page : "home",
@@ -18,7 +18,7 @@ var TEMPEST = {
         const {
             helm = [],
             defaultPage = "home",
-            dir = "fragment",
+            dir = "TEMPEST/fragment",
             fade = false,
             pages = [],
             prefix = ""
