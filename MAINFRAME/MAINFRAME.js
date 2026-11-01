@@ -8,6 +8,7 @@ const MVC = {
             Search: require("../Control/Search"),
             Category : require("../Control/Category"),
             Torrents: require("../Control/Torrents"),
+            Index : require("../Control/Index")
         },
         Hook: {
             Node: require("../Hook/Node"),

@@ -19,6 +19,9 @@ module.exports = {
 
         var dataTable = $target.DataTable({
             scroller: true,
+            scrollY: "500px",
+            paging : true,
+            pageLength : 5,
             responsive: {
                 details: {
                     type: 'column',
@@ -30,8 +33,6 @@ module.exports = {
                     }
                 }
             },
-            serverSide: false,
-            bSort: true,
             columns: [
                 { visible: false, searchable: false }, // Index 0: Hidden rowGroup source key (renders via startRender)
                 { width: "50%" },                      // Index 1: APA Citation (First visible column)
@@ -47,9 +48,6 @@ module.exports = {
                 { targets: [5], visible: false, searchable: false }
             ],
             order: [[ 2, "desc" ]], // Order by Date (Index 2) by default
-            processing: true,
-            searching: false,
-            info: false,
             rowGroup: {
                 dataSrc: 0,
                 startRender: function (rows, group) {
@@ -61,7 +59,7 @@ module.exports = {
                 }
             },
             ajax: function(data, callback, settings) {
-                $.getJSON("Base/foobar.json", function(json) {
+                $.getJSON("Base/dummy.json", function(json) {
                     processTableData(json, callback);
                 }).fail(function(err) {
                     console.error("[TORRENTS ERROR] Failed to load dummy.json:", err);

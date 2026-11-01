@@ -1,5 +1,5 @@
 module.exports = {
-  execute : function(){
+  unfold : function(){
     TEMPEST.route(
       "#torrents?search=true&title=" +
         encodeURIComponent($("#adv_title").val()) +

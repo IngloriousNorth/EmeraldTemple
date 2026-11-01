@@ -18,7 +18,7 @@ async function runBuild() {
     fs.mkdirSync(targetClientDir, { recursive: true });
 
     // Compile main source bundle from Gate.js using Browserify + esmify
-    const bundleEntryPoint = path.join(__dirname, '../Gate.js');
+    const bundleEntryPoint = path.join(__dirname, '../Gate/Gate.js');
     const tempBundlePath = path.join(targetClientDir, 'Gate.temp.js');
     const encOutputPath = path.join(targetClientDir, 'Gate.bundle.enc');
 
