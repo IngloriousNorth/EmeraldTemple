@@ -1,8 +1,5 @@
 import crypto from 'crypto';
 
-import TEMPEST from './lib/TEMPEST';
-window.TEMPEST = TEMPEST; 
-
 import async from 'async';
 window.async = async;
 

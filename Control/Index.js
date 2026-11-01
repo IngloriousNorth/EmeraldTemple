@@ -1,4 +1,4 @@
-import TEMPEST from '../lib/TEMPEST';
+import TEMPEST from '../TEMPEST/TEMPEST.js';
 const async = require ('async');
 
 module.exports = {
@@ -16,7 +16,6 @@ module.exports = {
                 // 3. Build TEMPEST Config Object
                 const tempestConfig = {
                     defaultPage: "torrents",
-                    dir: "/fragment",
                     directory: "/fragment",
                     fade: true,
                     pages: ["webtorrent", "torrents", "top10", "node", "Category", "privacy"],

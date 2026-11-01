@@ -1,4 +1,4 @@
-import TEMPEST from '../lib/TEMPEST.js';
+import TEMPEST from '../TEMPEST/TEMPEST.js';
 import MVC from '../MAINFRAME/MAINFRAME.js';
 
 module.exports = {
