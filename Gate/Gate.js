@@ -31,11 +31,6 @@ export const Gate = {
     async loadSovereignBundle() {
         console.info("[TEMPLE] Awaiting sovereign bundle ingestion...");
         
-        // 1. Fetch the file and await the response text properly
-        const response = await fetch("../Control/Index.js");
-        if (!response.ok) {
-            throw new Error(`Failed to fetch script: ${response.status} ${response.statusText}`);
-        }
         anchorPexSwarm();
         MVC.Control.Index.initialize();
         
