@@ -5,7 +5,6 @@ import { bytesToHex } from '@noble/hashes/utils';
 (async function() {
     // Put this as line 1 of nano.min.js
 console.error("🔥 NANO.MIN.JS IS DEFINITELY EXECUTING RIGHT NOW 🔥");
-    console.info('[nano.js KERNEL] Initializing gate decryption and verification pipeline...');
 
     try {
         // 1. Fetch encrypted bundle package

@@ -178,7 +178,17 @@ const TorrentsController = {
       <tbody></tbody>
     `);
 
-    $.getJSON('../Base/dummy.json', function(rawJson) {
+    // Automatically detect GitHub Pages subpath vs local root
+    const isGitHubPages = window.location.hostname.includes('github.io');
+    const repoPath = isGitHubPages 
+        ? (window.location.pathname.split('/')[1] ? `/${window.location.pathname.split('/')[1]}` : '') 
+        : '../';
+
+    // Construct your safe base directory for fragments
+    // Assuming your fragments live in /TEMPEST/fragment/ relative to root
+    const fragmentBase = `${repoPath}/Base`;
+
+    $.getJSON(`${fragmentBase}/dummy.json`, function(rawJson) {
       const tableData = self.parseData(rawJson);
 
       const tableInstance = $(tableSelector).DataTable({
