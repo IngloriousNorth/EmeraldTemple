@@ -29,15 +29,15 @@ module.exports = {
             deferRender: true,
             paging: true,
             searching: false,
-            info: true,
+            info: false,
             processing: true,
             bSort: true,
             order: [[ 3, "desc" ]],
-            dom: 'rt<"bottom"ip><"clear">',
+            dom: 'rt<"clear">',
             responsive: {
                 details: {
-                    display: $.fn.dataTable.Responsive.display.childRowImmediate,
-                    type: 'none',
+                    type: 'column',
+                    target: 5,
                     renderer: function (api, rowIdx, columns) {
                         var data = api.row(rowIdx).data();
                         var tortables = data ? data[5] : "";
@@ -92,19 +92,6 @@ module.exports = {
                     console.info("[PEX] Local rev increment recorded for infoHash:", infoHash);
                 });
             }
-        });
-
-        // Citation copy handler
-        $(document).off("click", ".copy-citation-btn").on("click", ".copy-citation-btn", function(e) {
-          e.stopPropagation();
-          const uuid = $(this).data("uuid");
-          const $btn = $(this);
-          const textToCopy = $("#edition_" + uuid + "_field").text().trim();
-
-          navigator.clipboard.writeText(textToCopy).then(() => {
-            $btn.css("color", "#50C777");
-            setTimeout(() => $btn.css("color", "#a0a0a0"), 1200);
-          }).catch(err => console.error("Failed to copy citation: ", err));
         });
         
         // WebTorrent action handler

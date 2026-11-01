@@ -1,5 +1,3 @@
-import crypto from 'crypto';
-
 import async from 'async';
 window.async = async;
 
@@ -12,7 +10,7 @@ import 'jquery-ui/dist/jquery-ui.js';
 
 import DataTable from 'datatables.net-jqui';
 import 'datatables.net-scroller-dt';
-import 'datatables.net-rowgroup-jqui'
+import 'datatables.net-rowgroup-bs5'
 import 'datatables.net-responsive-dt';
 
 import * as d3 from 'd3';
