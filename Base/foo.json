@@ -1,0 +1,399 @@
+{
+  "records": [
+    {
+      "_fields": [
+        {
+          "properties": {
+            "uuid": "src_critique_pure_reason_01",
+            "name": "Critique of Pure Reason",
+            "type": "Book",
+            "date": "1781",
+            "cover": "https://covers.openlibrary.org/b/id/8230186-M.jpg"
+          }
+        },
+        [
+          {
+            "properties": {
+              "uuid": "auth_kant_01",
+              "name": "Immanuel Kant"
+            }
+          }
+        ],
+        [
+          {
+            "edition": {
+              "properties": {
+                "uuid": "ed_kant_1",
+                "title": "Cambridge Edition (Pluhar Translation)",
+                "snatches": 142,
+                "date": "1998",
+                "created_at": "1719446400"
+              }
+            },
+            "publisher": {
+              "properties": {
+                "uuid": "pub_cambridge_01",
+                "name": "Cambridge University Press"
+              }
+            },
+            "torrent": {
+              "properties": {
+                "format": "PDF",
+                "res": "HQ Scan",
+                "infoHash": "cc8799fd074352c0120f44e373c3100805d8fd86",
+                "snatches": 142,
+                "date": "1998",
+                "size": 15728640,
+                "release": "Cambridge-1998-Kant"
+              }
+            }
+          },
+          {
+            "edition": {
+              "properties": {
+                "uuid": "ed_kant_3",
+                "title": "Critique of Pure Reason - Archive Edition (Meiklejohn Translation)",
+                "snatches": 61,
+                "date": "1985",
+                "created_at": "1719446600"
+              }
+            },
+            "publisher": {
+              "properties": {
+                "uuid": "pub_cambridge_01",
+                "name": "Cambridge University Press"
+              }
+            },
+            "torrent": {
+              "properties": {
+                "format": "PDF",
+                "res": "Library Archive",
+                "infoHash": "cc8799fd074352c0120f44e373c3100805d8fd88",
+                "snatches": 61,
+                "date": "1985",
+                "size": 22020096,
+                "release": "Cambridge-1985-Kant"
+              }
+            }
+          }
+        ],
+        [
+          {
+            "properties": {
+              "uuid": "class_epistemology_01",
+              "name": "Epistemology"
+            }
+          },
+          {
+            "properties": {
+              "uuid": "class_metaphysics_01",
+              "name": "Metaphysics"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "_fields": [
+        {
+          "properties": {
+            "uuid": "src_republic_plat_02",
+            "name": "The Republic",
+            "type": "Book",
+            "date": "-375",
+            "cover": "https://covers.openlibrary.org/b/id/7984910-M.jpg"
+          }
+        },
+        [
+          {
+            "properties": {
+              "uuid": "auth_plato_01",
+              "name": "Plato"
+            }
+          }
+        ],
+        [
+          {
+            "edition": {
+              "properties": {
+                "uuid": "ed_plato_1",
+                "title": "Hackett Standard Edition (Grube/Reeve Translation)",
+                "snatches": 289,
+                "date": "2000",
+                "created_at": "1719360000"
+              }
+            },
+            "publisher": {
+              "properties": {
+                "uuid": "pub_hackett_01",
+                "name": "Hackett Publishing Company"
+              }
+            },
+            "torrent": {
+              "properties": {
+                "format": "EPUB",
+                "res": "Digital Original",
+                "infoHash": "1234567890abcdef1234567890abcdef12345678",
+                "snatches": 289,
+                "date": "2000",
+                "size": 4194304,
+                "release": "Hackett-2000-Plato"
+              }
+            }
+          },
+          {
+            "edition": {
+              "properties": {
+                "uuid": "ed_plato_3",
+                "title": "The Republic - Study Edition (Bloom Translation)",
+                "snatches": 175,
+                "date": "1992",
+                "created_at": "1719360200"
+              }
+            },
+            "publisher": {
+              "properties": {
+                "uuid": "pub_hackett_01",
+                "name": "Hackett Publishing Company"
+              }
+            },
+            "torrent": {
+              "properties": {
+                "format": "PDF",
+                "res": "Student Scan",
+                "infoHash": "1234567890abcdef1234567890abcdef12345680",
+                "snatches": 175,
+                "date": "1992",
+                "size": 6291456,
+                "release": "Hackett-1992-Plato"
+              }
+            }
+          }
+        ],
+        [
+          {
+            "properties": {
+              "uuid": "class_political_theory_01",
+              "name": "Political Theory"
+            }
+          },
+          {
+            "properties": {
+              "uuid": "class_ethics_01",
+              "name": "Ethics"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "_fields": [
+        {
+          "properties": {
+            "uuid": "src_mathematical_principles_03",
+            "name": "Philosophiæ Naturalis Principia Mathematica",
+            "type": "Book",
+            "date": "1687",
+            "cover": "https://covers.openlibrary.org/b/id/6979848-M.jpg"
+          }
+        },
+        [
+          {
+            "properties": {
+              "uuid": "auth_newton_01",
+              "name": "Isaac Newton"
+            }
+          }
+        ],
+        [
+          {
+            "edition": {
+              "properties": {
+                "uuid": "ed_newton_1",
+                "title": "University Press Facsimile (Cohen & Whitman Translation)",
+                "snatches": 95,
+                "date": "1999",
+                "created_at": "1719273600"
+              }
+            },
+            "publisher": {
+              "properties": {
+                "uuid": "pub_uc_press_01",
+                "name": "University of California Press"
+              }
+            },
+            "torrent": {
+              "properties": {
+                "format": "PDF",
+                "res": "Restored Facsimile",
+                "infoHash": "abcdef1234567890abcdef1234567890abcdef12",
+                "snatches": 95,
+                "date": "1999",
+                "size": 31457280,
+                "release": "UC-1999-Principia"
+              }
+            }
+          },
+          {
+            "edition": {
+              "properties": {
+                "uuid": "ed_newton_3",
+                "title": "Principia Mathematica - First English Translation (Motte)",
+                "snatches": 120,
+                "date": "1934",
+                "created_at": "1719273800"
+              }
+            },
+            "publisher": {
+              "properties": {
+                "uuid": "pub_uc_press_01",
+                "name": "University of California Press"
+              }
+            },
+            "torrent": {
+              "properties": {
+                "format": "PDF",
+                "res": "Vintage Scan",
+                "infoHash": "abcdef1234567890abcdef1234567890abcdef14",
+                "snatches": 120,
+                "date": "1934",
+                "size": 41943040,
+                "release": "UC-1934-Principia"
+              }
+            }
+          }
+        ],
+        [
+          {
+            "properties": {
+              "uuid": "class_physics_01",
+              "name": "Classical Mechanics"
+            }
+          },
+          {
+            "properties": {
+              "uuid": "class_math_01",
+              "name": "Calculus & Geometry"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "_fields": [
+        {
+          "properties": {
+            "uuid": "src_origin_species_04",
+            "name": "On the Origin of Species",
+            "type": "Book",
+            "date": "1859",
+            "cover": "https://covers.openlibrary.org/b/id/12558667-M.jpg"
+          }
+        },
+        [
+          {
+            "properties": {
+              "uuid": "auth_darwin_01",
+              "name": "Charles Darwin"
+            }
+          }
+        ],
+        [
+          {
+            "edition": {
+              "properties": {
+                "uuid": "ed_darwin_1",
+                "title": "Penguin Classics Definitive Edition (Beer Translation/Ed.)",
+                "snatches": 412,
+                "date": "2009",
+                "created_at": "1719187200"
+              }
+            },
+            "publisher": {
+              "properties": {
+                "uuid": "pub_penguin_01",
+                "name": "Penguin Books"
+              }
+            },
+            "torrent": {
+              "properties": {
+                "format": "PDF",
+                "res": "Restored Scan",
+                "infoHash": "9876543210fedcba9876543210fedcba98765432",
+                "snatches": 412,
+                "size": 18454937,
+                "release": "Penguin-2009-Darwin"
+              }
+            }
+          }
+        ],
+        [
+          {
+            "properties": {
+              "uuid": "class_biology_01",
+              "name": "Evolutionary Biology"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "_fields": [
+        {
+          "properties": {
+            "uuid": "src_pride_prejudice_05",
+            "name": "Pride and Prejudice",
+            "type": "Book",
+            "date": "1813",
+            "cover": "https://covers.openlibrary.org/b/id/8091102-M.jpg"
+          }
+        },
+        [
+          {
+            "properties": {
+              "uuid": "auth_austen_01",
+              "name": "Jane Austen"
+            }
+          }
+        ],
+        [
+          {
+            "edition": {
+              "properties": {
+                "uuid": "ed_austen_1",
+                "title": "Oxford World's Classics Edition (Phipson/Kp)",
+                "snatches": 530,
+                "date": "2003",
+                "created_at": "1719100800"
+              }
+            },
+            "publisher": {
+              "properties": {
+                "uuid": "pub_oxford_01",
+                "name": "Oxford University Press"
+              }
+            },
+            "torrent": {
+              "properties": {
+                "format": "EPUB",
+                "res": "Digital Clean",
+                "infoHash": "fedcba0987654321fedcba0987654321fedcba09",
+                "snatches": 530,
+                "size": 2097152,
+                "release": "Oxford-2003-Austen"
+              }
+            }
+          }
+        ],
+        [
+          {
+            "properties": {
+              "uuid": "class_literature_01",
+              "name": "English Literature"
+            }
+          }
+        ]
+      ]
+    }
+  ]
+}

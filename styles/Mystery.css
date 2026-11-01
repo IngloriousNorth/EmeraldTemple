@@ -110,7 +110,7 @@ footer{
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url(../fonts/J7aHnp1uDWRBEqV98dVQztYldFc7pA.ttf) format('truetype');
+  src: url(/fonts/J7aHnp1uDWRBEqV98dVQztYldFc7pA.ttf) format('truetype');
 }
 
 
@@ -439,10 +439,11 @@ label{
 
 
 div.TEMPEST{
-    overflow-y:auto;
+    overflow:hidden;
     color:black;
     width: 100%;
     height: calc(100% - 169px);
+
     position: absolute;
     box-sizing: border-box;
     top: 92px;
@@ -632,31 +633,7 @@ thead tr{
   color:goldenrod;
 }
 
-table.dataTable tr.dtrg-group th{
-  
-  height:147px;
 
-}
-
-/* 1. Set the table to allow rounded corners */
-table.dataTable {
-    border-collapse: separate !important;
-    border-spacing: 0;
-    border: 2px solid silver; /* Adjust 'silver' or pixel width as needed */
-    border-radius: 13px;
-    
-    /* 2. Clip header/cell backgrounds so they don't overflow the rounded border */
-    overflow: hidden; 
-}
-
-/* 2. Apply radius to the top-left and top-right of the header row */
-table.dataTable thead tr:first-child th:first-child {
-    border-top-left-radius: 13px;
-}
-
-table.dataTable thead tr:first-child th:last-child {
-    border-top-right-radius: 13px;
-}
 
 .dataTable td{
   padding-bottom:13px;
@@ -1387,6 +1364,7 @@ h2 span a{
 
 .torrentSource{
   position:relative;
+  width:calc(100% - 114px);
   top:-15px;
 }
 
@@ -1422,19 +1400,6 @@ h3{
 .torrentsTable th{
   font-variant:small-caps;
 }
-
-/* Remove sorting icons from all headers */
-.top10 table.dataTable thead th:before,
-.top10 table.dataTable thead th:after {
-    display: none !important;
-}
-
-/* Adjust padding to reclaim the space reserved for icons */
-.top10 table.dataTable thead th {
-    padding-right: 10px !important;
-}
-
-
 
 
 #hero{
@@ -1625,37 +1590,10 @@ header{
   background:linear-gradient(180deg, lightseagreen, #03fc9c, lightgoldenrodyellow) !important;
 }
 
-.dataTable thead th{
-                                                                                   
-  border-bottom:3px solid whitesmoke;
-  box-shadow:2px 2px 2px gold;
-  /* 1. Define your gradient */
-  background: linear-gradient(180deg, seagreen, goldenrod, whitesmoke);
-  
-  color:lightgoldenrodyellow;
-  text-shadow:2px 2px black;
-  font-size:27px;
-  padding-top:13px;
-  position:relative;
-  z-index:5;
-  padding-bottom:13px;
-  font-family:"Rationale", system-ui !important;
-
-}
-
 .silver{
   color:silver !important; /* EXTREMELY IMPORTANT */
 }
 
-table.dataTable tr.dtrg-group th{
-  background:linear-gradient(90deg, palegoldenrod, #03fc9c);
-  box-shadow:2px 2px 4px silver;
-  padding-top:6px;
-  padding-left:5px;
-  padding-bottom:6px;
-
-
-}
 
 
 .tableHeading, .tableHeading a{

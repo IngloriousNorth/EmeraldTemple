@@ -13,8 +13,10 @@
     "d3": "^7.9.0",
     "datatables.net": "^3.1.4",
     "datatables.net-jqui": "^3.1.4",
+    "datatables.net-responsive-dt": "^4.1.1",
     "datatables.net-responsive-jqui": "^4.1.1",
     "datatables.net-rowgroup-jqui": "^2.1.1",
+    "datatables.net-scroller-dt": "^3.1.1",
     "datatables.net-scroller-jqui": "^3.1.1",
     "drag-drop": "^7.2.0",
     "esbuild": "^0.28.2",
@@ -39,5 +41,8 @@
     "plugin": [
       "esmify"
     ]
+  },
+  "dependencies": {
+    "datatables.net-rowgroup-bs5": "^2.1.1"
   }
 }

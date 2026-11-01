@@ -17,15 +17,27 @@ module.exports = {
             $target.removeAttr('style').removeClass('dtr-inline collapsed');
         }
 
+        // Re-inject the skeleton structure matching the 6 defined columns
+        $target.append('<thead><tr><th>Group</th><th>APA Citation</th><th>Revs</th><th>Date</th><th>Time</th><th class="none"></th></tr></thead><tbody></tbody>');
+
         var dataTable = $target.DataTable({
-            scroller: true,
+            scroller: {
+                loadingIndicator: true
+            },
             scrollY: "500px",
-            paging : true,
-            pageLength : 5,
+            scrollCollapse: true,
+            deferRender: true,
+            paging: true,
+            searching: false,
+            info: true,
+            processing: true,
+            bSort: true,
+            order: [[ 3, "desc" ]],
+            dom: 'rt<"bottom"ip><"clear">',
             responsive: {
                 details: {
-                    type: 'column',
-                    target: 'tr',
+                    display: $.fn.dataTable.Responsive.display.childRowImmediate,
+                    type: 'none',
                     renderer: function (api, rowIdx, columns) {
                         var data = api.row(rowIdx).data();
                         var tortables = data ? data[5] : "";
@@ -34,25 +46,25 @@ module.exports = {
                 }
             },
             columns: [
-                { visible: false, searchable: false }, // Index 0: Hidden rowGroup source key (renders via startRender)
-                { width: "50%" },                      // Index 1: APA Citation (First visible column)
-                { width: "16.66%" },                   // Index 2: Date
-                { width: "16.66%" },                   // Index 3: Revs
-                { width: "16.66%" },                   // Index 4: Time (Timesince)
-                { visible: false, searchable: false }  // Index 5: TorrentsTable payload rendered in responsive child row
+                { visible: false, searchable: false }, // Index 0: Hidden rowGroup source key
+                { width: "50%" },                      // Index 1: APA Citation
+                { width: "16.66%" },                   // Index 2: Revs
+                { width: "16.66%" },                   // Index 3: Date
+                { width: "16.66%" },                   // Index 4: Time
+                { width: "100%", responsivePriority: 1 } // Index 5: TorrentsTable payload
             ],
             columnDefs: [
                 { targets: [0], visible: false }, 
                 { targets: [1], className: "text-left" }, 
                 { targets: [2, 3, 4], className: "dt-left" },
-                { targets: [5], visible: false, searchable: false }
+                { targets: 5, responsivePriority: 1 }
             ],
-            order: [[ 2, "desc" ]], // Order by Date (Index 2) by default
             rowGroup: {
                 dataSrc: 0,
+                ordering: true,
+                orderable: true,
                 startRender: function (rows, group) {
                     var htmlPayload = rows.data()[0][0];
-                    // colspan="4" covers the 4 visible data columns (APA Citation, Date, Revs, Time)
                     return $('<tr class="dtrg-group">' +
                                 '<td colspan="4">' + htmlPayload + '</td>' +
                              '</tr>');
@@ -62,7 +74,7 @@ module.exports = {
                 $.getJSON("Base/foobar.json", function(json) {
                     processTableData(json, callback);
                 }).fail(function(err) {
-                    console.error("[TORRENTS ERROR] Failed to load dummy.json:", err);
+                    console.error("[TORRENTS ERROR] Failed to load foobar.json:", err);
                     callback({ draw: 1, recordsTotal: 0, recordsFiltered: 0, data: [] });
                 });
             },
@@ -79,15 +91,7 @@ module.exports = {
                     const infoHash = $(this).data("infohash");
                     console.info("[PEX] Local rev increment recorded for infoHash:", infoHash);
                 });
-
-                var api = this.api();
-                if (settings.iDraw > 1) {
-                    var tableWrapper = $(api.table().container());
-                    if (tableWrapper[0]) {
-                        tableWrapper[0].scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
-                }            
-            },
+            }
         });
 
         // Citation copy handler
@@ -131,7 +135,6 @@ module.exports = {
 function processTableData(json, callback) {
     var records = json && json.records ? json.records : (Array.isArray(json) ? json : []);
     
-    // Ensure the namespace container exists
     if (!MVC.Ramosa) MVC.Ramosa = {};
     if (!MVC.Ramosa.Torrents) MVC.Ramosa.Torrents = {};
     MVC.Ramosa.Torrents.dtRecs = [];
@@ -235,7 +238,7 @@ function assertFirstEditionRow(record, edition_torrent, editionsAdded, citationH
     "</button>";
 
   MVC.Ramosa.Torrents.dtRecs.push([
-    // Index 0: Grouping HTML Payload (Source name, date, author, classes list ul)
+    // Index 0: Grouping HTML Payload
     "<img class='tableImg' id='source_" + sourceUuid + "' src='" + finalCoverUrl + "'>" +
     "<span class='sourceType'>" + decodeEntities(record._fields[0].properties.type) + "</span>" +
     "<div class='torrentSource'>" +
@@ -247,24 +250,22 @@ function assertFirstEditionRow(record, edition_torrent, editionsAdded, citationH
       "<ul class='torrentClasses' style='list-style:none; padding:0; margin:0; display:inline-flex; gap:4px;'>" + classesField + "</ul>" +
     "</div>",
 
-    // Index 1: APA Citation (First visible column)
+    // Index 1: APA Citation
     "<div class='apa-container' style='display:inline-flex; align-items:baseline; max-width:100%;'>" +
       "<span class='apa-text bold' id='edition_" + editionUuid + "_field'>" + citationHtml + "</span>" +
       copyBtnHtml +
     "</div>",
 
-    // Index 2: Date
-    "<span id='edition_date'>" + 
-    (edition_torrent.edition.properties.date && edition_torrent.edition.properties.date !== "undefined" && edition_torrent.edition.properties.date !== record._fields[0].properties.date ? record._fields[0].properties.date + "/" + edition_torrent.edition.properties.date : record._fields[0].properties.date) +
-    "</span>",
-
-    // Index 3: Revs
+    // Index 2: Revs
     edition_torrent.edition.properties.snatches,
 
-    // Index 4: Time (Timesince)
+    // Index 3: Date
+    edition_torrent.edition.properties.date || record._fields[0].properties.date,
+
+    // Index 4: Time
     typeof timeSince === 'function' ? timeSince(edition_torrent.edition.properties.created_at) + " ago" : "",
 
-    // Index 5: TorrentsTable (Loaded in Responsive child row)
+    // Index 5: Torrents Table payload
     tortables
   ]);
 }
@@ -304,16 +305,6 @@ function assertAPACitation(record, edition_torrent) {
         remainderPart += decodeEntities(edition_torrent.edition.properties.title);
         if (!edition_torrent.edition.properties.title.endsWith(".")) remainderPart += (record._fields[0].properties.type !== "Journal Article" ? ". " : "");
         else remainderPart += " ";
-    }
-
-    if (edition_torrent.edition.properties.no) {
-        remainderPart += "(" + decodeEntities(edition_torrent.edition.properties.no) + ")";
-        if (edition_torrent.edition.properties.pages) remainderPart += ": ";
-    }
-    if (edition_torrent.edition.properties.pages) {
-        remainderPart += edition_torrent.edition.properties.no ?
-            decodeEntities(edition_torrent.edition.properties.pages) + "." :
-            ", " + edition_torrent.edition.properties.pages + ".";
     }
 
     var citationHtml = "<span class='apa-former'>" + formerPart + "</span>";

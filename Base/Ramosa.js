@@ -70,4 +70,4 @@ const RAy = {
     }
 };
 
-export default RAY;
+export default { RAy };
