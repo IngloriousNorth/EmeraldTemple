@@ -787,7 +787,7 @@ a{
 }
 
 .webtorrent-download-btn{
-  border:1px solid dimgray;
+  border:2px dotted WHITESMOKE;
   box-shadow:2px 3px gold;
   border-radius:4px;
   background:linear-gradient(#007BFF, silver);
