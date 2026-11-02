@@ -238,7 +238,7 @@ module.exports = {
                   <div class="d-flex align-items-center gap-3 w-100">
                     <!-- Left Column: Fixed 222px width container for image -->
                     <div class="flex-shrink-0 d-flex align-items-center justify-content-start" style="width: 222px;">
-                      <img src="${src.cover}" alt="${src.name}" style="max-height: 85px; max-width: 65px; object-fit: cover;" class="rounded shadow-sm border border-white" />
+                      <img src="${src.cover}" alt="${src.name}" style="max-height: auto; max-width: 222px; object-fit: cover;" class="rounded shadow-sm border border-white" />
                     </div>
                     <!-- Right Column: Two vertically stacked rows (title_heading on top, categories underneath) -->
                     <div class="d-flex flex-column justify-content-center flex-grow-1 py-1 gap-1">

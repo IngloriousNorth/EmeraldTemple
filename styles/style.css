@@ -123,11 +123,21 @@ td.dtr-control::before{
   background-color:lightgoldenrodyellow;
 }
 
-.group-header td{
-  background: #ABABAB !important;
-  border-top:1px solid black;
+.dataTable thead th:not(.torrentsSubTable thead th){
+  font-family:"Rationale", serif;
+  font-size:27px;
+  color:WHITESMOKE !important;
 }
 
+.group-header td{
+  border-top:1px solid gold;
+  background:linear-gradient(darkviolet, #03fc9c, whitesmoke);
+}
+
+
+.child{
+  border-bottom:3px solid yellow;
+}
 
 .title_heading{
   font-family:"Rationale", sans-serif;
@@ -145,6 +155,8 @@ td.dtr-control::before{
 .group-header img{
   width:222px !important;
   height:auto !important;
+  float:left;
+  margin-right:16px;
 }
 
 .dataTable th:last-child, .dataTable td:last-child{
@@ -701,6 +713,7 @@ h2{
 
 .publisher_name{
   color:mediumvioletred !important;
+  font-family: "Share Tech Mono", system-ui !important;
 }
 
 .class_name{
@@ -714,7 +727,7 @@ h2{
 }
 
 .apa-citation-column{
-  font-family: "Times New Roman", serif;
+  font-family: "Rationale", sans-serif;
   text-align:justify;
 }
 
@@ -729,7 +742,7 @@ h2{
 
 .dataTable thead th{
   padding:32px;
-  background:goldenrod;
+  background:linear-gradient(darkgoldenrod, goldenrod, palegoldenrod);
 }
 
 .torrentsSubTable thead th{
@@ -759,6 +772,10 @@ h2{
 
 .group-header:hover {
   background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(52, 211, 153, 0.22) 100%) !important;
+}
+
+.dataTable td:not(.group-header td){
+  background:lightcyan !important;
 }
 
 /* Category Badges (.class_name) styled like Emerald Temple navigation pills */
