@@ -61,7 +61,7 @@ module.exports = {
             // (WebTorrent will use the magnet for DHT/tracker-less PEX, and use urlList for the HTTP webseed)
             const fallbackMagnet = `magnet:?xt=urn:btih:11337774a35a41544a0b25e79148d5eb28c89bf&dn=${encodeURIComponent(webseedUrl.split('/').pop())}`;
 
-            client.seed(fallbackMagnet, options, (torrent) => {
+            client.add(fallbackMagnet, options, (torrent) => {
                 console.info(`[MVC.Control.Webtorrent] Webseed torrent active! InfoHash: ${torrent.infoHash}`);
 
                 // Automatically trigger .torrent metafile blob download upon metadata parsing
