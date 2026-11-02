@@ -86,8 +86,9 @@ q:before, q:after {
 footer{
   position:fixed;
   z-index:999;
+  border-top:7px solid lightgoldenrodyellow;
   background:linear-gradient(90deg, lightgoldenrodyellow, palegoldenrod, goldenrod, darkgoldenrod) !important;
-  box-shadow:7px -7px 27px whitesmoke;
+  box-shadow:7px -7px 17px whitesmoke;
 }
 
 div.dataTables_wrapper div.dataTables_scrollBody,
