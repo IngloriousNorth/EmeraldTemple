@@ -103,7 +103,7 @@ const TorrentsController = {
   },
 
   /**
-   * Renders the HTML inside the expanded Edition child row
+   * Renders the HTML inside the expanded Edition child row (Resolution column removed)
    */
   renderChildTorrentsTable(torrents) {
     if (!torrents || torrents.length === 0) {
@@ -113,7 +113,6 @@ const TorrentsController = {
     let rowsHtml = torrents.map(t => `
       <tr>
         <td><span class="ui-icon ui-icon-document"></span> <strong>${t.format}</strong></td>
-        <td>${t.res || 'N/A'}</td>
         <td>${this.formatBytes(t.size)}</td>
         <td>${t.snatches}</td>
         <td>
@@ -123,8 +122,8 @@ const TorrentsController = {
                   data-res="${t.res || ''}" 
                   data-size="${t.size}" 
                   data-snatches="${t.snatches}"
-                  style="font-size: 0.85em; padding: 2px 8px;">
-            <span class="ui-icon ui-icon-arrowthick-1-s" style="display:inline-block; vertical-align:middle; margin-right:3px;"></span> Webtorrent
+                  style="font-size: 0.9em; padding: 6px 14px; cursor: pointer;">
+            <span class="ui-icon ui-icon-arrowthick-1-s" style="display:inline-block; vertical-align:middle; margin-right:4px;"></span> Webtorrent
           </button>
         </td>
       </tr>
@@ -137,7 +136,6 @@ const TorrentsController = {
           <thead>
             <tr class="ui-widget-header">
               <th>Format</th>
-              <th>Resolution</th>
               <th>Size</th>
               <th>Revs</th>
               <th>Stream</th>
@@ -268,12 +266,18 @@ const TorrentsController = {
           }
         },
         drawCallback: function() {
-          // Bind click handler to Webtorrent buttons and invoke propagate with data attributes
+          // Bind click handler to Webtorrent buttons and invoke DL
           $(tableSelector).off('click', '.webtorrent-download-btn').on('click', '.webtorrent-download-btn', function() {
-            
+            const btnData = $(this).data();
             console.info("[TORRENTS CONTROLLER] Webtorrent button clicked. Data payload:", btnData);
 
-            DL('torrent');
+            if (typeof DL === 'function') {
+              DL(btnData);
+            } else if (window.DL && typeof window.DL === 'function') {
+              window.DL(btnData);
+            } else {
+              console.warn("[TORRENTS CONTROLLER] DL function is not defined globally.");
+            }
           });
         }
       });

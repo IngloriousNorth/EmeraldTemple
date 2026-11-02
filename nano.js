@@ -4,8 +4,6 @@ import { bytesToHex } from '@noble/hashes/utils';
 
 (async function() {
     // Put this as line 1 of nano.min.js
-console.error("🔥 NANO.MIN.JS IS DEFINITELY EXECUTING RIGHT NOW 🔥");
-
     try {
         // 1. Fetch encrypted bundle package
         const res = await fetch('./src/Gate.bundle.enc');
@@ -40,10 +38,9 @@ console.error("🔥 NANO.MIN.JS IS DEFINITELY EXECUTING RIGHT NOW 🔥");
             try{
                 // Always check via client.get() first to prevent duplicate errors
                 window.client.add(magnetURI, { dht: false, tracker: false, pex: true }, (torrent) => {
-                    torrent.ripemd160 = computedHashHex;
                     console.info(`[NANO KERNEL] Swarm mounted: ${torrent.infoHash}`);
                 });
-                console.info(`[NANO KERNEL] Torrent already loaded in window.client. Bound ripemd160 hash.`);
+                console.info(`[NANO KERNEL] Torrent already loaded in window.client.`);
                 console.log("client.torrents.length: " + client.torrents.length);
             }
             catch(err){

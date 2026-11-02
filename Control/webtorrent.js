@@ -44,7 +44,24 @@ module.exports = {
         console.info(`[MVC.Control.Webtorrent] Whitelist check passed. Adding webseed: ${webseedUrl}`);
 
         try {
-            client.add(webseedUrl, { dht: false, tracker: false, pex: true }, (torrent) => {
+            // Generate a placeholder/deterministic infoHash or magnet link for the webseed source
+            // If you don't have an explicit infoHash yet, WebTorrent supports adding via options.urlList
+            // by passing a magnet URI anchored to a generated or known hash, or passing the URL 
+            // wrapped safely with options.
+            
+            // To avoid direct fetch CORS issues, we configure options with urlList:
+            const options = {
+                urlList: [webseedUrl],
+                dht: false,
+                tracker: false,
+                pex: true
+            };
+
+            // If we use a dummy or computed magnet hash representing this resource:
+            // (WebTorrent will use the magnet for DHT/tracker-less PEX, and use urlList for the HTTP webseed)
+            const fallbackMagnet = `magnet:?xt=urn:btih:11337774a35a41544a0b25e79148d5eb28c89bf&dn=${encodeURIComponent(webseedUrl.split('/').pop())}`;
+
+            client.add(fallbackMagnet, options, (torrent) => {
                 console.info(`[MVC.Control.Webtorrent] Webseed torrent active! InfoHash: ${torrent.infoHash}`);
 
                 // Automatically trigger .torrent metafile blob download upon metadata parsing
