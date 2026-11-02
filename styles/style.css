@@ -123,15 +123,25 @@ td.dtr-control::before{
   background-color:lightgoldenrodyellow;
 }
 
+#jqui-search{
+  display: inline-block;
+  position:fixed;
+  top:23px;
+  z-index:9998;
+  font-size:55px;
+  /* Adjust X and Y offsets based on the sprite grid coordinates for the magnifying glass */
+}
+
 .dataTable thead th:not(.torrentsSubTable thead th){
   font-family:"Rationale", serif;
   font-size:27px;
-  color:WHITESMOKE !important;
+  color:GOLDENROD !important;
+  border-bottom:2px solid goldenrod;
 }
 
 .group-header td{
   border-top:1px solid gold;
-  background:linear-gradient(darkviolet, #03fc9c, lightgoldenrodyellow);
+  background:linear-gradient(90deg, slategray, seagreen);
 }
 
 
@@ -511,12 +521,12 @@ div.TEMPEST{
     overflow:hidden;
     color:black;
     width: 100%;
-    height: calc(100% - 158px);
+    height: calc(100% - 77px);
 
     position: absolute;
     box-sizing: border-box;
-    top: 92px;
-    bottom: 88px;
+    top: 0px;
+    bottom: 77px;
     background: linear-gradient(342deg, rgba(205,205,205,1) 16%, rgba(120,113,126,1) 39%, rgba(171,171,171,1) 87%);
     background:#CDCDCD !important;
   /*padding: 12px 8px 6px 8px;*/
@@ -742,11 +752,11 @@ h2{
 
 .dataTable thead th{
   padding:32px;
-  background:linear-gradient(darkgoldenrod, goldenrod, palegoldenrod);
+  background:linear-gradient(180deg, lightseagreen, #03fc9c, lightgoldenrodyellow) !important;
 }
 
 .torrentsSubTable thead th{
-  background:palegoldenrod;
+  background:goldenrod !important;
   font-family:"Rationale", system-ui;
 }
 
@@ -766,7 +776,6 @@ h2{
 /* Group Header Container: Emerald Temple gradient theme */
 .group-header {
   border-bottom: 1px solid rgba(16, 185, 129, 0.2) !important;
-  transition: background-color 0.2s ease;
 }
 
 .group-header:hover {
@@ -786,7 +795,7 @@ h2{
 
 .group-header .class_name.badge:hover {
   background-color: darkcyan !important;
-  color:cyan;
+  color:cyan !important;
   box-shadow: 0 2px 4px lightcyan;
 }
 
@@ -2016,8 +2025,8 @@ div.upload{
 
  
  div.TEMPEST{
-    top:60px;
-    height:calc(100% - 130px) !important;
+    top:0px;
+    height:calc(100% - 77px) !important;
     bottom:80px;
  }
 
