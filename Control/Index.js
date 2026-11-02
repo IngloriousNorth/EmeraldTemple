@@ -1,4 +1,3 @@
-import TEMPEST from '../TEMPEST/TEMPEST.js';
 const async = require ('async');
 
 module.exports = {
@@ -84,14 +83,12 @@ module.exports = {
                     TEMPEST.initialize(tempestConfig, ()=>{ // 4. Fade out crossRoad / splash and initialize TEMPEST Router
                         $(".crossRoad").fadeOut(4444)
                         MVC.Hook.webtorrent.initialize();
-                    }
-                    )
+                    })
                 });
                 
                 console.info("[TEMPEST KERNEL] Router initialized successfully.");
 
         }
-        //there is no try
 
         boot();    
     }

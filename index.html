@@ -13,9 +13,16 @@
     <link rel="stylesheet" type="text/css" href="styles/scroller.jqueryui.min.css"/>
     <script src="TEMPEST/TEMPEST.js" type="module"></script>
 
+    <script type="module">
+        import TEMPEST from './TEMPEST/TEMPEST.js';
+        window.TEMPEST = TEMPEST;
+    </script>
+
     <script src = "lib/jQuery-4.0.0.min.js"></script>
 
-    <script src="lib/util.js"></script>
+    <script src="lib/util.js"></script>    
+    <!-- MVC Architecture bundle !-->
+    <script src="src/bundle.min.js" type="module"></script>
 
     <!-- attaches client to window !-->
     <script type='module'>
@@ -64,21 +71,21 @@
         });
     </script>
 
-    <!-- MVC Architecture bundle !-->
-    <script src="src/bundle.min.js" type="module"></script>
-
 </head>
 <body>
-    <div class="TEMPEST upload"></div>
+    <a href='#' id="jqui-search">
+        &#x13274;
+    </a>    <div class="TEMPEST upload"></div>
     <div class="TEMPEST webtorrent"></div>
     <div class="TEMPEST top10"></div>
     <div class="TEMPEST node"></div>
     <div class="TEMPEST Category"></div>
     <div class="TEMPEST torrents"></div>
     <div class="TEMPEST privacy"></div>
+    <a class="hiero" href="#" title="Hiero's Ziggüratt">&#x131F3;</a>
     <footer></footer>
     
-    <div class="crossRoad" tabindex="0" title="Focus and Press Enter to Unlock.">
+    <div class="crossRoad" tabindex="0" title="Enter-Key to Enter.">
         <!-- Auth Gate Module -->
         <div class="GATE" tabindex="0" style="cursor: pointer;">
             <span id="unlock">&#x131B8;</span>

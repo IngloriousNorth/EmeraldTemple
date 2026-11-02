@@ -1,5 +1,3 @@
-const TEMPEST = window.TEMPEST;
-
 module.exports = {
     header : function(){
         switch(TEMPEST.paramREC().ward){

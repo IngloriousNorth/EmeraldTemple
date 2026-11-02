@@ -126,16 +126,22 @@ td.dtr-control::before{
 #jqui-search{
   display: inline-block;
   position:fixed;
-  top:23px;
+  color:gold;
+  text-shadow:2px 1px lightseagreen;
+  top:33px;
+  left:8px;
   z-index:9998;
   font-size:55px;
   /* Adjust X and Y offsets based on the sprite grid coordinates for the magnifying glass */
 }
 
+
+
 .dataTable thead th:not(.torrentsSubTable thead th){
   font-family:"Rationale", serif;
   font-size:27px;
-  color:GOLDENROD !important;
+  color:paleGOLDENROD !important;
+  text-shadow:1px 1px mediumvioletred;
   border-bottom:2px solid goldenrod;
 }
 
@@ -202,16 +208,23 @@ td.dtr-control {
   border:3px dotted goldenrod !important;
 }
 
+.GATE{
+}
+
 .GATE #inscription{
   font-family:"Share Tech Mono", sans-serif;
-  padding:0px 5px 0px 5px;
-  padding-top:110px;
-  height:333px;
+  padding:7px;
   font-size:22px;
   line-height:33px;
   color:BLACK;
+  position:absolute;
+  right:0;
+  top:0;
+  width:333px;
   text-shadow:1px 1px gold;
-  text-align:center;
+  text-align:justify;
+  border-collapse:collapse;
+  border:3px solid gold;
 }
 
 #hero{
@@ -220,12 +233,13 @@ td.dtr-control {
 
 .hiero{
   font-size:40px;
-  color:gold;
-  text-shadow:1px 1px #0f3c9c;
+  color:black;
+  text-shadow:1px 3px whitesmoke !important;
   position:absolute;
-  top:0px;
   font-family:"Noto Sans Egyptian Hieroglyphs", system-ui;
   right:5px;
+  bottom:47px;
+  z-index:9999;
 
 }
 
@@ -264,12 +278,14 @@ td.dtr-control {
   font-weight:bold;
   font-size:120px;
   top:13px;
-  text-align:center;
   right:auto;
+  left:155px;
+  width:120px;
+  position:absolute;
 }
 
 .crossRoad{
-  position:fixed;
+  position:absolute;
   width:100%;
   overflow-y:auto;
   z-index:9991;
@@ -407,7 +423,7 @@ div.webtorrent,
 }
 
 #hero, #hero option{
-  font-family:"Share Tech Mono", system-ui;
+  font-family:"Rationale", system-ui;
 }
 
 
@@ -432,7 +448,7 @@ body.is-seed .show-leech { display: none; }  /* Hides "Downloading" and "from" *
 }
 
 #numPeers, #uploadSpeed, #downloadSpeed{
-  color:palevioletred !important;
+  color:darkgoldenrod !important;
 }
 
 footer a:link, #hero a:visited {
@@ -516,6 +532,10 @@ label{
 }
 
 
+#torrents-wrapper, .dt-container{
+  border-top:16px solid GOLDENROD;
+  padding-top:0 !important;
+}
 
 div.TEMPEST{
     overflow:hidden;
@@ -732,6 +752,27 @@ h2{
   color:darkcyan !important;
 }
 
+a{
+  text-decoration:none !important;
+}
+
+.class_name::before {
+  content: "[";
+  color: lightseagreen; /* Muted color, or any color you want */
+  font-weight: normal;
+  text-decoration: none;
+  margin-right: 2px;
+  padding:16px 6px 6px 0px !important;
+}
+
+.class_name::after {
+  content: "]";
+  color: lightseagreen; /* Muted color, or any color you want */
+  font-weight: normal;
+  text-decoration: none;
+  margin-left: 2px;
+}
+
 .title_heading{
   padding:8px;
 }
@@ -785,18 +826,18 @@ h2{
   background:lightcyan !important;
 }
 
+.class_name{
+  color:Cyan !important;
+}
+
 /* Category Badges (.class_name) styled like Emerald Temple navigation pills */
 .group-header .class_name.badge {
-  background-color: cyan !important;
-  border: 1px dotted lightcyan;
   font-weight: 500;
   transition: all 0.15s ease;
 }
 
 .group-header .class_name.badge:hover {
-  background-color: darkcyan !important;
-  color:cyan !important;
-  box-shadow: 0 2px 4px lightcyan;
+  color:lightcyan !important;
 }
 
 /* Publisher Name Link inside APA Citation (.publisher_name) */
@@ -1499,9 +1540,11 @@ h3{
 }
 
 
+
 #hero{
-  background:white !important;
-  color:black !important;
+  background-color:#03fc9c !important;
+  color:goldenrod !important;
+  height:47px;
 }
 
 
@@ -1516,8 +1559,7 @@ footer{
 }
 
 #hero{
-  height:30px;
-  border-radius:10px;
+  height:40px;
   position:fixed;
   bottom:0px;
 }
@@ -1856,8 +1898,15 @@ h2 span a{
 
 
 #status{
-  font-family:"Share Tech Mono", sans-serif;
-  color:darkgoldenrod !important;
+  font-family:"Rationale", sans-serif;
+  font-size:16px;
+  color:#000000 !important;
+}
+
+.spiral{
+  position:fixed;
+  bottom:3px;
+  right:17px;
 }
 
 #unlock:hover{

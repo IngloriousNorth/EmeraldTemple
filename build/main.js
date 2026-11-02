@@ -18,8 +18,6 @@ window.DataTable = DataTable;
 
 import * as d3 from 'd3';
 
-
-
 import pdfjs from 'pdfjs';
 
 

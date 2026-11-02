@@ -114,7 +114,7 @@ function renderChildTorrentsTable(torrents) {
               data-format="${t.format}" 
               data-size="${t.size}" 
               data-snatches="${t.snatches}">
-          <span class="ui-icon ui-icon-arrowthick-1-s"></span> webtorrent
+          <span class="ui-icon ui-icon-arrowthick-1-s"></span>WebTorrent
         </button>
       </td>
     </tr>

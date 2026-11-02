@@ -1,4 +1,3 @@
-const TEMPEST = window.TEMPEST;
 const MVC = window.MVC;
 module.exports = {
     initialize : function(){

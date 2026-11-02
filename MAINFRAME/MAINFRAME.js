@@ -1,5 +1,3 @@
-import TEMPEST from "../TEMPEST/TEMPEST.js"
-
 const MVC = {
         Ramosa: {
             Torrents: require("../Base/Torrents"),
