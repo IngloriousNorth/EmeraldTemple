@@ -718,6 +718,10 @@ h2{
   padding-right:6px !important;
 }
 
+.table-secondary th{
+  background:goldenrod;
+  font-family:"Rationale", system-ui;
+}
 
 .panel{
   position: absolute;
