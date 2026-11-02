@@ -709,6 +709,11 @@ h2{
   padding:8px;
 }
 
+.apa-citation-column{
+  font-family: "Times New Roman", serif;
+  text-align:justify;
+}
+
 .torrentClasses a{
   padding-right:6px !important;
 }
@@ -1613,14 +1618,6 @@ header{
 .tableHeading, .tableHeading a{
   font-family: "Rationale", sans-serif !important;
   font-size:19px !important;
-}
-
-
-.dataTable td{
-  font-family:"Share Tech Mono", system-ui !important;
-  font-size:16px !important;
-  text-align:justify;
-
 }
 
 div.TEMPEST {
