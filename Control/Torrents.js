@@ -3,6 +3,19 @@
  */
 
 /**
+ * Formats raw year/date strings or ints, converting negative years to B.C.
+ */
+function adjDate(dateVal) {
+  if (!dateVal && dateVal !== 0) return '-';
+  const strVal = String(dateVal).trim();
+  if (strVal.startsWith('-')) {
+    const positiveYear = strVal.substring(1);
+    return `${positiveYear} B.C.`;
+  }
+  return strVal;
+}
+
+/**
  * Normalizes the response schema into flat edition rows grouped by clean source name
  */
 function parseData(json) {
@@ -32,7 +45,6 @@ function parseData(json) {
         const title = edProps.title || cleanSourceName;
         const publisherName = pubProps.name || '';
         
-        // Construct APA Citation dynamically incorporating clickable publisher anchor with .publisher_name
         let apaCitation = edProps.apaCitation || '';
         if (publisherName && publisherName !== 'Unknown Publisher' && !apaCitation.includes('publisher_name')) {
           const pubHtml = `<a href="#" class="publisher_name text-decoration-none">${publisherName}</a>.`;
@@ -128,9 +140,6 @@ function renderChildTorrentsTable(torrents) {
 }
 
 module.exports = {
-  /**
-   * DataTable constructor matching table(table, cb)
-   */
   table: function(table, cb) {
     const tableSelector = (typeof table === 'string' && !table.startsWith('#') && !table.startsWith('.')) 
       ? `#${table}` 
@@ -146,8 +155,8 @@ module.exports = {
     $(tableSelector).html(`
       <thead>
         <tr class="table-secondary">
+          <th class="d-none"></th>
           <th></th>
-          <th>Source UUID</th>
           <th>APA Citation</th>
           <th>Edition Date</th>
           <th>Revs</th>
@@ -177,7 +186,8 @@ module.exports = {
         paging: true,
         columns: [
           {
-            className: 'dt-control',
+            title: '',
+            className: 'dt-control d-none',
             orderable: false,
             data: null,
             defaultContent: '<span class="ui-icon ui-icon-circle-plus expand-btn" style="cursor:pointer; display:inline-block;"></span>',
@@ -192,7 +202,7 @@ module.exports = {
             title: 'APA Citation',
             data: 'edition.apaCitation',
             className: 'apa-citation-column',
-            width: '55%',
+            width: '37.3%',
             render: (data) => `<strong>${data}</strong>`
           },
           { 
@@ -220,12 +230,10 @@ module.exports = {
             const firstRow = rows.data()[0];
             const src = firstRow.source;
             
-            // Map each author into a clickable anchor with .author_name and join with commas
             const authorsList = src.authors
               .map(a => `<a href="#" class="author_name text-decoration-none">${a}</a>`)
               .join(', ') || '<a href="#" class="author_name text-decoration-none">Unknown Author</a>';
 
-            // Map each category into a clickable anchor badge with .class_name and join with space
             const categories = src.categories
               .map(c => `<a href="#" class="class_name badge bg-secondary text-decoration-none px-2 py-1" style="font-size: 0.75em; font-weight: 500; letter-spacing: 0.3px;">${c}</a>`)
               .join(' ');
@@ -233,14 +241,12 @@ module.exports = {
             const formattedDate = adjDate(src.date);
 
             return $(`
-              <tr class="group-header table-secondary border-bottom">
-                <td colspan="5" class="py-2 px-3">
+              <tr class="group-header border-bottom" style="position: relative; overflow: hidden;">
+                <td colspan="5" class="py-2 px-3" style="position: relative; z-index: 2;">
                   <div class="d-flex align-items-center gap-3 w-100">
-                    <!-- Left Column: Fixed 222px width container for image -->
                     <div class="flex-shrink-0 d-flex align-items-center justify-content-start" style="width: 222px;">
-                      <img src="${src.cover}" alt="${src.name}" style="max-height: auto; max-width: 222px; object-fit: cover;" class="rounded shadow-sm border border-white" />
+                      <img src="${src.cover}" alt="${src.name}" style="max-height: auto; width: 222px; object-fit: contain;" class="rounded shadow-sm border border-white bg-white" />
                     </div>
-                    <!-- Right Column: Two vertically stacked rows (title_heading on top, categories underneath) -->
                     <div class="d-flex flex-column justify-content-center flex-grow-1 py-1 gap-1">
                       <div class="title_heading fw-bold fs-6 text-truncate" style="line-height: 1.3;">
                         <a href="#" class="source_name text-dark text-decoration-none">${src.name}</a> 
@@ -273,7 +279,6 @@ module.exports = {
         }
       });
 
-      // Expand/Collapse Child Row handler for Torrent Details
       $(tableSelector).off('click', 'td.dt-control').on('click', 'td.dt-control', function () {
         const tr = $(this).closest('tr');
         const row = tableInstance.row(tr);

@@ -131,7 +131,7 @@ td.dtr-control::before{
 
 .group-header td{
   border-top:1px solid gold;
-  background:linear-gradient(darkviolet, #03fc9c, whitesmoke);
+  background:linear-gradient(darkviolet, #03fc9c, lightgoldenrodyellow);
 }
 
 
@@ -765,13 +765,11 @@ h2{
 
 /* Group Header Container: Emerald Temple gradient theme */
 .group-header {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(52, 211, 153, 0.15) 100%) !important;
   border-bottom: 1px solid rgba(16, 185, 129, 0.2) !important;
   transition: background-color 0.2s ease;
 }
 
 .group-header:hover {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(52, 211, 153, 0.22) 100%) !important;
 }
 
 .dataTable td:not(.group-header td){
