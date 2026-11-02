@@ -687,6 +687,10 @@ h2{
 
 }
 
+.title_heading{
+  color:#CDCDCD;
+}
+
 .source_name{
   color:whitesmoke !important;
 }
@@ -726,6 +730,10 @@ h2{
 .webtorrent-download-btn{
   border:1px solid gold;
   background:linear-gradient(#50C777, #03fc9c);
+}
+
+.dataTable thead th{
+  background:darkgoldenrod;
 }
 
 .panel{
