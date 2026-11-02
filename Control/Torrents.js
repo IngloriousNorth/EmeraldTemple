@@ -3,19 +3,6 @@
  */
 
 /**
- * Formats raw year/date strings or ints, converting negative years to B.C.
- */
-function adjDate(dateVal) {
-  if (!dateVal && dateVal !== 0) return '-';
-  const strVal = String(dateVal).trim();
-  if (strVal.startsWith('-')) {
-    const positiveYear = strVal.substring(1);
-    return `${positiveYear} B.C.`;
-  }
-  return strVal;
-}
-
-/**
  * Normalizes the response schema into flat edition rows grouped by clean source name
  */
 function parseData(json) {
@@ -251,7 +238,7 @@ module.exports = {
                   <div class="d-flex align-items-center gap-3 w-100">
                     <!-- Left Column: Fixed-size thumbnail with crisp shadow and border -->
                     <div class="flex-shrink-0" style="width: 52px; height: 75px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                      <img src="${src.cover}" alt="${src.name}" style="max-height: 75px; max-width: 52px; object-fit: cover;" class="rounded shadow-sm border border-white" />
+                      <img src="${src.cover}" alt="${src.name}" object-fit: cover;" class="rounded shadow-sm border border-white" />
                     </div>
                     <!-- Right Column: Vertically centered title heading & categories -->
                     <div class="d-flex flex-column justify-content-center flex-grow-1 py-1">

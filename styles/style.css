@@ -706,7 +706,7 @@ h2{
 .class_name{
   padding:7px;
   font-size:18px;
-  color:cyan !important;
+  color:darkcyan !important;
 }
 
 .title_heading{
@@ -722,19 +722,19 @@ h2{
   padding-right:6px !important;
 }
 
-.table-secondary th{
-  background:palegoldenrod !important;
-  font-family:"Rationale", system-ui;
-}
-
 .webtorrent-download-btn{
   border:1px solid gold;
   background:linear-gradient(#50C777, #03fc9c);
 }
 
 .dataTable thead th{
-  background:darkgoldenrod;
   padding:32px;
+  background:goldenrod;
+}
+
+.torrentsSubTable thead th{
+  background:palegoldenrod;
+  font-family:"Rationale", system-ui;
 }
 
 .panel{
@@ -763,7 +763,7 @@ h2{
 
 /* Category Badges (.class_name) styled like Emerald Temple navigation pills */
 .group-header .class_name.badge {
-  background-color: goldenrod !important;
+  background-color: cyan !important;
   border: 1px solid rgba(52, 211, 153, 0.4);
   font-weight: 500;
   transition: all 0.15s ease;
@@ -775,10 +775,6 @@ h2{
 }
 
 /* Publisher Name Link inside APA Citation (.publisher_name) */
-.apa-citation-column .publisher_name {
-  color: #0d9488 !important;
-  font-weight: 500;
-}
 
 .apa-citation-column .publisher_name:hover {
   color: #0f766e !important;
