@@ -143,8 +143,8 @@ td.dtr-control::before{
 }
 
 .dataTable img{
-  width:222px !important;
-  height:auto !important;
+  width:222px;
+  height:auto;
 }
 
 .dataTable th:last-child, .dataTable td:last-child{
@@ -734,6 +734,7 @@ h2{
 
 .dataTable thead th{
   background:darkgoldenrod;
+  padding:32px;
 }
 
 .panel{
@@ -743,6 +744,45 @@ h2{
   float: right;
   font-size: 16px;
   /*z-index: 1;*/
+}
+
+/* ==========================================================================
+   Emerald Temple Theme Integration for Torrents Module
+   ========================================================================== */
+
+/* Group Header Container: Emerald Temple gradient theme */
+.group-header {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(52, 211, 153, 0.15) 100%) !important;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.2) !important;
+  transition: background-color 0.2s ease;
+}
+
+.group-header:hover {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(52, 211, 153, 0.22) 100%) !important;
+}
+
+/* Category Badges (.class_name) styled like Emerald Temple navigation pills */
+.group-header .class_name.badge {
+  background-color: goldenrod !important;
+  border: 1px solid rgba(52, 211, 153, 0.4);
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.group-header .class_name.badge:hover {
+  background-color: gold !important;
+  box-shadow: 0 2px 4px rgba(6, 95, 70, 0.2);
+}
+
+/* Publisher Name Link inside APA Citation (.publisher_name) */
+.apa-citation-column .publisher_name {
+  color: #0d9488 !important;
+  font-weight: 500;
+}
+
+.apa-citation-column .publisher_name:hover {
+  color: #0f766e !important;
+  text-decoration: underline !important;
 }
 
 
