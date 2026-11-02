@@ -84,7 +84,7 @@ q:before, q:after {
 
 /*SHOE ON HEAD!*/
 footer{
-  border-top:1px solid silver !important;
+  border-top:2px solid gold !important;
   position:fixed;
   z-index:999;
   background:linear-gradient(90deg, lightgoldenrodyellow, palegoldenrod, goldenrod, darkgoldenrod) !important;
@@ -143,6 +143,7 @@ td.dtr-control::before{
   color:paleGOLDENROD !important;
   text-shadow:1px 1px mediumvioletred;
   border-bottom:2px solid goldenrod;
+  box-shadow:7px 7px 7px gold !IMPORTANT;
 }
 
 .group-header td{
@@ -533,7 +534,7 @@ label{
 
 
 #torrents-wrapper, .dt-container{
-  border-top:16px solid GOLDENROD;
+  border-top:17px solid GOLD;
   padding-top:0 !important;
 }
 
@@ -542,7 +543,8 @@ div.TEMPEST{
     color:black;
     width: 100%;
     height: calc(100% - 77px);
-
+    border-left:4px solid silver;
+    border-right:4px solid silver;
     position: absolute;
     box-sizing: border-box;
     top: 0px;
@@ -704,10 +706,6 @@ h2{
 }
 
 
-.child{
-  border-bottom:3px solid goldenrod;
-}
-
 .TEMPEST .about_us h2 span a{
   color:goldenrod;
 }
@@ -778,7 +776,7 @@ a{
 }
 
 .apa-citation-column{
-  font-family: "Rationale", sans-serif;
+  font-family: "Times New Roman", sans-serif;
   text-align:justify;
 }
 
@@ -788,7 +786,7 @@ a{
 
 .webtorrent-download-btn{
   border:2px dotted WHITESMOKE;
-  box-shadow:2px 3px gold;
+  box-shadow:2px 3px paleGOLDENROD;
   border-radius:4px;
   background:linear-gradient(#007BFF, silver);
 }
@@ -799,7 +797,8 @@ a{
 }
 
 .torrentsSubTable thead th{
-  background:goldenrod !important;
+  background:SILVER !Important;
+  color:WHITESMOKE !Important;
   font-family:"Rationale", system-ui;
 }
 
@@ -818,7 +817,7 @@ a{
 
 /* Group Header Container: Emerald Temple gradient theme */
 .group-header {
-  border-bottom: 1px solid rgba(16, 185, 129, 0.2) !important;
+  border-top: 4px solid palevioletred !important;
 }
 
 .group-header:hover {
@@ -1900,7 +1899,7 @@ h2 span a{
 #status{
   font-family:"Rationale", sans-serif;
   font-size:16px;
-  color:#000000 !important;
+  color:#000 !important;
 }
 
 .spiral{

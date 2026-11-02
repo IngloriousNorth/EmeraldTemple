@@ -2,18 +2,7 @@
  * Torrents.js Controller (Bootstrap 5 + jQuery UI Hybrid)
  */
 
-/**
- * Formats raw year/date strings or ints, converting negative years to B.C.
- */
-function adjDate(dateVal) {
-  if (!dateVal && dateVal !== 0) return '-';
-  const strVal = String(dateVal).trim();
-  if (strVal.startsWith('-')) {
-    const positiveYear = strVal.substring(1);
-    return `${positiveYear} B.C.`;
-  }
-  return strVal;
-}
+//do not put this here
 
 /**
  * Normalizes the response schema into flat edition rows grouped by clean source name
@@ -191,12 +180,12 @@ module.exports = {
             orderable: false,
             data: null,
             defaultContent: '<span class="ui-icon ui-icon-circle-plus expand-btn" style="cursor:pointer; display:inline-block;"></span>',
-            width: '30px'
+            width: '5%'
           },
           { 
             data: 'source.uuid',
             className: 'dt-src',
-            visible: false 
+            visible: false
           },
           { 
             title: 'APA Citation',
@@ -209,17 +198,20 @@ module.exports = {
             title: 'Edition Date',
             data: 'edition.date',
             className: 'text-center',
+            width:"16%",
             render: (data) => adjDate(data)
           },
           { 
             title: 'Revs',
             data: 'edition.snatches',
+            width:"16%",
             className: 'text-center'
           },
           { 
             title: 'Time Since',
             data: 'edition.created_at',
             className: 'text-center',
+            width: "16%",
             render: (data) => typeof timeSince === 'function' ? timeSince(data) : (data ? data : '-')
           }
         ],
