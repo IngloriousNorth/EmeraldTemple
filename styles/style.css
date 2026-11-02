@@ -84,11 +84,15 @@ q:before, q:after {
 
 /*SHOE ON HEAD!*/
 footer{
-  border-top:2px solid gold !important;
   position:fixed;
   z-index:999;
   background:linear-gradient(90deg, lightgoldenrodyellow, palegoldenrod, goldenrod, darkgoldenrod) !important;
-  box-shadow:4px -4px 4px whitesmoke;
+  box-shadow:7px -7px 27px whitesmoke;
+}
+
+div.dataTables_wrapper div.dataTables_scrollBody,
+.dt-scroll-body {
+  border-bottom: 7px dotted lightgoldenrodyellow !important;
 }
 
 @font-face {
@@ -129,7 +133,7 @@ td.dtr-control::before{
   color:gold;
   text-shadow:2px 1px lightseagreen;
   top:33px;
-  left:8px;
+  left:1.4%;
   z-index:9998;
   font-size:55px;
   /* Adjust X and Y offsets based on the sprite grid coordinates for the magnifying glass */
@@ -142,7 +146,7 @@ td.dtr-control::before{
   font-size:27px;
   color:paleGOLDENROD !important;
   text-shadow:1px 1px mediumvioletred;
-  border-bottom:2px solid goldenrod;
+  border-bottom:3px solid Darkviolet;
   box-shadow:7px 7px 7px gold !IMPORTANT;
 }
 
@@ -225,7 +229,7 @@ td.dtr-control {
   text-shadow:1px 1px gold;
   text-align:justify;
   border-collapse:collapse;
-  border:4px solid silver;
+  border:4px solid GOLDENROD !IMPORTANT;
 }
 
 #hero{
@@ -534,8 +538,9 @@ label{
 
 
 #torrents-wrapper, .dt-container{
-  border-top:17px solid GOLD;
+  border-top:17px solid GOLDENROD !Important;
   padding-top:0 !important;
+  padding-bottom:77px;
 }
 
 div.TEMPEST{
@@ -543,8 +548,8 @@ div.TEMPEST{
     color:black;
     width: 100%;
     height: calc(100% - 77px);
-    border-left:4px solid silver;
-    border-right:4px solid silver;
+    border-left:4px solid gold;
+    border-right:4px solid gold;
     position: absolute;
     box-sizing: border-box;
     top: 0px;
@@ -817,7 +822,7 @@ a{
 
 /* Group Header Container: Emerald Temple gradient theme */
 .group-header {
-  border-top: 4px solid palevioletred !important;
+  border-top: 4px solid rgba(16, 185, 129, 0.2) !important;
 }
 
 .group-header:hover {
@@ -999,6 +1004,9 @@ h3{
 }
 
 
+.child{
+  border-bottom:4px solid silver;
+}
 
 
 .torrentsTable{
@@ -1546,6 +1554,7 @@ h3{
   background-color:#03fc9c !important;
   color:goldenrod !important;
   height:47px;
+  border:4px dotted gold !IMPORTANT;
 }
 
 
@@ -1655,7 +1664,9 @@ footer{
   border-radius:14px;
 }
 
-
+.dt-scroll{
+  border-bottom:4px solid lightgoldenrodyellow;
+}
 
 
 .dt-container{  
