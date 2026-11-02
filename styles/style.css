@@ -770,8 +770,9 @@ h2{
 }
 
 .group-header .class_name.badge:hover {
-  background-color: gold !important;
-  box-shadow: 0 2px 4px rgba(6, 95, 70, 0.2);
+  background-color: darkcyan !important;
+  color:cyan;
+  box-shadow: 0 2px 4px lightcyan;
 }
 
 /* Publisher Name Link inside APA Citation (.publisher_name) */
