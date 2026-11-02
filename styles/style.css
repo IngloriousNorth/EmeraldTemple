@@ -688,21 +688,21 @@ h2{
 }
 
 .source_name{
-  color:whitesmoke;
+  color:whitesmoke !important;
 }
 
 .author_name{
-  color:gold;
+  color:gold !important;
 }
 
 .publisher_name{
-  color:mediumvioletred;
+  color:mediumvioletred !important;
 }
 
 .class_name{
   padding:7px;
   font-size:18px;
-  color:cyan;
+  color:cyan !important;
 }
 
 .title_heading{
