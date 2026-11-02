@@ -141,6 +141,13 @@ td.dtr-control::before{
 }
 
 
+.dt_scroll-head{
+  overflow:visible !important;
+  position:relative;
+  z-index:9998;
+  box-shadow:7px 7px 7px gold;
+}
+
 
 .dataTable thead th:not(.torrentsSubTable thead th){
   font-family:"Rationale", serif;
@@ -148,7 +155,9 @@ td.dtr-control::before{
   color:paleGOLDENROD !important;
   text-shadow:1px 1px mediumvioletred;
   border-bottom:3px solid Darkviolet;
-  box-shadow:7px 7px 7px gold !IMPORTANT;
+  position:relative;
+  z-index:9998;
+  box-shadow:4px 4px 4px silver;
 }
 
 .group-header td{
