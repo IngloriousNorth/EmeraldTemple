@@ -28,7 +28,7 @@
                 "snatches": 142,
                 "date": "1998",
                 "created_at": 1719446400000,
-                "apaCitation": "Kant, I. (1998). <i>Critique of Pure Reason</i> (N. Kemp Smith, Trans.). Cambridge University Press."
+                "apaCitation": "Kant, I. (1998). <i>Critique of Pure Reason</i> (N. Kemp Smith, Trans.). <span class=\"publisher_name\">Cambridge University Press</span>."
               }
             },
             "publisher": {
@@ -94,7 +94,7 @@
                 "snatches": 289,
                 "date": "2000",
                 "created_at": 1719360000000,
-                "apaCitation": "Plato. (2000). <i>The Republic</i> (G. M. A. Grube, Trans.; C. D. C. Reeve, Rev.). Hackett Publishing Company."
+                "apaCitation": "Plato. (2000). <i>The Republic</i> (G. M. A. Grube, Trans.; C. D. C. Reeve, Rev.). <span class=\"publisher_name\">Hackett Publishing Company</span>."
               }
             },
             "publisher": {
@@ -160,7 +160,7 @@
                 "snatches": 95,
                 "date": "1999",
                 "created_at": 1719273600000,
-                "apaCitation": "Newton, I. (1999). <i>The Principia: Mathematical Principles of Natural Philosophy</i> (I. Bernard Cohen & A. Whitman, Trans.). University of California Press."
+                "apaCitation": "Newton, I. (1999). <i>The Principia: Mathematical Principles of Natural Philosophy</i> (I. Bernard Cohen & A. Whitman, Trans.). <span class=\"publisher_name\">University of California Press</span>."
               }
             },
             "publisher": {
@@ -220,7 +220,7 @@
                 "snatches": 110,
                 "date": "1994",
                 "created_at": 1719187200000,
-                "apaCitation": "Spinoza, B. (1994). <i>Ethics</i> (E. Curley, Ed. & Trans.). Penguin Classics."
+                "apaCitation": "Spinoza, B. (1994). <i>Ethics</i> (E. Curley, Ed. & Trans.). <span class=\"publisher_name\">Penguin Classics</span>."
               }
             },
             "publisher": {
@@ -280,7 +280,7 @@
                 "snatches": 204,
                 "date": "1985",
                 "created_at": 1719100800000,
-                "apaCitation": "Hobbes, T. (1985). <i>Leviathan</i> (C. B. Macpherson, Ed.). Penguin Classics."
+                "apaCitation": "Hobbes, T. (1985). <i>Leviathan</i> (C. B. Macpherson, Ed.). <span class=\"publisher_name\">Penguin Classics</span>."
               }
             },
             "publisher": {
@@ -340,7 +340,7 @@
                 "snatches": 340,
                 "date": "2003",
                 "created_at": 1719014400000,
-                "apaCitation": "Machiavelli, N. (2003). <i>The Prince</i> (H. Mansfield, Trans.). University of Chicago Press."
+                "apaCitation": "Machiavelli, N. (2003). <i>The Prince</i> (H. Mansfield, Trans.). <span class=\"publisher_name\">University of Chicago Press</span>."
               }
             },
             "publisher": {
@@ -400,7 +400,7 @@
                 "snatches": 165,
                 "date": "1996",
                 "created_at": 1718928000000,
-                "apaCitation": "Descartes, R. (1996). <i>Meditations on First Philosophy</i> (J. Cottingham, Trans.). Cambridge University Press."
+                "apaCitation": "Descartes, R. (1996). <i>Meditations on First Philosophy</i> (J. Cottingham, Trans.). <span class=\"publisher_name\">Cambridge University Press</span>."
               }
             },
             "publisher": {
@@ -460,7 +460,7 @@
                 "snatches": 128,
                 "date": "2007",
                 "created_at": 1718841600000,
-                "apaCitation": "Hume, D. (2007). <i>A Treatise of Human Nature</i> (D. Fate Norton & M. J. Norton, Eds.). Oxford University Press."
+                "apaCitation": "Hume, D. (2007). <i>A Treatise of Human Nature</i> (D. Fate Norton & M. J. Norton, Eds.). <span class=\"publisher_name\">Oxford University Press</span>."
               }
             },
             "publisher": {
@@ -520,7 +520,7 @@
                 "snatches": 92,
                 "date": "1977",
                 "created_at": 1718755200000,
-                "apaCitation": "Hegel, G. W. F. (1977). <i>Phenomenology of Spirit</i> (A. V. Miller, Trans.). Oxford University Press."
+                "apaCitation": "Hegel, G. W. F. (1977). <i>Phenomenology of Spirit</i> (A. V. Miller, Trans.). <span class=\"publisher_name\">Oxford University Press</span>."
               }
             },
             "publisher": {
@@ -580,7 +580,7 @@
                 "snatches": 245,
                 "date": "2003",
                 "created_at": 1718668800000,
-                "apaCitation": "Nietzsche, F. (2003). <i>Beyond Good and Evil</i> (R. J. Hollingdale, Trans.). Penguin Classics."
+                "apaCitation": "Nietzsche, F. (2003). <i>Beyond Good and Evil</i> (R. J. Hollingdale, Trans.). <span class=\"publisher_name\">Penguin Classics</span>."
               }
             },
             "publisher": {
@@ -640,7 +640,7 @@
                 "snatches": 412,
                 "date": "1989",
                 "created_at": 1718410000000,
-                "apaCitation": "Freud, S. (1989). <i>Civilization and Its Discontents</i> (J. Strachey, Ed. & Trans.). W. W. Norton & Company."
+                "apaCitation": "Freud, S. (1989). <i>Civilization and Its Discontents</i> (J. Strachey, Ed. & Trans.). <span class=\"publisher_name\">W. W. Norton & Company</span>."
               }
             },
             "publisher": {
@@ -706,7 +706,7 @@
                 "snatches": 188,
                 "date": "1969",
                 "created_at": 1718320000000,
-                "apaCitation": "Schopenhauer, A. (1969). <i>The World as Will and Representation</i> (Vol. 1, E. F. J. Payne, Trans.). Dover Publications."
+                "apaCitation": "Schopenhauer, A. (1969). <i>The World as Will and Representation</i> (Vol. 1, E. F. J. Payne, Trans.). <span class=\"publisher_name\">Dover Publications</span>."
               }
             },
             "publisher": {
