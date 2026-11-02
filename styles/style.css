@@ -705,6 +705,10 @@ h2{
   color:cyan;
 }
 
+.title_heading{
+  padding:8px;
+}
+
 .torrentClasses a{
   padding-right:6px !important;
 }
