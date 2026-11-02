@@ -499,7 +499,7 @@ div.TEMPEST{
     overflow:hidden;
     color:black;
     width: 100%;
-    height: calc(100% - 169px);
+    height: calc(100% - 158px);
 
     position: absolute;
     box-sizing: border-box;
@@ -1404,7 +1404,7 @@ h3{
 footer{
   position:fixed;
   bottom:0px;
-  height:88px;
+  height:77px;
   width:100%;
     /* Ensure consistent border styling */
   
@@ -1930,7 +1930,7 @@ div.upload{
  
  div.TEMPEST{
     top:60px;
-    height:calc(100% - 141px) !important;
+    height:calc(100% - 130px) !important;
     bottom:80px;
  }
 
