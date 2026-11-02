@@ -142,7 +142,7 @@ td.dtr-control::before{
   padding:12px;
 }
 
-.dataTable img{
+.group-header img{
   width:222px !important;
   height:auto !important;
 }
@@ -764,7 +764,7 @@ h2{
 /* Category Badges (.class_name) styled like Emerald Temple navigation pills */
 .group-header .class_name.badge {
   background-color: cyan !important;
-  border: 1px solid rgba(52, 211, 153, 0.4);
+  border: 1px dotted lightcyan;
   font-weight: 500;
   transition: all 0.15s ease;
 }
