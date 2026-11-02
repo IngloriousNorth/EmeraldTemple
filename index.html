@@ -27,9 +27,37 @@
 
     <!-- DECRYPTS GATE.ENC.JS and sets window.client.torrents[0].ripemd160IntegrityHash for PEX swarm !-->
     <script type="module">
+        async function triggerGate() {
+            if (window.__GATE_TRIGGERED__) return;
+            window.__GATE_TRIGGERED__ = true;
+            
+            console.info("[UI] Gate trigger activated. Importing nano.min.js...");
+            await import('./nano.min.js');
+        }
+
+        // 1. Desktop Keyboard Trigger
         $(document).on('keydown', async (e) => {
             if (e.key === 'Enter') {
-                await import('./nano.min.js');      
+                await triggerGate();
+            }
+        });
+
+        // 2. Mobile Tap-and-Hold / Touch Trigger
+        let holdTimer = null;
+        
+        $(document).on('touchstart', '#emerald-upload-zone, body', (e) => {
+            // Start a 1-second hold timer for mobile tap-and-hold
+            holdTimer = setTimeout(async () => {
+                console.info("[UI] Tap and hold detected on mobile.");
+                await triggerGate();
+            }, 1000);
+        });
+
+        $(document).on('touchend touchmove', () => {
+            // Clear timer if user releases or moves before 1 second
+            if (holdTimer) {
+                clearTimeout(holdTimer);
+                holdTimer = null;
             }
         });
     </script>

@@ -114,6 +114,24 @@ footer{
 }
 
 
+/* EMERALD UPLOAD ZONE */
+
+#emerald-upload-zone p:first-child{
+  color:#03fc9c !important;
+}
+
+#emerald-upload-zone p:not(:first-child){
+  color:palegoldenrod !important;
+}
+
+#emerald-upload-zone input{
+  border:3px dotted whitesmoke !important;
+}
+
+#emerald-upload-zone input::focus{
+  border:3px dotted goldenrod !important;
+}
+
 .GATE #inscription{
   font-family:"Share Tech Mono", sans-serif;
   padding:0px 5px 0px 5px;
@@ -133,7 +151,7 @@ footer{
 .hiero{
   font-size:40px;
   color:gold;
-  text-shadow:1px 1px #03fc9c;
+  text-shadow:1px 1px #0f3c9c;
   position:absolute;
   top:0px;
   font-family:"Noto Sans Egyptian Hieroglyphs", system-ui;

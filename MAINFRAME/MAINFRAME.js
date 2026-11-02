@@ -8,12 +8,14 @@ const MVC = {
             Search: require("../Control/Search"),
             Category : require("../Control/Category"),
             Torrents: require("../Control/Torrents"),
-            Index : require("../Control/Index")
+            Index : require("../Control/Index"),
+            webtorrent : require("../Control/webtorrent")
         },
         Hook: {
             Node: require("../Hook/Node"),
             Search: require("../Hook/Search"),
-            Category : require("../Hook/Category")
+            Category : require("../Hook/Category"),
+            webtorrent : require("../Hook/webtorrent")
         }
 };
 

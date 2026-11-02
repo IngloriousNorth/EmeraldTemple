@@ -1,5 +1,64 @@
 //IA
-module.exports = { 
+import MVC from '../MAINFRAME/MAINFRAME';
+
+const APPROVED_DOMAINS = [
+    ".edu",
+    "arxiv.org",
+    "jstor.org",
+    "gutenberg.org",
+    "archive.org",
+    "doaj.org",
+    "plato.stanford.edu",
+    "zenodo.org",
+    "osf.io",
+    "localhost"
+];
+
+module.exports = {
+    isWhitelisted(urlStr) {
+        try {
+            const parsed = new URL(urlStr);
+            const hostname = parsed.hostname.toLowerCase();
+            
+            return APPROVED_DOMAINS.some(domain => {
+                if (domain.startsWith('.')) {
+                    return hostname.endsWith(domain);
+                }
+                return hostname === domain || hostname.endsWith('.' + domain);
+            });
+        } catch (err) {
+            console.warn("[SECURITY] Malformed webseed URL rejected:", urlStr);
+            return false;
+        }
+    },
+
+    addWebseed(webseedUrl, callback) {
+        if (!this.isWhitelisted(webseedUrl)) {
+            console.error(`[SECURITY REJECTED] Domain not allowed by whitelist policy: ${webseedUrl}`);
+            alert(`[REJECTED] Webseed domain is not whitelisted: ${new URL(webseedUrl).hostname}`);
+            return;
+        }
+
+        const client = window.client;
+        if (!client) {
+            console.error("[MVC.Control.Webtorrent] window.client WebTorrent instance not found.");
+            return;
+        }
+
+        console.info(`[MVC.Control.Webtorrent] Whitelist check passed. Adding webseed: ${webseedUrl}`);
+
+        try {
+            client.add(webseedUrl, { dht: false, tracker: false, pex: true }, (torrent) => {
+                console.info(`[MVC.Control.Webtorrent] Webseed torrent active! InfoHash: ${torrent.infoHash}`);
+                
+                if (typeof callback === 'function') {
+                    callback(torrent);
+                }
+            });
+        } catch (err) {
+            console.error("[MVC.Control.Webtorrent] Failed to add webseed to client:", err);
+        }
+    },
     propagate : function(infoHash) {
         $.get(`/torrent/${infoHash}`, function(data) {
             if (!data || !data.torrent) {
@@ -65,4 +124,4 @@ module.exports = {
             });
         });
     }
-}
+};
