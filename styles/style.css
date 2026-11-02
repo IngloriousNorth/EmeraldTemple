@@ -113,6 +113,54 @@ footer{
   src: url(../fonts/J7aHnp1uDWRBEqV98dVQztYldFc7pA.ttf) format('truetype');
 }
 
+/* Hide DataTables default responsive inline arrow */
+td.dtr-control::before{
+    content: "" !important;
+    display: none !important;
+}
+
+.dataTable{
+  background-color:lightgoldenrodyellow;
+}
+
+.group-header td{
+  background: #ABABAB !important;
+  border-top:1px solid black;
+}
+
+
+.title_heading{
+  font-family:"Rationale", sans-serif;
+  font-size:24px;
+}
+
+.source_name{
+  font-style:italic;
+}
+
+.dataTable tr td{
+  padding:12px;
+}
+
+.dataTable img{
+  width:222px !important;
+  height:auto !important;
+}
+
+.dataTable th:last-child, .dataTable td:last-child{
+}
+
+
+.group-header{
+  text-align:left;
+  background:#ABABAB;
+}
+
+/* Ensure your custom jQuery UI expand icon sits cleanly in the control cell */
+td.dtr-control {
+    position: relative;
+    cursor: pointer;
+}
 
 /* EMERALD UPLOAD ZONE */
 

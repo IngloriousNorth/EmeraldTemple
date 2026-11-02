@@ -15,7 +15,8 @@ const MVC = {
             Node: require("../Hook/Node"),
             Search: require("../Hook/Search"),
             Category : require("../Hook/Category"),
-            webtorrent : require("../Hook/webtorrent")
+            webtorrent : require("../Hook/webtorrent"),
+            Hero : require("../Hook/Hero.js")
         }
 };
 

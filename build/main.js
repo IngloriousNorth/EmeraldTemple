@@ -23,6 +23,7 @@ import pdfjs from 'pdfjs';
 
 
 import dragDrop from 'drag-drop';
+window.dragDrop = dragDrop;
 
 import moment from 'moment';
 

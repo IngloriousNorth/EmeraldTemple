@@ -1,7 +1,6 @@
 /**
- * Torrents.js Controller
+ * Torrents.js Controller (Bootstrap 5 + jQuery UI Hybrid)
  */
-
 const TorrentsController = {
   
   /**
@@ -36,7 +35,7 @@ const TorrentsController = {
     const rows = [];
 
     (json.records || []).forEach(record => {
-      const fields = record._fields || [];//GEMINI
+      const fields = record._fields || [];
       const source = fields[0]?.properties || {};
       const authors = (fields[1] || []).map(a => a.properties?.name).filter(Boolean);
       const items = fields[2] || [];
@@ -86,7 +85,6 @@ const TorrentsController = {
         if (torProps.infoHash) {
           editionMap.get(edUuid).torrents.push({
             format: torProps.format,
-            res: torProps.res,
             size: torProps.size,
             snatches: torProps.snatches,
             infoHash: torProps.infoHash
@@ -103,11 +101,11 @@ const TorrentsController = {
   },
 
   /**
-   * Renders the HTML inside the expanded Edition child row (Resolution column removed)
+   * Renders the HTML inside the expanded Edition child row using BS5 utility classes
    */
   renderChildTorrentsTable(torrents) {
     if (!torrents || torrents.length === 0) {
-      return '<div class="torrent-details-wrapper"><p>No torrents available.</p></div>';
+      return '<div class="p-3 bg-light border rounded"><p class="mb-0 text-muted">No torrents available.</p></div>';
     }
 
     let rowsHtml = torrents.map(t => `
@@ -116,25 +114,22 @@ const TorrentsController = {
         <td>${this.formatBytes(t.size)}</td>
         <td>${t.snatches}</td>
         <td>
-          <button class="webtorrent-download-btn ui-button ui-widget ui-corner-all" 
-                  data-infohash="${t.infoHash}" 
-                  data-format="${t.format}" 
-                  data-res="${t.res || ''}" 
-                  data-size="${t.size}" 
-                  data-snatches="${t.snatches}"
-                  style="font-size: 0.9em; padding: 6px 14px; cursor: pointer;">
-            <span class="ui-icon ui-icon-arrowthick-1-s" style="display:inline-block; vertical-align:middle; margin-right:4px;"></span> Webtorrent
+          <button class="webtorrent-download-btn btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1" 
+                data-infohash="${t.infoHash}" 
+                data-format="${t.format}" 
+                data-size="${t.size}" 
+                data-snatches="${t.snatches}">
+            <span class="ui-icon ui-icon-arrowthick-1-s"></span> webtorrent
           </button>
         </td>
       </tr>
     `).join('');
 
     return `
-      <div class="torrent-details-wrapper" style="padding: 10px; background: #f9f9f9; border: 1px solid #ddd; margin: 5px 0; border-radius: 4px;">
-        <h4 style="margin: 0 0 8px 0; font-size: 0.9em; text-transform: uppercase; color: #555;">Available Downloads</h4>
-        <table class="torrentsSubTable display compact cell-border" style="width:100%; text-align: left;">
+      <div class="p-3 bg-light border rounded my-2">
+        <table class="torrentsSubTable table table-sm table-striped table-bordered align-middle w-100 mb-0">
           <thead>
-            <tr class="ui-widget-header">
+            <tr class="table-secondary">
               <th>Format</th>
               <th>Size</th>
               <th>Revs</th>
@@ -150,9 +145,7 @@ const TorrentsController = {
   },
 
   /**
-   * DataTable constructor matching your required signature: table(table, cb)
-   * @param {string|HTMLElement} table Table selector or element (e.g., "torrents" or "#torrents")
-   * @param {Function} [cb] Optional callback function
+   * DataTable constructor matching table(table, cb)
    */
   table: function(table, cb) {
     const self = TorrentsController;
@@ -170,7 +163,7 @@ const TorrentsController = {
 
     $(tableSelector).html(`
       <thead>
-        <tr class="ui-widget-header">
+        <tr class="table-secondary">
           <th></th>
           <th>Source UUID</th>
           <th>APA Citation</th>
@@ -182,7 +175,6 @@ const TorrentsController = {
       <tbody></tbody>
     `);
 
-    // Automatically detect GitHub Pages subpath vs local root
     const isGitHubPages = window.location.hostname.includes('github.io');
     const repoPath = isGitHubPages 
         ? (window.location.pathname.split('/')[1] ? `/${window.location.pathname.split('/')[1]}` : '') 
@@ -190,17 +182,16 @@ const TorrentsController = {
 
     const fragmentBase = `${repoPath}/Base`;
 
-    $.getJSON(`${fragmentBase}/dummy.json`, function(rawJson) {
+    $.getJSON(`${fragmentBase}/foobar.json`, function(rawJson) {
       const tableData = self.parseData(rawJson);
 
       const tableInstance = $(tableSelector).DataTable({
         data: tableData,
-        jQueryUI: true,
         responsive: true,
         scroller: true,
         scrollY: 'calc(100vh - 169px)',
         scrollCollapse: false,
-        dom : 'rt<"clear">',
+        dom: 'rt<"clear">',
         paging: true,
         columns: [
           {
@@ -224,18 +215,18 @@ const TorrentsController = {
           { 
             title: 'Edition Date',
             data: 'edition.date',
-            className: 'dt-center',
+            className: 'text-center',
             render: (data) => self.adjDate(data)
           },
           { 
             title: 'Revs',
             data: 'edition.snatches',
-            className: 'dt-center'
+            className: 'text-center'
           },
           { 
             title: 'Time Since',
             data: 'edition.created_at',
-            className: 'dt-center',
+            className: 'text-center',
             render: (data) => typeof timeSince === 'function' ? timeSince(data) : (data ? data : '-')
           }
         ],
@@ -245,19 +236,35 @@ const TorrentsController = {
           startRender: function (rows, group) {
             const firstRow = rows.data()[0];
             const src = firstRow.source;
-            const authorsList = src.authors.join(', ') || 'Unknown Author';
-            const categories = src.categories.map(c => `<span class="ui-widget-header ui-corner-all" style="padding: 1px 5px; font-size: 0.8em; margin-right: 4px;">${c}</span>`).join('');
+            
+            // Map each author with class .author_name and join with commas
+            const authorsList = src.authors
+              .map(a => `<span class="author_name">${a}</span>`)
+              .join(', ') || '<span class="author_name">Unknown Author</span>';
+
+            // Map each category with class .class_name and join with comma + space
+            const categories = src.categories
+              .map(c => `<span class="class_name badge bg-secondary" style="font-size: 0.8em;">${c}</span>`)
+              .join(', ');
+
             const formattedDate = self.adjDate(src.date);
 
             return $(`
-              <tr class="group-header ui-widget-header" style="background: #e9e9e9; font-size: 1.05em;">
-                <td colspan="5" style="padding: 8px;">
-                  <div style="display: flex; align-items: center; gap: 12px;">
-                    <img src="${src.cover}" alt="${src.name}" style="height: 55px; width: auto; border-radius: 3px; box-shadow: 0 1px 3px rgba(0,0,0,0.3);" />
-                    <div>
-                      <div style="font-weight: bold; font-size: 1.1em;">${src.name} <span style="font-weight: normal; font-size: 0.9em; opacity: 0.85;">[${formattedDate}]</span></div>
-                      <div style="margin: 2px 0;">by <em>${authorsList}</em></div>
-                      <div>${categories}</div>
+              <tr class="group-header table-secondary">
+                <td colspan="5" class="p-2">
+                  <div class="d-flex align-items-start gap-3">
+                    <!-- Left Column: Thumbnail Image -->
+                    <div class="flex-shrink-0">
+                      <img src="${src.cover}" alt="${src.name}" style="height: 65px; width: auto;" class="rounded shadow-sm" />
+                    </div>
+                    <!-- Right Column: Title Heading and Categories stacked vertically -->
+                    <div class="d-flex flex-column justify-content-center h-100" style="min-height: 65px;">
+                      <div class="title_heading fw-bold fs-6">
+                        <span class="source_name">${src.name}</span> 
+                        <span class="fw-normal small text-muted">[${formattedDate}]</span> 
+                        <span class="fw-normal text-muted">by <em>${authorsList}</em></span>
+                      </div>
+                      <div class="mt-1">${categories}</div>
                     </div>
                   </div>
                 </td>
@@ -266,17 +273,16 @@ const TorrentsController = {
           }
         },
         drawCallback: function() {
-          // Bind click handler to Webtorrent buttons and invoke DL
           $(tableSelector).off('click', '.webtorrent-download-btn').on('click', '.webtorrent-download-btn', function() {
             const btnData = $(this).data();
             console.info("[TORRENTS CONTROLLER] Webtorrent button clicked. Data payload:", btnData);
 
-            if (typeof DL === 'function') {
-              DL(btnData);
-            } else if (window.DL && typeof window.DL === 'function') {
-              window.DL(btnData);
+            if (window.MVC && window.MVC.Controller && window.MVC.Controller.webtorrent && typeof window.MVC.Controller.webtorrent.propagate === 'function') {
+              window.MVC.Controller.webtorrent.propagate(btnData.infohash || btnData.infoHash);
+            } else if (typeof propagate === 'function') {
+              propagate(btnData.infohash || btnData.infoHash);
             } else {
-              console.warn("[TORRENTS CONTROLLER] DL function is not defined globally.");
+              console.warn("[TORRENTS CONTROLLER] propagate function is not defined globally.");
             }
           });
         }
