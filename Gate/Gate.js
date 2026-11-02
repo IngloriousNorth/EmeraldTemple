@@ -39,26 +39,6 @@ export const Gate = {
     }
 }
 
-async function anchorPexSwarm() {
-    try {
-        const encoder = new TextEncoder();
-        const tokenBytes = encoder.encode(INSTITUTIONAL_PRIVATE_TOKEN);
-        
-        // Derive the 40-character hex infoHash via RIPEMD-160
-        const hashDigest = ripemd160(tokenBytes);
-        const institutionalInfoHash = bytesToHex(hashDigest);
-
-        console.info(`[PEX ANCHOR] Derived institutional infoHash: ${institutionalInfoHash}`);
-
-        // Send to nano.js Service Worker to mount the WebTorrent seed swarm
-        navigator.serviceWorker.controller.postMessage({
-            type: "SYNC_INSTITUTIONAL_INFOHASH",
-            infoHash: institutionalInfoHash
-        });
-    } catch (err) {
-        console.error("[PEX ERROR] Failed to anchor institutional swarm:", err);
-    }
-}
 
 Gate.init();
 

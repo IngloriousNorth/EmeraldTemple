@@ -7,11 +7,7 @@ const APPROVED_DOMAINS = [
     "jstor.org",
     "gutenberg.org",
     "archive.org",
-    "doaj.org",
     "plato.stanford.edu",
-    "zenodo.org",
-    "osf.io",
-    "localhost"
 ];
 
 module.exports = {
@@ -50,7 +46,33 @@ module.exports = {
         try {
             client.add(webseedUrl, { dht: false, tracker: false, pex: true }, (torrent) => {
                 console.info(`[MVC.Control.Webtorrent] Webseed torrent active! InfoHash: ${torrent.infoHash}`);
-                
+
+                // Automatically trigger .torrent metafile blob download upon metadata parsing
+                torrent.on('metadata', () => {
+                    try {
+                        if (torrent.torrentFile) {
+                            const torrentBlob = new Blob([torrent.torrentFile], { type: 'application/x-bittorrent' });
+                            const blobUrl = URL.createObjectURL(torrentBlob);
+                            const fileName = `${torrent.name || 'archive'}.torrent`;
+
+                            const downloadLink = document.createElement('a');
+                            downloadLink.href = blobUrl;
+                            downloadLink.download = fileName;
+                            document.body.appendChild(downloadLink);
+                            downloadLink.click();
+                            window.URL.revokeObjectURL(blobUrl);
+                            downloadLink.remove();
+
+                            console.info(`[MVC.Control.Webtorrent] Successfully triggered .torrent metafile download: ${fileName}`);
+                        }
+                    } catch (blobErr) {
+                        console.error("[MVC.Control.Webtorrent] Failed to generate .torrent file blob:", blobErr);
+                    }
+                });
+
+                // Trigger your custom DL file download pipeline
+                this.DL(torrent);
+
                 if (typeof callback === 'function') {
                     callback(torrent);
                 }
@@ -59,67 +81,61 @@ module.exports = {
             console.error("[MVC.Control.Webtorrent] Failed to add webseed to client:", err);
         }
     },
-    propagate : function(infoHash) {
-        $.get(`/torrent/${infoHash}`, function(data) {
-            if (!data || !data.torrent) {
-                console.error("Invalid torrent data returned from server.");
-                return;
-            }
 
-            // 1. Save data.torrent from API call to const torrent
-            const torrent = data.torrent;
+    DL: function(torrent) {
+        if (!torrent) {
+            console.error("Invalid torrent object provided to DL().");
+            return;
+        }
 
-            // 2. Use hexStr.split(',') to get the torrentBuffer
-            const hexArr = typeof torrent === 'object' ? torrent.hex : torrent;
-            const hexStr = hexArr.split(',');
-            const torrentUint8Array = new Uint8Array(hexStr);
-            const torrentBuffer = window.Buffer.from(torrentUint8Array);
+        const client = window.client;
+        if (!client) {
+            console.error("window.client not found for DL().");
+            return;
+        }
 
-            // 3. Add webseeds from torrent.webseeds as urlList
-            const webseeds = torrent.webseeds || [];
+        const infoHash = torrent.infoHash;
 
-            // 4. Configure strict options for webseed-only downloading with zero P2P seeding/uploading
-            const options = {
-                urlList: webseeds,
-                maxConns: 0,
-                announce: [],
-                private: true
-            };
+        // Add webseeds from torrent.webseeds or fallback to torrent.urlList/original source
+        const webseeds = torrent.webseeds || torrent.urlList || [];
 
-            // 5. Pass buffer and options to client.add using function(torrent) closure
-            client.add(torrentBuffer, options, function(torrent) {
-                console.log('Torrent added successfully. InfoHash:', torrent.infoHash);
+        // Configure strict options for webseed-only downloading with zero P2P seeding/uploading
+        const options = {
+            urlList: webseeds,
+            maxConns: 0,
+            announce: [],
+            private: true
+        };
 
-                if (typeof torrent.throttle === 'function') {
-                    torrent.throttle({ upload: 0 });
+        // Pass infoHash and options to client.add using function(torrent) closure
+        client.add(infoHash, options, function(activeTorrent) {
+            console.log('Torrent added successfully for DL stream. InfoHash:', activeTorrent.infoHash);
+
+            activeTorrent.on('download', function(bytes) {
+                console.log(`Downloaded ${bytes} bytes from webseed. Progress: ${(activeTorrent.progress * 100).toFixed(2)}%`);
+            });
+
+            // Auto-download file to the browser upon completion
+            activeTorrent.on('done', function() {
+                console.log('Download finished successfully from webseed!');
+                
+                const file = activeTorrent.files[0];
+                if (!file) {
+                    console.error("No files found in torrent to download.");
+                    return;
                 }
 
-                torrent.on('download', function(bytes) {
-                    console.log(`Downloaded ${bytes} bytes from webseed. Progress: ${(torrent.progress * 100).toFixed(2)}%`);
-                });
-
-                // 6. Auto-download file to the browser upon completion
-                torrent.on('done', function() {
-                    console.log('Download finished successfully from webseed!');
+                file.getBlob(function(err, blob) {
+                    if (err) throw err;
                     
-                    const file = torrent.files[0];
-                    file.getBlob(function(err, blob) {
-                        if (err) throw err;
-                        
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = file.name;
-                        document.body.appendChild(a);
-                        a.click();
-                        window.URL.revokeObjectURL(url);
-                        a.remove();
-
-                        // Destroy instance immediately to ensure zero background seeding
-                        torrent.destroy({ destroyStore: true }, () => {
-                            console.log('Torrent instance destroyed. Zero background activity.');
-                        });
-                    });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = file.name;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    a.remove();
                 });
             });
         });

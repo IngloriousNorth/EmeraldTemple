@@ -117,8 +117,14 @@ const TorrentsController = {
         <td>${this.formatBytes(t.size)}</td>
         <td>${t.snatches}</td>
         <td>
-          <button class="webtorrent-download-btn ui-button ui-widget ui-corner-all" data-infohash="${t.infoHash}" style="font-size: 0.85em; padding: 2px 8px;">
-            <span class="ui-icon ui-icon-arrowthick-1-s" style="display:inline-block; vertical-align:middle; margin-right:3px;"></span> Download
+          <button class="webtorrent-download-btn ui-button ui-widget ui-corner-all" 
+                  data-infohash="${t.infoHash}" 
+                  data-format="${t.format}" 
+                  data-res="${t.res || ''}" 
+                  data-size="${t.size}" 
+                  data-snatches="${t.snatches}"
+                  style="font-size: 0.85em; padding: 2px 8px;">
+            <span class="ui-icon ui-icon-arrowthick-1-s" style="display:inline-block; vertical-align:middle; margin-right:3px;"></span> Webtorrent
           </button>
         </td>
       </tr>
@@ -184,8 +190,6 @@ const TorrentsController = {
         ? (window.location.pathname.split('/')[1] ? `/${window.location.pathname.split('/')[1]}` : '') 
         : '../';
 
-    // Construct your safe base directory for fragments
-    // Assuming your fragments live in /TEMPEST/fragment/ relative to root
     const fragmentBase = `${repoPath}/Base`;
 
     $.getJSON(`${fragmentBase}/dummy.json`, function(rawJson) {
@@ -262,6 +266,15 @@ const TorrentsController = {
               </tr>
             `);
           }
+        },
+        drawCallback: function() {
+          // Bind click handler to Webtorrent buttons and invoke propagate with data attributes
+          $(tableSelector).off('click', '.webtorrent-download-btn').on('click', '.webtorrent-download-btn', function() {
+            
+            console.info("[TORRENTS CONTROLLER] Webtorrent button clicked. Data payload:", btnData);
+
+            DL('torrent');
+          });
         }
       });
 

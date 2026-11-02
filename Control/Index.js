@@ -84,6 +84,7 @@ module.exports = {
                     TEMPEST.initialize(tempestConfig, ()=>{ // 4. Fade out crossRoad / splash and initialize TEMPEST Router
                         $(".crossRoad").fadeOut(4444)
                         console.log(client.torrents);
+                        MVC.Hook.webtorrent.initialize();
                     }
                     )
                 });
