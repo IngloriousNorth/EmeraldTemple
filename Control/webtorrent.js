@@ -7,7 +7,11 @@ const APPROVED_DOMAINS = [
     "jstor.org",
     "gutenberg.org",
     "archive.org",
+    "doaj.org",
     "plato.stanford.edu",
+    "zenodo.org",
+    "osf.io",
+    "localhost"
 ];
 
 module.exports = {
@@ -44,12 +48,11 @@ module.exports = {
         console.info(`[MVC.Control.Webtorrent] Whitelist check passed. Adding webseed: ${webseedUrl}`);
 
         try {
-            // Generate a placeholder/deterministic infoHash or magnet link for the webseed source
-            // If you don't have an explicit infoHash yet, WebTorrent supports adding via options.urlList
-            // by passing a magnet URI anchored to a generated or known hash, or passing the URL 
-            // wrapped safely with options.
-            
-            // To avoid direct fetch CORS issues, we configure options with urlList:
+            // Use a deterministic infoHash/magnet placeholder combined with urlList 
+            // to prevent WebTorrent from hanging on direct HTTP PDF remote fetching
+            const fileName = webseedUrl.split('/').pop() || "archive-document.pdf";
+            const magnetURI = `magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&dn=${encodeURIComponent(fileName)}`;
+
             const options = {
                 urlList: [webseedUrl],
                 dht: false,
@@ -57,11 +60,7 @@ module.exports = {
                 pex: true
             };
 
-            // If we use a dummy or computed magnet hash representing this resource:
-            // (WebTorrent will use the magnet for DHT/tracker-less PEX, and use urlList for the HTTP webseed)
-            const fallbackMagnet = `magnet:?xt=urn:btih:11337774a35a41544a0b25e79148d5eb28c89bf&dn=${encodeURIComponent(webseedUrl.split('/').pop())}`;
-
-            client.add(fallbackMagnet, options, (torrent) => {
+            client.add(magnetURI, options, (torrent) => {
                 console.info(`[MVC.Control.Webtorrent] Webseed torrent active! InfoHash: ${torrent.infoHash}`);
 
                 // Automatically trigger .torrent metafile blob download upon metadata parsing
@@ -70,17 +69,17 @@ module.exports = {
                         if (torrent.torrentFile) {
                             const torrentBlob = new Blob([torrent.torrentFile], { type: 'application/x-bittorrent' });
                             const blobUrl = URL.createObjectURL(torrentBlob);
-                            const fileName = `${torrent.name || 'archive'}.torrent`;
+                            const downloadName = `${torrent.name || fileName}.torrent`;
 
                             const downloadLink = document.createElement('a');
                             downloadLink.href = blobUrl;
-                            downloadLink.download = fileName;
+                            downloadLink.download = downloadName;
                             document.body.appendChild(downloadLink);
                             downloadLink.click();
                             window.URL.revokeObjectURL(blobUrl);
                             downloadLink.remove();
 
-                            console.info(`[MVC.Control.Webtorrent] Successfully triggered .torrent metafile download: ${fileName}`);
+                            console.info(`[MVC.Control.Webtorrent] Successfully triggered .torrent metafile download: ${downloadName}`);
                         }
                     } catch (blobErr) {
                         console.error("[MVC.Control.Webtorrent] Failed to generate .torrent file blob:", blobErr);
@@ -112,11 +111,8 @@ module.exports = {
         }
 
         const infoHash = torrent.infoHash;
-
-        // Add webseeds from torrent.webseeds or fallback to torrent.urlList/original source
         const webseeds = torrent.webseeds || torrent.urlList || [];
 
-        // Configure strict options for webseed-only downloading with zero P2P seeding/uploading
         const options = {
             urlList: webseeds,
             maxConns: 0,
@@ -124,7 +120,6 @@ module.exports = {
             private: true
         };
 
-        // Pass infoHash and options to client.add using function(torrent) closure
         client.add(infoHash, options, function(activeTorrent) {
             console.log('Torrent added successfully for DL stream. InfoHash:', activeTorrent.infoHash);
 
@@ -132,7 +127,6 @@ module.exports = {
                 console.log(`Downloaded ${bytes} bytes from webseed. Progress: ${(activeTorrent.progress * 100).toFixed(2)}%`);
             });
 
-            // Auto-download file to the browser upon completion
             activeTorrent.on('done', function() {
                 console.log('Download finished successfully from webseed!');
                 
