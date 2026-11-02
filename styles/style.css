@@ -141,22 +141,12 @@ td.dtr-control::before{
 }
 
 
-.dt_scroll-head{
-  overflow:visible !important;
-  position:relative;
-  z-index:9998;
-  box-shadow:7px 7px 7px gold;
-}
-
-
 .dataTable thead th:not(.torrentsSubTable thead th){
   font-family:"Rationale", serif;
   font-size:27px;
   color:paleGOLDENROD !important;
   text-shadow:1px 1px mediumvioletred;
-  border-bottom:3px solid Darkviolet;
-  position:relative;
-  z-index:9998;
+  border-bottom:10px solid darkviolet;
   box-shadow:4px 4px 4px silver;
 }
 
@@ -244,6 +234,10 @@ td.dtr-control {
 
 #hero{
   width:100% !important;
+}
+
+code{
+  color:silver;
 }
 
 .hiero{
@@ -558,8 +552,8 @@ div.TEMPEST{
     color:black;
     width: 100%;
     height: calc(100% - 77px);
-    border-left:4px solid gold;
-    border-right:4px solid gold;
+    border-left:4px solid silver;
+    border-right:4px solid silver;
     position: absolute;
     box-sizing: border-box;
     top: 0px;
@@ -1564,7 +1558,7 @@ h3{
   background-color:#03fc9c !important;
   color:goldenrod !important;
   height:47px;
-  border:4px dotted gold !IMPORTANT;
+  border:4px dotted mediumvioletred !IMPORTANT;
 }
 
 

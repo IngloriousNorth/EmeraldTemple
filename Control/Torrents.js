@@ -180,7 +180,7 @@ module.exports = {
             orderable: false,
             data: null,
             defaultContent: '<span class="ui-icon ui-icon-circle-plus expand-btn" style="cursor:pointer; display:inline-block;"></span>',
-            width: '0px'
+            width: '5%'
           },
           { 
             data: 'source.uuid',
