@@ -165,7 +165,7 @@ td.dtr-control::before{
 }
 
 .dataTable tr td{
-  padding:12px;
+  padding:17px;
 }
 
 .group-header img{
@@ -234,7 +234,7 @@ td.dtr-control {
 .hiero{
   font-size:40px;
   color:black;
-  text-shadow:1px 3px whitesmoke !important;
+  text-shadow:1px 3px darkcyan !important;
   position:absolute;
   font-family:"Noto Sans Egyptian Hieroglyphs", system-ui;
   right:5px;
@@ -787,8 +787,10 @@ a{
 }
 
 .webtorrent-download-btn{
-  border:1px solid gold;
-  background:linear-gradient(#50C777, #03fc9c);
+  border:1px solid dimgray;
+  box-shadow:2px 3px gold;
+  border-radius:4px;
+  background:linear-gradient(#007BFF, silver);
 }
 
 .dataTable thead th{
@@ -1659,8 +1661,6 @@ footer{
 
 .dt-container{  
   background-color:lightgoldenrodyellow !important;
-  border-top-left-radius:8px;
-  border-top-right-radius:8px;
   padding:7px 0 12px 0;
   margin:0px 0px 0px 0px; 
   /* Margerine */
