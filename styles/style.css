@@ -143,8 +143,8 @@ td.dtr-control::before{
 }
 
 .dataTable img{
-  width:222px;
-  height:auto;
+  width:222px !important;
+  height:auto !important;
 }
 
 .dataTable th:last-child, .dataTable td:last-child{
@@ -723,7 +723,7 @@ h2{
 }
 
 .table-secondary th{
-  background:goldenrod;
+  background:palegoldenrod !important;
   font-family:"Rationale", system-ui;
 }
 
