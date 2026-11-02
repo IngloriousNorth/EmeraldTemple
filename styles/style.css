@@ -687,6 +687,23 @@ h2{
 
 }
 
+.source_name{
+  color:whitesmoke;
+}
+
+.author_name{
+  color:gold;
+}
+
+.publisher_name{
+  color:mediumvioletred;
+}
+
+.class_name{
+  padding:7px;
+  font-size:18px;
+  color:cyan;
+}
 
 .torrentClasses a{
   padding-right:6px !important;
