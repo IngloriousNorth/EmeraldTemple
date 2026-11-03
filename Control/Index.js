@@ -81,7 +81,7 @@ module.exports = {
                 ], function(err) {
                     // This executes once both parallel tasks finish
                     TEMPEST.initialize(tempestConfig, ()=>{ // 4. Fade out crossRoad / splash and initialize TEMPEST Router
-                        $(".crossRoad").fadeOut(4444)
+                        $(".crossRoad").fadeOut(777)
                         MVC.Hook.webtorrent.initialize();
                     })
                 });

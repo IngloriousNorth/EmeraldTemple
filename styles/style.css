@@ -1059,6 +1059,11 @@ table.dataTable.dtr-inline.collapsed > tbody > tr > th.dtr-control::before {
     display: none !important;
 }
 
+td.dt-control.d-none::before{
+  content:none !important;
+  display:none !important
+}
+
 .cross-road{
   font-size:22px;
   color:#83DAC0;;
