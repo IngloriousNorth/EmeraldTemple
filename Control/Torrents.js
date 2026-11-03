@@ -97,6 +97,7 @@ function renderChildTorrentsTable(torrents) {
       <td><span class="ui-icon ui-icon-document"></span> <strong>${t.format}</strong></td>
       <td>${prettyBytes(t.size)}</td>
       <td>${t.snatches}</td>
+      <td>${typeof timeSince === 'function' ? timeSince(t.created_at) : (t.created_at ? t.created_at : '-')}</td>
       <td>
         <button class="webtorrent-download-btn btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1" 
               data-infohash="${t.infoHash}" 
@@ -117,6 +118,7 @@ function renderChildTorrentsTable(torrents) {
             <th>Format</th>
             <th>Size</th>
             <th>Revs</th>
+            <th>Time Since</th>
             <th>Stream</th>
           </tr>
         </thead>
@@ -143,13 +145,11 @@ module.exports = {
 
     $(tableSelector).html(`
       <thead>
-        <tr class="table-secondary">
+        <tr class="table-primary">
           <th class="d-none"></th>
-          <th></th>
           <th>APA Citation</th>
-          <th>Edition Date</th>
           <th>Revs</th>
-          <th>Time Since</th>
+          <th>Date</th> <!-- Target column that collapses into the child drawer -->
         </tr>
       </thead>
       <tbody></tbody>
@@ -167,7 +167,34 @@ module.exports = {
 
       const tableInstance = $(tableSelector).DataTable({
         data: tableData,
-        responsive: true,
+        responsive: true /* {
+          details: {
+            type: 'column',
+            target: 4, // Target index 4 (Date) as the responsive trigger/column
+            renderer: function (api, rowIdx, columns) {
+              const data = api.row(rowIdx).data();
+              const torrentsHtml = data ? renderChildTorrentsTable(data.torrents) : "";
+              
+              // Build the collapsed data items (e.g. Date) that were hidden
+              const collapsedItems = columns.map(col => {
+                if (col.hidden) {
+                  return `<tr data-dt-row="${col.rowIndex}" data-dt-column="${col.columnIndex}">
+                            <td><strong>${col.title}:</strong></td>
+                            <td>${col.data}</td>
+                          </tr>`;
+                }
+                return '';
+              }).join('');
+
+              return $(`
+                <div class="p-3 bg-light border rounded my-2">
+                  ${collapsedItems ? `<table class="table table-sm mb-2"><tbody>${collapsedItems}</tbody></table>` : ''}
+                  ${torrentsHtml}
+                </div>
+              `);
+            }
+          }
+        }*/,
         scroller: true,
         scrollY: 'calc(100vh - 190px)',
         scrollCollapse: true,
@@ -191,28 +218,22 @@ module.exports = {
             title: 'APA Citation',
             data: 'edition.apaCitation',
             className: 'apa-citation-column',
-            width: '55.3%',
+            width: '45%',
             render: (data) => `<strong>${data}</strong>`
-          },
-          { 
-            title: 'Edition Date',
-            data: 'edition.date',
-            className: 'text-center',
-            width: '14%',
-            render: (data) => adjDate(data)
           },
           { 
             title: 'Revs',
             data: 'edition.snatches',
-            width: '14%',
+            width: '15%',
             className: 'text-center'
           },
           { 
-            title: 'Time Since',
-            data: 'edition.created_at',
+            title: 'Date',
+            data: 'edition.date',
             className: 'text-center',
-            width: '16.7%',
-            render: (data) => typeof timeSince === 'function' ? timeSince(data) : (data ? data : '-')
+            width: '15%',
+            responsivePriority: 1, // Forces this column to collapse into the child area first
+            render: (data) => adjDate(data)
           }
         ],
         order: [[1, 'asc']],
@@ -234,7 +255,7 @@ module.exports = {
 
             return $(`
               <tr class="group-header border-bottom" style="position: relative; overflow: hidden;">
-                <td colspan="5" class="py-2 px-3" style="position: relative; z-index: 2;">
+                <td colspan="4" class="py-2 px-3" style="position: relative; z-index: 2;">
                   <div class="d-flex align-items-center gap-3 w-100">
                     <div class="flex-shrink-0 d-flex align-items-center justify-content-start" style="width: 222px;">
                       <img src="${src.cover}" alt="${src.name}" style="max-height: auto; width: 222px; object-fit: contain;" class="rounded shadow-sm border border-white bg-white" />
