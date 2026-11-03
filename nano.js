@@ -41,7 +41,6 @@ import { bytesToHex } from '@noble/hashes/utils';
                     console.info(`[NANO KERNEL] Swarm mounted: ${torrent.infoHash}`);
                 });
                 console.info(`[NANO KERNEL] Torrent already loaded in window.client.`);
-                console.log("client.torrents.length: " + client.torrents.length);
             }
             catch(err){
                 console.warn(err);
