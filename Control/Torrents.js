@@ -7,6 +7,9 @@
 /**
  * Normalizes the response schema into flat edition rows grouped by clean source name
  */
+/**
+ * Normalizes the response schema into flat edition rows grouped by clean source name
+ */
 function parseData(json) {
   const rows = [];
 
@@ -25,7 +28,7 @@ function parseData(json) {
     items.forEach(item => {
       const edProps = item.edition?.properties || {};
       const pubProps = item.publisher?.properties || {};
-      const torProps = item.torrent?.properties || {};
+      const torrentsList = item.torrents || []; // Fixed: read from 'torrents' array instead of singular 'torrent'
 
       const edUuid = edProps.uuid;
       if (!edUuid) return;
@@ -66,14 +69,19 @@ function parseData(json) {
         });
       }
 
-      if (torProps.infoHash) {
-        editionMap.get(edUuid).torrents.push({
-          format: torProps.format,
-          size: torProps.size,
-          snatches: torProps.snatches,
-          infoHash: torProps.infoHash
-        });
-      }
+      // Loop through the torrents array and push each one properly
+      torrentsList.forEach(tor => {
+        const torProps = tor.properties || {};
+        if (torProps.infoHash) {
+          editionMap.get(edUuid).torrents.push({
+            format: torProps.format,
+            size: torProps.size,
+            snatches: torProps.snatches,
+            infoHash: torProps.infoHash,
+            created_at: torProps.created_at || edProps.created_at || Date.now()
+          });
+        }
+      });
     });
 
     editionMap.forEach(editionData => {
@@ -85,7 +93,7 @@ function parseData(json) {
 }
 
 /**
- * Renders the HTML inside the expanded Edition child row using BS5 utility classes
+ * Renders the HTML inside the expanded Edition child row with Time Since included
  */
 function renderChildTorrentsTable(torrents) {
   if (!torrents || torrents.length === 0) {
@@ -95,7 +103,7 @@ function renderChildTorrentsTable(torrents) {
   let rowsHtml = torrents.map(t => `
     <tr>
       <td><span class="ui-icon ui-icon-document"></span> <strong>${t.format}</strong></td>
-      <td>${prettyBytes(t.size)}</td>
+      <td>${typeof prettyBytes === 'function' ? prettyBytes(t.size) : t.size}</td>
       <td>${t.snatches}</td>
       <td>${typeof timeSince === 'function' ? timeSince(t.created_at) : (t.created_at ? t.created_at : '-')}</td>
       <td>
@@ -147,9 +155,10 @@ module.exports = {
       <thead>
         <tr class="table-primary">
           <th class="d-none"></th>
+          <th></th>
           <th>APA Citation</th>
+          <th>Edition Date</th>
           <th>Revs</th>
-          <th>Date</th> <!-- Target column that collapses into the child drawer -->
         </tr>
       </thead>
       <tbody></tbody>
@@ -223,24 +232,24 @@ module.exports = {
             title: 'APA Citation',
             data: 'edition.apaCitation',
             className: 'apa-citation-column',
-            width: '45%',
+            width: '60%',
             render: (data) => `<strong>${data}</strong>`
+          },
+          { 
+            title: 'Edition Date',
+            data: 'edition.date',
+            className: 'text-center',
+            width: '20%',
+            render: (data) => adjDate(data)
           },
           { 
             title: 'Revs',
             data: 'edition.snatches',
             width: '15%',
             className: 'text-center'
-          },
-          { 
-            title: 'Date',
-            data: 'edition.date',
-            className: 'text-center',
-            width: '15%',
-            responsivePriority: 1, // Forces this column to collapse into the child area first
-            render: (data) => adjDate(data)
           }
-        ],
+        ]
+        ,
         order: [[1, 'asc']],
         rowGroup: {
           dataSrc: 'source.uuid',

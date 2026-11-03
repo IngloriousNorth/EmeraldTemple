@@ -37,17 +37,64 @@
                 "name": "Cambridge University Press"
               }
             },
-            "torrent": {
-              "properties": {
-                "format": "PDF",
-                "res": "HQ Scan",
-                "infoHash": "cc8799fd074352c0120f44e373c3100805d8fd86",
-                "snatches": 142,
-                "date": "1998",
-                "size": 15728640,
-                "release": "Cambridge-1998-Kant"
+            "torrents": [
+              {
+                "properties": {
+                  "format": "PDF",
+                  "res": "HQ Scan",
+                  "infoHash": "cc8799fd074352c0120f44e373c3100805d8fd86",
+                  "snatches": 142,
+                  "date": "1998",
+                  "size": 15728640,
+                  "release": "Cambridge-1998-Kant",
+                  "created_at": 1719446400000
+                }
+              },
+              {
+                "properties": {
+                  "format": "PDF",
+                  "res": "Clean OCR",
+                  "infoHash": "cc8799fd074352c0120f44e373c3100805d8fd89",
+                  "snatches": 75,
+                  "date": "1999",
+                  "size": 14200000,
+                  "release": "Cambridge-1998-Kant-Alt",
+                  "created_at": 1719532800000
+                }
               }
-            }
+            ]
+          },
+          {
+            "edition": {
+              "properties": {
+                "uuid": "ed_kant_2",
+                "title": "Critique of Pure Reason (Unified Edition)",
+                "snatches": 88,
+                "date": "2007",
+                "created_at": 1719619200000,
+                "apaCitation": "Kant, I. (2007). <i>Critique of Pure Reason</i> (P. Guyer & A. W. Wood, Eds. & Trans.). <span class=\"publisher_name\">Cambridge University Press</span>."
+              }
+            },
+            "publisher": {
+              "properties": {
+                "uuid": "pub_cambridge_01",
+                "name": "Cambridge University Press"
+              }
+            },
+            "torrents": [
+              {
+                "properties": {
+                  "format": "PDF",
+                  "res": "Retail OCR",
+                  "infoHash": "cc8799fd074352c0120f44e373c3100805d8fd88",
+                  "snatches": 88,
+                  "date": "2007",
+                  "size": 18874368,
+                  "release": "Cambridge-2007-Kant-Guyer",
+                  "created_at": 1719619200000
+                }
+              }
+            ]
           }
         ],
         [
@@ -103,17 +150,64 @@
                 "name": "Hackett Publishing Company"
               }
             },
-            "torrent": {
-              "properties": {
-                "format": "EPUB",
-                "res": "Digital Original",
-                "infoHash": "1234567890abcdef1234567890abcdef12345678",
-                "snatches": 289,
-                "date": "2000",
-                "size": 4194304,
-                "release": "Hackett-2000-Plato"
+            "torrents": [
+              {
+                "properties": {
+                  "format": "PDF",
+                  "res": "Digital Original",
+                  "infoHash": "1234567890abcdef1234567890abcdef12345678",
+                  "snatches": 289,
+                  "date": "2000",
+                  "size": 4194304,
+                  "release": "Hackett-2000-Plato",
+                  "created_at": 1719360000000
+                }
+              },
+              {
+                "properties": {
+                  "format": "PDF",
+                  "res": "Scanned Copy",
+                  "infoHash": "1234567890abcdef1234567890abcdef12345679",
+                  "snatches": 112,
+                  "date": "2001",
+                  "size": 6500000,
+                  "release": "Hackett-2000-Plato-Scan",
+                  "created_at": 1719400000000
+                }
               }
-            }
+            ]
+          },
+          {
+            "edition": {
+              "properties": {
+                "uuid": "ed_plato_2",
+                "title": "The Republic (Second Edition)",
+                "snatches": 95,
+                "date": "1992",
+                "created_at": 1719500000000,
+                "apaCitation": "Plato. (1992). <i>The Republic</i> (A. Bloom, Trans.). <span class=\"publisher_name\">Basic Books</span>."
+              }
+            },
+            "publisher": {
+              "properties": {
+                "uuid": "pub_basic_01",
+                "name": "Basic Books"
+              }
+            },
+            "torrents": [
+              {
+                "properties": {
+                  "format": "PDF",
+                  "res": "Retail PDF",
+                  "infoHash": "1234567890abcdef1234567890abcdef12345680",
+                  "snatches": 95,
+                  "date": "1992",
+                  "size": 5120000,
+                  "release": "Basic-1992-Plato-Bloom",
+                  "created_at": 1719500000000
+                }
+              }
+            ]
           }
         ],
         [
@@ -169,17 +263,32 @@
                 "name": "University of California Press"
               }
             },
-            "torrent": {
-              "properties": {
-                "format": "PDF",
-                "res": "Restored Facsimile",
-                "infoHash": "abcdef1234567890abcdef1234567890abcdef12",
-                "snatches": 95,
-                "date": "1999",
-                "size": 31457280,
-                "release": "UC-1999-Principia"
+            "torrents": [
+              {
+                "properties": {
+                  "format": "PDF",
+                  "res": "Restored Facsimile",
+                  "infoHash": "abcdef1234567890abcdef1234567890abcdef12",
+                  "snatches": 95,
+                  "date": "1999",
+                  "size": 31457280,
+                  "release": "UC-1999-Principia",
+                  "created_at": 1719273600000
+                }
+              },
+              {
+                "properties": {
+                  "format": "PDF",
+                  "res": "Optimized Scan",
+                  "infoHash": "abcdef1234567890abcdef1234567890abcdef13",
+                  "snatches": 40,
+                  "date": "2000",
+                  "size": 15000000,
+                  "release": "UC-1999-Principia-Opt",
+                  "created_at": 1719300000000
+                }
               }
-            }
+            ]
           }
         ],
         [
@@ -229,17 +338,32 @@
                 "name": "Penguin Classics"
               }
             },
-            "torrent": {
-              "properties": {
-                "format": "EPUB",
-                "res": "Digital Clean",
-                "infoHash": "9876543210fedcba9876543210fedcba98765432",
-                "snatches": 110,
-                "date": "1994",
-                "size": 2097152,
-                "release": "Penguin-1994-Spinoza"
+            "torrents": [
+              {
+                "properties": {
+                  "format": "PDF",
+                  "res": "Digital Clean",
+                  "infoHash": "9876543210fedcba9876543210fedcba98765432",
+                  "snatches": 110,
+                  "date": "1994",
+                  "size": 2097152,
+                  "release": "Penguin-1994-Spinoza",
+                  "created_at": 1719187200000
+                }
+              },
+              {
+                "properties": {
+                  "format": "PDF",
+                  "res": "Scanned Book",
+                  "infoHash": "9876543210fedcba9876543210fedcba98765433",
+                  "snatches": 35,
+                  "date": "1995",
+                  "size": 3500000,
+                  "release": "Penguin-1994-Spinoza-Scan",
+                  "created_at": 1719200000000
+                }
               }
-            }
+            ]
           }
         ],
         [
@@ -289,17 +413,32 @@
                 "name": "Penguin Classics"
               }
             },
-            "torrent": {
-              "properties": {
-                "format": "PDF",
-                "res": "Scanned Book",
-                "infoHash": "5544332211eeddcc5544332211eeddcc55443322",
-                "snatches": 204,
-                "date": "1985",
-                "size": 14680064,
-                "release": "Penguin-1985-Hobbes"
+            "torrents": [
+              {
+                "properties": {
+                  "format": "PDF",
+                  "res": "Scanned Book",
+                  "infoHash": "5544332211eeddcc5544332211eeddcc55443322",
+                  "snatches": 204,
+                  "date": "1985",
+                  "size": 14680064,
+                  "release": "Penguin-1985-Hobbes",
+                  "created_at": 1719100800000
+                }
+              },
+              {
+                "properties": {
+                  "format": "PDF",
+                  "res": "Retypeset Edition",
+                  "infoHash": "5544332211eeddcc5544332211eeddcc55443323",
+                  "snatches": 88,
+                  "date": "1988",
+                  "size": 9200000,
+                  "release": "Penguin-1985-Hobbes-Clean",
+                  "created_at": 1719150000000
+                }
               }
-            }
+            ]
           }
         ],
         [
@@ -349,17 +488,32 @@
                 "name": "University of Chicago Press"
               }
             },
-            "torrent": {
-              "properties": {
-                "format": "EPUB",
-                "res": "Retail Edition",
-                "infoHash": "aabbccddeeff00112233445566778899aabbccdd",
-                "snatches": 340,
-                "date": "2003",
-                "size": 3145728,
-                "release": "Chicago-2003-Machiavelli"
+            "torrents": [
+              {
+                "properties": {
+                  "format": "PDF",
+                  "res": "Retail Edition",
+                  "infoHash": "aabbccddeeff00112233445566778899aabbccdd",
+                  "snatches": 340,
+                  "date": "2003",
+                  "size": 3145728,
+                  "release": "Chicago-2003-Machiavelli",
+                  "created_at": 1719014400000
+                }
+              },
+              {
+                "properties": {
+                  "format": "PDF",
+                  "res": "OCR Searchable",
+                  "infoHash": "aabbccddeeff00112233445566778899aabbccde",
+                  "snatches": 120,
+                  "date": "2004",
+                  "size": 4000000,
+                  "release": "Chicago-2003-Machiavelli-OCR",
+                  "created_at": 1719050000000
+                }
               }
-            }
+            ]
           }
         ],
         [
@@ -409,17 +563,32 @@
                 "name": "Cambridge University Press"
               }
             },
-            "torrent": {
-              "properties": {
-                "format": "PDF",
-                "res": "Clean OCR",
-                "infoHash": "11223344556677889900aabbccddeeff11223344",
-                "snatches": 165,
-                "date": "1996",
-                "size": 8388608,
-                "release": "Cambridge-1996-Descartes"
+            "torrents": [
+              {
+                "properties": {
+                  "format": "PDF",
+                  "res": "Clean OCR",
+                  "infoHash": "11223344556677889900aabbccddeeff11223344",
+                  "snatches": 165,
+                  "date": "1996",
+                  "size": 8388608,
+                  "release": "Cambridge-1996-Descartes",
+                  "created_at": 1718928000000
+                }
+              },
+              {
+                "properties": {
+                  "format": "PDF",
+                  "res": "Scan High Quality",
+                  "infoHash": "11223344556677889900aabbccddeeff11223345",
+                  "snatches": 50,
+                  "date": "1997",
+                  "size": 10200000,
+                  "release": "Cambridge-1996-Descartes-HQ",
+                  "created_at": 1718960000000
+                }
               }
-            }
+            ]
           }
         ],
         [
@@ -469,17 +638,32 @@
                 "name": "Oxford University Press"
               }
             },
-            "torrent": {
-              "properties": {
-                "format": "PDF",
-                "res": "Digital Facsimile",
-                "infoHash": "eeddccbbaa99887766554433221100ffeeeeddcc",
-                "snatches": 128,
-                "date": "2007",
-                "size": 19922944,
-                "release": "Oxford-2007-Hume"
+            "torrents": [
+              {
+                "properties": {
+                  "format": "PDF",
+                  "res": "Digital Facsimile",
+                  "infoHash": "eeddccbbaa99887766554433221100ffeeeeddcc",
+                  "snatches": 128,
+                  "date": "2007",
+                  "size": 19922944,
+                  "release": "Oxford-2007-Hume",
+                  "created_at": 1718841600000
+                }
+              },
+              {
+                "properties": {
+                  "format": "PDF",
+                  "res": "Bookmarked PDF",
+                  "infoHash": "eeddccbbaa99887766554433221100ffeeeeddcd",
+                  "snatches": 60,
+                  "date": "2008",
+                  "size": 18500000,
+                  "release": "Oxford-2007-Hume-Bookmarks",
+                  "created_at": 1718880000000
+                }
               }
-            }
+            ]
           }
         ],
         [
@@ -529,17 +713,32 @@
                 "name": "Oxford University Press"
               }
             },
-            "torrent": {
-              "properties": {
-                "format": "PDF",
-                "res": "Archive Scan",
-                "infoHash": "778899aabbccddeeff0011223344556677889900",
-                "snatches": 92,
-                "date": "1977",
-                "size": 25165824,
-                "release": "Oxford-1977-Hegel"
+            "torrents": [
+              {
+                "properties": {
+                  "format": "PDF",
+                  "res": "Archive Scan",
+                  "infoHash": "778899aabbccddeeff0011223344556677889900",
+                  "snatches": 92,
+                  "date": "1977",
+                  "size": 25165824,
+                  "release": "Oxford-1977-Hegel",
+                  "created_at": 1718755200000
+                }
+              },
+              {
+                "properties": {
+                  "format": "PDF",
+                  "res": "Clean Scan",
+                  "infoHash": "778899aabbccddeeff0011223344556677889901",
+                  "snatches": 45,
+                  "date": "1979",
+                  "size": 22000000,
+                  "release": "Oxford-1977-Hegel-Clean",
+                  "created_at": 1718790000000
+                }
               }
-            }
+            ]
           }
         ],
         [
@@ -589,17 +788,32 @@
                 "name": "Penguin Classics"
               }
             },
-            "torrent": {
-              "properties": {
-                "format": "EPUB",
-                "res": "Digital Clean",
-                "infoHash": "3344556677889900aabbccddeeff112233445566",
-                "snatches": 245,
-                "date": "2003",
-                "size": 3670016,
-                "release": "Penguin-2003-Nietzsche"
+            "torrents": [
+              {
+                "properties": {
+                  "format": "PDF",
+                  "res": "Digital Clean",
+                  "infoHash": "3344556677889900aabbccddeeff112233445566",
+                  "snatches": 245,
+                  "date": "2003",
+                  "size": 3670016,
+                  "release": "Penguin-2003-Nietzsche",
+                  "created_at": 1718668800000
+                }
+              },
+              {
+                "properties": {
+                  "format": "PDF",
+                  "res": "Retail PDF",
+                  "infoHash": "3344556677889900aabbccddeeff112233445567",
+                  "snatches": 110,
+                  "date": "2004",
+                  "size": 4100000,
+                  "release": "Penguin-2003-Nietzsche-Retail",
+                  "created_at": 1718700000000
+                }
               }
-            }
+            ]
           }
         ],
         [
@@ -649,17 +863,32 @@
                 "name": "W. W. Norton & Company"
               }
             },
-            "torrent": {
-              "properties": {
-                "format": "PDF",
-                "res": "Retail OCR",
-                "infoHash": "887766554433221100ffeeddccbbaa9988776655",
-                "snatches": 412,
-                "date": "1989",
-                "size": 5242880,
-                "release": "Norton-1989-Freud"
+            "torrents": [
+              {
+                "properties": {
+                  "format": "PDF",
+                  "res": "Retail OCR",
+                  "infoHash": "887766554433221100ffeeddccbbaa9988776655",
+                  "snatches": 412,
+                  "date": "1989",
+                  "size": 5242880,
+                  "release": "Norton-1989-Freud",
+                  "created_at": 1718410000000
+                }
+              },
+              {
+                "properties": {
+                  "format": "PDF",
+                  "res": "Scanned Edition",
+                  "infoHash": "887766554433221100ffeeddccbbaa9988776656",
+                  "snatches": 130,
+                  "date": "1990",
+                  "size": 6100000,
+                  "release": "Norton-1989-Freud-Scan",
+                  "created_at": 1718450000000
+                }
               }
-            }
+            ]
           }
         ],
         [
@@ -715,17 +944,32 @@
                 "name": "Dover Publications"
               }
             },
-            "torrent": {
-              "properties": {
-                "format": "PDF",
-                "res": "Library Scan",
-                "infoHash": "4433221100ffeeddccbbaa998877665544332211",
-                "snatches": 1988,
-                "date": "1969",
-                "size": 18874368,
-                "release": "Dover-1969-Schopenhauer"
+            "torrents": [
+              {
+                "properties": {
+                  "format": "PDF",
+                  "res": "Library Scan",
+                  "infoHash": "4433221100ffeeddccbbaa998877665544332211",
+                  "snatches": 1988,
+                  "date": "1969",
+                  "size": 18874368,
+                  "release": "Dover-1969-Schopenhauer",
+                  "created_at": 1718320000000
+                }
+              },
+              {
+                "properties": {
+                  "format": "PDF",
+                  "res": "High-Res Archive Scan",
+                  "infoHash": "4433221100ffeeddccbbaa998877665544332212",
+                  "snatches": 340,
+                  "date": "1972",
+                  "size": 24000000,
+                  "release": "Dover-1969-Schopenhauer-HR",
+                  "created_at": 1718360000000
+                }
               }
-            }
+            ]
           }
         ],
         [

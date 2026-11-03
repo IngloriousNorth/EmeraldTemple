@@ -11,7 +11,8 @@ const APPROVED_DOMAINS = [
     "plato.stanford.edu",
     "zenodo.org",
     "osf.io",
-    "localhost"
+    "localhost",
+    "buddhanet.net"
 ];
 
 module.exports = {
@@ -32,28 +33,39 @@ module.exports = {
         }
     },
 
-    /**
-     * Adds or seeds a dropped file/torrent via window.client, 
-     * triggers auto-download, and fires callback with the active torrent.
-     */
     addTorrentOrFile(fileOrSource, callback) {
+        // 1. Prompt for webseed URL before mounting or seeding
+        const webseedUrl = prompt("Enter the accredited webseed URL for this file (must match whitelist policy):", "https://archive.org/download/");
+        
+        if (!webseedUrl) {
+            console.info("[MVC.Control.Webtorrent] Torrent creation canceled by user.");
+            return;
+        }
+
+        // 2. Validate against whitelist policy
+        if (!this.isWhitelisted(webseedUrl)) {
+            console.error(`[SECURITY REJECTED] Domain not allowed by whitelist policy: ${webseedUrl}`);
+            alert(`[REJECTED] Webseed domain is not whitelisted: ${webseedUrl}`);
+            return;
+        }
+
         const client = window.client;
         if (!client) {
             console.error("[MVC.Control.Webtorrent] window.client WebTorrent instance not found.");
             return;
         }
 
-        // Determine if it's a File object or buffer/magnet string
         const isFile = fileOrSource instanceof File || fileOrSource instanceof Blob;
-        const addMethod = isFile ? client.seed.bind(client) : client.add.bind(client);
 
-        addMethod(fileOrSource, { dht: false, tracker: false, pex: true }, (torrent) => {
+        // 3. Mount with webseed included in options
+        client.seed(fileOrSource, { dht: false, tracker: false, pex: true, urlList: [webseedUrl] }, (torrent) => {
             console.info(`[MVC.Control.Webtorrent] Torrent active. InfoHash: ${torrent.infoHash}`);
 
             // Automatically trigger genuine browser-level .torrent file download
-            torrent.on('metadata', () => {
-                try {
-                    if (torrent.torrentFile) {
+            console.log("GOT SEED METADATA");
+                        
+                        MVC.Hook.Hero.assertProgress(torrent.infoHash);
+
                         // Create a true binary blob with bittorrent MIME type
                         const torrentBlob = new Blob([torrent.torrentFile], { type: 'application/x-bittorrent' });
                         const blobUrl = URL.createObjectURL(torrentBlob);
@@ -76,25 +88,17 @@ module.exports = {
                         }, 1000);
 
                         console.info(`[MVC.Control.Webtorrent] Successfully dispatched literal browser download for: ${fileName}`);
-                    }
-                } catch (blobErr) {
-                    console.error("[MVC.Control.Webtorrent] Failed to trigger literal browser download for .torrent blob:", blobErr);
-                }
-            });
-
-            // Trigger file data stream download pipeline
-            this.DL(torrent);
 
             if (typeof callback === 'function') {
                 callback(torrent);
             }
         });
     },
+
     DL: function(torrent) {
         if (!torrent) return;
         const client = window.client;
         if (!client) return;
-
 
         MVC.Hook.Hero.assertProgress(torrent.infoHash);
         const infoHash = torrent.infoHash;
@@ -113,10 +117,10 @@ module.exports = {
                 const file = activeTorrent.files[0];
                 if (!file) return;
 
-
                 torrent.on("progress", ()=>{
                     MVC.Hook.Hero.onProgress(torrent);
-                })
+                });
+                
                 file.getBlob(function(err, blob) {
                     if (err) throw err;
                     const url = URL.createObjectURL(blob);
