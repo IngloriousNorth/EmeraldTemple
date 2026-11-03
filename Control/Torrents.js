@@ -156,18 +156,23 @@ module.exports = {
     `);
 
     const isGitHubPages = window.location.hostname.includes('github.io');
-    const repoPath = isGitHubPages 
-        ? (window.location.pathname.split('/')[1] ? `/${window.location.pathname.split('/')[1]}` : '') 
-        : '../';
+    const repoPath = (window.location.pathname.split('/')[1] ? `/${window.location.pathname.split('/')[1]}` : '')
 
-    const fragmentBase = `${repoPath}/Base`;
+    let fragmentBase;
+    if(isGitHubPages){
+      fragmentBase = `${repoPath}`;
+    }
+    else{
+      fragmentBase = '..';
+    }
+    
 
     $.getJSON(`${fragmentBase}/dummy.json`, function(rawJson) {
       const tableData = parseData(rawJson);
 
       const tableInstance = $(tableSelector).DataTable({
         data: tableData,
-        responsive: true /* {
+        responsive: {
           details: {
             type: 'column',
             target: 4, // Target index 4 (Date) as the responsive trigger/column
@@ -194,7 +199,7 @@ module.exports = {
               `);
             }
           }
-        }*/,
+        },
         scroller: true,
         scrollY: 'calc(100vh - 190px)',
         scrollCollapse: true,
