@@ -31,16 +31,18 @@ const WebTorrentControl = {
     },
 
     seed(fileOrSource, rayPayLoad, seedOptions, cb) {        
-        if (rayPayLoad.urlList.length === 0) {//white-listed.
+        if (seedOptions.urlList.length === 0) {//white-listed.
             console.info("[MVC.Control.webtorrent] Torrent creation canceled by user.");
             return;
         }
 
-        if (!this.isWhitelisted(webseedUrl)) {
-            console.error(`[SECURITY REJECTED] Domain not allowed by whitelist policy: ${webseedUrl}`);
-            alert(`[REJECTED] Webseed domain is not whitelisted: ${webseedUrl}`);
-            return;
-        }
+        seedOptions.urlList.forEach(function(URL){
+            if(!isWhitelisted(URL)){
+                return;
+                console.error(`[SECURITY REJECTED] Domain not allowed by whitelist policy: ${webseedUrl}`);
+                alert(`[REJECTED] Webseed domain is not whitelisted: ${webseedUrl}`);
+            }
+        })
 
         const client = window.client || window.webtorrentClient;
         if (!client) {
