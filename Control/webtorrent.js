@@ -103,7 +103,7 @@ const WebTorrentControl = {
         }
 
         if (window.MVC?.Hook?.Hero && typeof window.MVC.Hook.Hero.assertProgress === 'function') {
-            window.MVC.Hook.Hero.assertProgress(infoHash);
+            MVC.Hook.Hero.assertProgress(infoHash);
         }
 
         let activeTorrent = client.get(infoHash);
