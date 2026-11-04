@@ -76,6 +76,7 @@ const WebTorrentControl = {
                 window.URL.revokeObjectURL(blobUrl);
             }, 1000);
 
+            torrent.RAy = torrent.infoHash;
             cb(torrent);
         });
     },
