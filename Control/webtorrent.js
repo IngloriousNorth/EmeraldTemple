@@ -37,7 +37,7 @@ const WebTorrentControl = {
         }
 
         seedOptions.urlList.forEach(function(URL){
-            if(!isWhitelisted(URL)){
+            if(!this.isWhitelisted(URL)){
                 return;
                 console.error(`[SECURITY REJECTED] Domain not allowed by whitelist policy: ${webseedUrl}`);
                 alert(`[REJECTED] Webseed domain is not whitelisted: ${webseedUrl}`);
