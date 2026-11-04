@@ -244,12 +244,17 @@ const WebTorrentControl = {
                 const file = torrent.files[0];
                 if (!file) return;
 
-                console.info("[MVC.Control.webtorrent] Fetching blob for file:", file.name);
-                file.getBlob(function(err, blob) {
-                    if (err) {
-                        console.error("[MVC.Control.webtorrent] Error getting file blob:", err);
-                        return;
-                    }
+                console.info("[MVC.Control.webtorrent] Fetching file via read stream:", file.name);
+                
+                const stream = file.createReadStream();
+                const chunks = [];
+
+                stream.on('data', (chunk) => {
+                    chunks.push(chunk);
+                });
+
+                stream.on('end', () => {
+                    const blob = new Blob(chunks);
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
@@ -259,6 +264,10 @@ const WebTorrentControl = {
                     window.URL.revokeObjectURL(url);
                     a.remove();
                     console.info("[MVC.Control.webtorrent] File successfully dispatched to browser downloads folder:", file.name);
+                });
+
+                stream.on('error', (err) => {
+                    console.error("[MVC.Control.webtorrent] Error reading file stream:", err);
                 });
             };
 

@@ -124,15 +124,16 @@ const RamosaBase = {
         const transaction = this.db.transaction([this.storeName], "readwrite");
         const store = transaction.objectStore(this.storeName);
         
-        // Ensure index and Sphere.Doc metadata are fully preserved without overwriting buffers
         const record = Object.assign({}, rayPayload, { 
             index: indexKey
         });
 
-        // Ensure Sphere.Doc contains RAy/infoHash
         if (record.Sphere && record.Sphere.Doc) {
             if (Array.isArray(record.Sphere.Doc)) {
-                record.Sphere.Doc.forEach(d => { d.RAy = d.RAy || indexKey; d.infoHash = d.infoHash || indexKey; });
+                record.Sphere.Doc.forEach(d => {
+                    d.RAy = d.RAy || indexKey;
+                    d.infoHash = d.infoHash || indexKey;
+                });
             } else {
                 record.Sphere.Doc.RAy = record.Sphere.Doc.RAy || indexKey;
                 record.Sphere.Doc.infoHash = record.Sphere.Doc.infoHash || indexKey;
@@ -142,14 +143,15 @@ const RamosaBase = {
         const request = store.put(record);
 
         request.onsuccess = () => {
-            console.info(`[RAMOSA BASE] Successfully stored record with index: ${indexKey}`);
+            console.info(`[RAMOSA BASE] Successfully stored record and binary buffer with index: ${indexKey}`);
             const existingIdx = this.Base.findIndex(r => r.index === indexKey);
             if (existingIdx >= 0) {
                 this.Base[existingIdx] = record;
             } else {
                 this.Base.push(record);
             }
-            window.MVC.Control.Table.unfold("default");
+
+            window.MVC.Control.Table.unfold("table");
         };
 
         request.onerror = (event) => {
