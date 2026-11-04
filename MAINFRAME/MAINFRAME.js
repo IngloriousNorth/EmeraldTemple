@@ -7,9 +7,9 @@ import RamosaControl from "../Control/Ramosa.js";
 import WebtorrentHook from "../Hook/webtorrent.js";
 import RamosaHook from "../Hook/Ramosa.js";
 
-import TorrentsControl from '../Control/Torrents.js';
+import TableControl from '../Control/Table.js';
 
-import TorrentsBase from '../Base/Torrents.js';
+import TableBase from '../Base/Table.js';
 
 import RamosaBase from '../Base/Ramosa.js';
 

@@ -17,23 +17,12 @@ const IndexControl = {
                 helm: [
                     {
                         page: "torrents",
+                        /* MAIN FUNCTION, of EmeraldTemple */
                         fn: function() {
                             if (MVC.Control && MVC.Control.Torrents) {
-                                MVC.Control.Torrents.table("torrents");
-
+                                //webtorrent - neutral
+                                MVC.Control.Table.unfold("default");
                             }
-                        }
-                    },
-                    {
-                        page: "top10",
-                        fn: function() {
-                            window.async.parallel([
-                                function(cb) { MVC.Control.Torrents.table("day", cb); },
-                                function(cb) { MVC.Control.Torrents.table("week", cb); },
-                                function(cb) { MVC.Control.Torrents.table("month", cb); },
-                                function(cb) { MVC.Control.Torrents.table("year", cb); },
-                                function(cb) { MVC.Control.Torrents.table("alltime", cb); }
-                            ]);
                         }
                     },
                     {
@@ -45,11 +34,7 @@ const IndexControl = {
                                     cb(null); 
                                 },
                                 function(cb) { 
-                                    if (MVC.Control && MVC.Control.Torrents && typeof MVC.Control.Torrents.initialize === 'function') {
-                                        MVC.Control.Torrents.initialize("node", cb); 
-                                    } else {
-                                        cb(null);
-                                    }
+                                   
                                 }
                             ]);
                         }

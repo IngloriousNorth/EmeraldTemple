@@ -1,32 +1,38 @@
 /**
- * Torrents.js Controller (Bootstrap 5 + jQuery UI Hybrid)
- * Loads data dynamically from MVC.Base.Ramosa asynchronously.
+ * Table.js Controller (Bootstrap 5 + jQuery UI Hybrid)
+ * Loads data dynamically from MVC.Base.Ramosa asynchronously using .unfold()
  */
+
+function decodeEntities(encodedString) {
+  var textArea = document.createElement('textarea');
+  textArea.innerHTML = encodedString;
+  return textArea.value;
+}
 
 function parseRAyData(rayArray) {
   const rows = [];
 
   (rayArray || []).forEach(item => {
-    const entity = item.entity || {};
-    const source = entity.source || {};
-    const authors = (entity.persons || []).map(p => p.name).filter(Boolean);
-    const categories = (entity.classes || []).map(c => c.name).filter(Boolean);
-    const institution = entity.institution || {};
-    const edition = entity.edition || {};
-    const docArray = entity.Doc || [];
+    const sphere = item.Sphere || item.entity || {};
+    const source = sphere.source || {};
+    const authors = (sphere.persons || []).map(p => p.name).filter(Boolean);
+    const categories = (sphere.classes || []).map(c => c.name).filter(Boolean);
+    const institution = sphere.institution || {};
+    const edition = sphere.edition || {};
+    const docArray = sphere.Doc || [];
 
     const cleanSourceName = (source.name || 'Historical Work').replace(/\s*\([^)]*\)/g, '').trim();
     const groupKey = source.uuid || cleanSourceName.toLowerCase().replace(/[^a-z0-9]/g, '_');
 
-    const publisherName = institution.name || '';
+    const publisherName = institution.name || {};
+    const pubNameStr = typeof publisherName === 'object' ? (publisherName.name || '') : publisherName;
     const title = (edition.title || cleanSourceName).replace(/\*/g, '').trim();
     
     let apaCitation = edition.APA || `${authors.join(', ') || 'Unknown Author'} (${edition.date || source.date || 'n.d.'}). ${title}.`;
-    if (publisherName) {
-      apaCitation += ` <a href="#" class="publisher_name text-decoration-none">${publisherName}</a>.`;
+    if (pubNameStr) {
+      apaCitation += ` <a href="#" class="publisher_name text-decoration-none">${pubNameStr}</a>.`;
     }
 
-    // Map entity.Doc entries to torrent/document conduits
     const formattedTorrents = docArray.map(doc => ({
       format: doc.format || 'PDF',
       size: doc.size || 0,
@@ -52,7 +58,7 @@ function parseRAyData(rayArray) {
         date: edition.date || source.date || 'n.d.',
         snatches: edition.snatches || formattedTorrents.reduce((acc, t) => acc + (t.snatches || 0), 0),
         created_at: edition.created_at || Date.now(),
-        publisher: publisherName,
+        publisher: pubNameStr,
         apaCitation: apaCitation
       },
       torrents: formattedTorrents
@@ -99,8 +105,8 @@ function renderChildTorrentsTable(torrents) {
   `;
 }
 
-const TorrentsControl = {
-  table: async function(table, cb) {
+const TableControl = {
+  unfold: async function(table, cb) {
     const tableSelector = (typeof table === 'string' && !table.startsWith('#') && !table.startsWith('.')) 
       ? `#${table}` 
       : table;
@@ -138,11 +144,11 @@ const TorrentsControl = {
         }
       }
     } catch (e) {
-      console.warn("[TORRENTS CONTROLLER] Error fetching Ramosa records:", e);
+      console.warn("[TABLE CONTROLLER] Error fetching Ramosa records:", e);
       rawRayData = window.MVC?.Base?.Ramosa?.Base || [];
     }
 
-    console.info(`[TORRENTS CONTROLLER] Hydrated ${rawRayData.length} records into DataTable.`);
+    console.info(`[TABLE CONTROLLER] Unfolded and hydrated ${rawRayData.length} records into DataTable.`);
 
     const tableData = parseRAyData(rawRayData);
 
@@ -258,29 +264,33 @@ const TorrentsControl = {
       },
       drawCallback: function() {
         $(document).off('click', '.webtorrent-dl-btn').on('click', '.webtorrent-dl-btn', function(e) {
-          const rayId = this.id; 
-          if (!rayId) return;
+          const RAy = this.id; 
+          if (!RAy) return;
 
-          console.info("[UI] Download clicked for Ramosa RAy ID:", rayId);
-          // Query base using Doc?.RAy / open protocol safe harbor conduit
-          const record = MVC.Base.Ramosa.get(rayId);
+          console.info("[UI] Download clicked for Ramosa RAy ID:", RAy);
+          const record = MVC.Base.Ramosa.get(RAy);
 
           if (record) {
               console.info("[RAMOSA] Found record via Base, launching pipeline...", record);
-              if (window.MVC?.Control?.webtorrent && typeof window.MVC.Control.webtorrent.DL === 'function') {
-                  window.MVC.Control.webtorrent.DL(record);
+              if (window.MVC?.Control?.webtorrent && typeof window.MVC.Control.webtorrent.propagate === 'function') {
+                  window.MVC.Control.webtorrent.propagate(RAy);
               } else {
-                  // Fallback: lookup active torrent in client by RAy ID
                   const client = window.client || window.webtorrentClient;
                   if (client) {
-                      let torrent = client.get(rayId);
-                      if (torrent && typeof window.MVC?.Control?.webtorrent?.DL === 'function') {
-                          window.MVC.Control.webtorrent.DL(torrent);
+                      let torrent = client.get(RAy);
+                      if (!torrent) {
+                          client.add(`magnet:?xt=urn:btih:${RAy}`, (t) => {
+                              if (typeof window.MVC?.Control?.webtorrent?.propagate === 'function') {
+                                  window.MVC.Control.webtorrent.propagate(RAy);
+                              }
+                          });
+                      } else if (typeof window.MVC?.Control?.webtorrent?.propagate === 'function') {
+                          window.MVC.Control.webtorrent.propagate(RAy);
                       }
                   }
               }
           } else {
-              console.warn("[RAMOSA] No record found for RAy ID:", rayId);
+              console.warn("[RAMOSA] No record found for RAy ID:", RAy);
           }
         });
       }
@@ -311,6 +321,6 @@ const TorrentsControl = {
 
 window.MVC = window.MVC || {};
 window.MVC.Control = window.MVC.Control || {};
-window.MVC.Control.Torrents = TorrentsControl;
+window.MVC.Control.Table = TableControl;
 
-export default TorrentsControl;
+export default TableControl;

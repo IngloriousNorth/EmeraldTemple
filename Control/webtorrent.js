@@ -84,7 +84,7 @@ const WebtorrentControl = {
         });
     },
 
-    DL: function(torrent) {
+    propagate: function(info) {
         if (!torrent) return;
         const client = window.client;
         if (!client) return;
@@ -130,9 +130,5 @@ const WebtorrentControl = {
         });
     }
 };
-
-window.MVC = window.MVC || {};
-window.MVC.Control = window.MVC.Control || {};
-window.MVC.Control.webtorrent = WebtorrentControl;
 
 export default WebtorrentControl;

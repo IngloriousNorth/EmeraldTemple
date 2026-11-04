@@ -132,7 +132,7 @@ const RamosaBase = {
             if (!this.Base.some(r => r.index === indexKey || r.Sphere.Doc?.RAy === indexKey)) {
                 MVC.Base.Ramosa.Base.push(record);
                 if (typeof MVC.Control?.Torrents?.table === 'function') {
-                    MVC.Control.Torrents.table("torrents");
+                    MVC.Control.Table.unfold("default");
                 }
             }
         };
