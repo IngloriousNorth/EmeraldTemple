@@ -12,7 +12,7 @@ const APPROVED_DOMAINS = [
     "buddhanet.net"
 ];
 
-const WebtorrentControl = {
+const WebTorrentControl = {
     isWhitelisted(urlStr) {
         try {
             const parsed = new URL(urlStr);
@@ -131,4 +131,4 @@ const WebtorrentControl = {
     }
 };
 
-export default WebtorrentControl;
+export default WebTorrentControl;

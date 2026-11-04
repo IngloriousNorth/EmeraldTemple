@@ -1,3 +1,6 @@
+//EmeraldTemple Universal p2p GraphDB imports webtorrent functions
+import './webtorrent.js'
+
 /**
  * Table.js Controller (Bootstrap 5 + jQuery UI Hybrid)
  * Loads data dynamically from MVC.Base.Ramosa asynchronously using .unfold()
@@ -318,9 +321,5 @@ const TableControl = {
     }
   }
 };
-
-window.MVC = window.MVC || {};
-window.MVC.Control = window.MVC.Control || {};
-window.MVC.Control.Table = TableControl;
 
 export default TableControl;

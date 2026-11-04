@@ -47,8 +47,10 @@ const RamosaBase = {
         const records = this.Base || [];
         if (RAy) {
             const found = records.find(r => 
-                r.Sphere.Doc?.RAy === RAy ||
-                (r.Sphere?.Doc.RAy === RAy)
+                r.index === RAy ||
+                r.Sphere?.Doc?.RAy === RAy ||
+                (Array.isArray(r.Sphere?.Doc) && r.Sphere.Doc.some(d => d.RAy === RAy)) ||
+                (Array.isArray(r.Doc) && r.Doc.some(d => d.RAy === RAy))
             );
             if (!found && !this.isLoaded) {
                 console.warn("[RAMOSA BASE] get() called before Base was fully hydrated. Triggering background loadAll...");
@@ -119,20 +121,19 @@ const RamosaBase = {
         const transaction = this.db.transaction([this.storeName], "readwrite");
         const store = transaction.objectStore(this.storeName);
         
-        // Structure payload ensuring Doc and Doc.RAy anchor the GraphDB identifier
+        // Ensure index matches the GraphDB ID at top-level and inside Sphere.Doc
         const record = Object.assign({}, rayPayload, { 
-            index: indexKey,
-            Doc: Object.assign({}, rayPayload.Doc || {}, { RAy: indexKey })
+            index: indexKey
         });
 
         const request = store.put(record);
 
         request.onsuccess = () => {
-            console.info(`[RAMOSA BASE] Successfully stored Sphere with Doc.RAy index: ${indexKey}`);
-            if (!this.Base.some(r => r.index === indexKey || r.Sphere.Doc?.RAy === indexKey)) {
+            console.info(`[RAMOSA BASE] Successfully stored Sphere with index: ${indexKey}`);
+            if (!this.Base.some(r => r.index === indexKey)) {
                 MVC.Base.Ramosa.Base.push(record);
-                if (typeof MVC.Control?.Torrents?.table === 'function') {
-                    MVC.Control.Table.unfold("default");
+                if (typeof MVC.Control?.Table?.unfold === 'function') {
+                    MVC.Control.Table.unfold("table");
                 }
             }
         };

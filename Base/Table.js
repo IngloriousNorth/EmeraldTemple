@@ -1,4 +1,4 @@
-const TorrentsBase = {
+const TableBase = {
     tableData: [],
     dtRecs: [],
     refresh: function() {
@@ -12,8 +12,4 @@ const TorrentsBase = {
     }
 };
 
-window.MVC = window.MVC || {};
-window.MVC.Base = window.MVC.Base || {};
-window.MVC.Base.Torrents = TorrentsBase;
-
-export default TorrentsBase;
+export default TableBase;

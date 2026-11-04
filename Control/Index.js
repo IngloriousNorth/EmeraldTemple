@@ -11,18 +11,16 @@ const IndexControl = {
         async function boot() {
             // 3. Build TEMPEST Config Object
             const tempestConfig = {
-                defaultPage: "torrents",
+                defaultPage: "table",
                 fade: true,
-                pages: ["webtorrent", "torrents", "top10", "node", "Category", "privacy"],
+                pages: ["table", "top10", "node", "Category", "privacy"],
                 helm: [
                     {
-                        page: "torrents",
+                        page: "table",
                         /* MAIN FUNCTION, of EmeraldTemple */
                         fn: function() {
-                            if (MVC.Control && MVC.Control.Torrents) {
-                                //webtorrent - neutral
-                                MVC.Control.Table.unfold("default");
-                            }
+                            //torrent-neutral table
+                            MVC.Control.Table.unfold("default");
                         }
                     },
                     {

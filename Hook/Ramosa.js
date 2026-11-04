@@ -1,6 +1,12 @@
 // src/Hook/Ramosa.js
 import MVC from '../MAINFRAME/MAINFRAME.js';
 
+//imports webtorrent upload fn() with hard-coded whitelist
+//EmeraldTemple's *original public domain whitelist, via Open Source coding intent* can be found in Hook/webtorrent.js
+import WebTorrentControl from '../Control/webtorrent.js';
+//extra control factor
+//FF
+
 const RamosaHook = {
     unfurl: function(selector = 'body') {
         if (!window.dragDrop) {
@@ -51,7 +57,7 @@ const RamosaHook = {
                         return;
                     }
                     if (webSeedUrl && webSeedUrl.trim() !== "") {
-                        if (!MVC.Control?.webtorrent?.isWhitelisted(webSeedUrl)) {
+                        if (!WebTorrentControl.isWhitelisted(webSeedUrl)) {
                             console.error("[MVC.Hook.Webtorrent] Security check failed: Webseed URL is not whitelisted. Aborted.");
                             alert("[REJECTED] The entered Web Seed URL is not whitelisted.");
                             return;

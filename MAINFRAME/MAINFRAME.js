@@ -1,10 +1,8 @@
 // MAINFRAME.js
 import Index from '../Control/Index.js';
 
-import WebtorrentControl from "../Control/webtorrent.js";
 import RamosaControl from "../Control/Ramosa.js";
 
-import WebtorrentHook from "../Hook/webtorrent.js";
 import RamosaHook from "../Hook/Ramosa.js";
 
 import TableControl from '../Control/Table.js';
@@ -15,22 +13,16 @@ import RamosaBase from '../Base/Ramosa.js';
 
 const MVC = {
     Base: {
-        Torrents: TorrentsBase,
+        Table: TableBase,
         Ramosa: RamosaBase
     },
     Control: {
         Index : Index,
-        Torrents: TorrentsControl,
-        webtorrent: WebtorrentControl,
+        Table: TableControl,
         Ramosa: RamosaControl
     },
     Hook: {
-        webtorrent: WebtorrentHook,
         Ramosa: RamosaHook
-    },
-    // Convenient shortcut accessor for Ramosa Swarm RAy payload storage / retrieval
-    Ramosa: {
-        Swarm: RamosaBase
     }
 };
 console.log("BASE/Ramosa", MVC.Base.Ramosa)
