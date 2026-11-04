@@ -82,75 +82,134 @@ const WebTorrentControl = {
     },
 
     propagate: function(info) {
-        if (!info || Object.keys(info).length === 0) return;
-
-        if (!client) {
-            console.error("[MVC.Control.webtorrent] WebTorrent client not found during propagate()");
-            return;
-        }
-
-        // Extract infoHash / RAy from Ramosa record structure (record root index, Doc array, or edition metadata)
-        let infoHash = info.index || info.RAy || info.infoHash;
-        if (!infoHash && info.Sphere) {
-            if (Array.isArray(info.Sphere.Doc) && info.Sphere.Doc.length > 0) {
-                infoHash = info.Sphere.Doc[0].RAy || info.Sphere.Doc[0].infoHash;
+        try {
+            console.info("[MVC.Control.webtorrent] propagate() invoked with info:", info);
+            
+            if (!info || Object.keys(info).length === 0) {
+                console.warn("[MVC.Control.webtorrent] propagate() aborted: info object is empty.");
+                return;
             }
-        }
 
-        if (!infoHash) {
-            console.error("[MVC.Control.webtorrent] Could not resolve infoHash from record:", info);
-            return;
-        }
+            const client = window.client || window.webtorrentClient;
+            if (!client) {
+                console.error("[MVC.Control.webtorrent] WebTorrent client (window.client) not found during propagate()");
+                return;
+            }
 
-        if (window.MVC?.Hook?.Hero && typeof window.MVC.Hook.Hero.assertProgress === 'function') {
-            MVC.Hook.Hero.assertProgress(infoHash);
-        }
-
-        let torrent = client.get(infoHash);
-
-        
-        let webseeds = [];
-            try {
-                // Extract webseeds from Sphere.Doc array or edition webSeed
-                if (info.Sphere) {
-                    if (Array.isArray(info.Sphere.Doc)) {
-                        info.Sphere.Doc.forEach(d => {
-                            if (Array.isArray(d.webseeds)) webseeds.push(...d.webseeds);
-                            if (d.webseed) webseeds.push(d.webseed);
-                        });
-                    }
-                    if (info.Sphere.edition?.webSeed) {
-                        webseeds.push(info.Sphere.edition.webSeed);
-                    }
+            let infoHash = info.index || info.RAy || info.infoHash;
+            if (!infoHash && info.Sphere) {
+                if (Array.isArray(info.Sphere.Doc) && info.Sphere.Doc.length > 0) {
+                    infoHash = info.Sphere.Doc[0].RAy || info.Sphere.Doc[0].infoHash;
                 }
-            } catch (e) { console.warn(e); }
+            }
 
-            client.add(`magnet:?xt=urn:btih:${infoHash}`, { urlList: webseeds, dht: false, tracker: false, pex: true }, (torrent) => {
-                torrent.on("progress", () => {
-                if (window.MVC?.Hook?.Hero && typeof window.MVC.Hook.Hero.assertProgress === 'function') {
-                        window.MVC.Hook.Hero.assertProgress(torrent.infoHash);
+            if (!infoHash) {
+                console.error("[MVC.Control.webtorrent] Could not resolve infoHash from record:", info);
+                return;
+            }
+
+            console.info("[MVC.Control.webtorrent] Resolved target infoHash:", infoHash);
+
+            if (window.MVC?.Hook?.Hero && typeof window.MVC.Hook.Hero.assertProgress === 'function') {
+                window.MVC.Hook.Hero.assertProgress(infoHash);
+            }
+
+            let activeTorrent = client.get(infoHash);
+
+            const downloadFile = (torrent) => {
+                if (!torrent || !torrent.files || torrent.files.length === 0) {
+                    console.warn("[MVC.Control.webtorrent] Torrent has no files available to download.");
+                    return;
+                }
+                const file = torrent.files[0];
+                if (!file) return;
+
+                console.info("[MVC.Control.webtorrent] Fetching blob for file:", file.name);
+                file.getBlob(function(err, blob) {
+                    if (err) {
+                        console.error("[MVC.Control.webtorrent] Error getting file blob:", err);
+                        return;
+                    }
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = file.name;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    a.remove();
+                    console.info("[MVC.Control.webtorrent] File successfully dispatched to browser downloads folder:", file.name);
+                });
+            };
+
+            const onTorrentReady = (torrent) => {
+                if (!torrent) return;
+
+                if (typeof torrent.on === 'function') {
+                    torrent.on("progress", () => {
+                        if (window.MVC?.Hook?.Hero && typeof window.MVC.Hook.Hero.assertProgress === 'function') {
+                            window.MVC.Hook.Hero.assertProgress(torrent.infoHash);
+                        }
+                    });
+                }
+
+                if (torrent.done || (torrent.files && torrent.files.length > 0 && torrent.progress === 1)) {
+                    downloadFile(torrent);
+                } else if (typeof torrent.on === 'function') {
+                    torrent.on('done', () => {
+                        downloadFile(torrent);
+                    });
+                } else {
+                    const checkInterval = setInterval(() => {
+                        if (torrent.done || (torrent.files && torrent.files.length > 0)) {
+                            clearInterval(checkInterval);
+                            downloadFile(torrent);
+                        }
+                    }, 1000);
+                }
+            };
+
+            if (activeTorrent) {
+                console.info("[MVC.Control.webtorrent] Found active torrent in client swarm:", infoHash);
+                onTorrentReady(activeTorrent);
+            } else {
+                let webseeds = [];
+                try {
+                    if (info.Sphere) {
+                        if (Array.isArray(info.Sphere.Doc)) {
+                            info.Sphere.Doc.forEach(d => {
+                                if (Array.isArray(d.webseeds)) webseeds.push(...d.webseeds);
+                                if (d.webseed) webseeds.push(d.webseed);
+                            });
+                        }
+                        if (info.Sphere.edition?.webSeed) {
+                            webseeds.push(info.Sphere.edition.webSeed);
+                        }
+                    }
+                } catch (e) { console.warn(e); }
+
+                console.info("[MVC.Control.webtorrent] Adding magnet via client.add with webseeds:", webseeds);
+
+                client.add(`magnet:?xt=urn:btih:${infoHash}`, { urlList: webseeds, dht: false, tracker: false, pex: true }, (torrent) => {
+                    if (!torrent) return;
+                    
+                    if (torrent.ready || (torrent.files && torrent.files.length > 0)) {
+                        onTorrentReady(torrent);
+                    } else if (typeof torrent.on === 'function') {
+                        torrent.on('ready', () => onTorrentReady(torrent));
+                    } else {
+                        const poll = setInterval(() => {
+                            if (torrent.files && torrent.files.length > 0) {
+                                clearInterval(poll);
+                                onTorrentReady(torrent);
+                            }
+                        }, 500);
                     }
                 });
-
-                torrent.on('done', ()=>{
-                    const file = torrent.files[0];
-                    if (!file) return;
-
-                    file.getBlob(function(err, blob) {
-                        if (err) return;
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = file.name;
-                        document.body.appendChild(a);
-                        a.click();
-                        window.URL.revokeObjectURL(url);
-                        a.remove();
-                    })
-                })
-                    
-            });
-        
+            }
+        } catch (err) {
+            console.error("[MVC.Control.webtorrent ERROR] Uncaught exception inside propagate():", err);
+        }
     }
 };
 

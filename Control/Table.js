@@ -272,12 +272,14 @@ const TableControl = {
           if (!RAy) return;
 
           console.info("[UI] Download clicked for Ramosa RAy ID:", RAy);
-          const info = MVC.Base.Ramosa.get(RAy);
+          
+          // Ensure MVC.Base.Ramosa is available before querying
+          const ramosaBase = window.MVC?.Base?.Ramosa;
+          const info = ramosaBase ? ramosaBase.get(RAy) : null;
 
           if (info) {
               console.info("[RAMOSA] Found record via Base, launching pipeline...", info);
               WebTorrentControl.propagate(info);
-          
           } else {
               console.warn("[RAMOSA] No record found for RAy ID:", RAy);
           }
