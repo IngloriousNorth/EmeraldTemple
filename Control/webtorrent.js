@@ -30,7 +30,7 @@ const WebTorrentControl = {
         }
     },
 
-    seed(fileOrSource, rayPayLoad, seedOptions, cb) {        
+    seed(fileOrSource, RayPayLoad, seedOptions, cb) {        
         if (seedOptions.urlList.length === 0) {//white-listed.
             console.info("[MVC.Control.webtorrent] Torrent creation canceled by user.");
             return;
@@ -76,9 +76,7 @@ const WebTorrentControl = {
                 window.URL.revokeObjectURL(blobUrl);
             }, 1000);
 
-            if (typeof callback === 'function') {
-                cb(torrent);
-            }
+            cb(torrent);
         });
     },
 
@@ -87,7 +85,7 @@ const WebTorrentControl = {
         const client = window.client || window.webtorrentClient;
         if (!client) return;
 
-        window.MVC.Hook.Hero.assertProgress(infoHash);
+        MVC.Hook.Hero.assertProgress(infoHash);
 
         const onTorrentReady = (torrent) => {
             torrent.on("progress", () => {
@@ -95,6 +93,10 @@ const WebTorrentControl = {
                     window.MVC.Hook.Hero.onProgress(torrent);
                 }
             });
+
+            torrent.on("progress", ()=>{
+                MVC.Hook.Hero.assertProgress();            
+            })
 
             if (torrent.done) {
                 downloadFile(torrent);
