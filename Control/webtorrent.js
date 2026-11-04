@@ -30,7 +30,7 @@ const WebTorrentControl = {
         }
     },
 
-    seed(fileOrSource, callback) {
+    seed(fileOrSource, rayPayLoad, seedOptions, callback) {
         const webseedUrl = prompt("Enter the accredited webseed URL for this file (must match whitelist policy):", "https://archive.org/download/");
         
         if (!webseedUrl) {
@@ -50,7 +50,7 @@ const WebTorrentControl = {
             return;
         }
 
-        client.seed(fileOrSource, { dht: false, tracker: false, pex: true, urlList: [webseedUrl] }, (torrent) => {
+        client.seed(fileOrSource, seedOptions, (torrent) => {
             console.info(`[MVC.Control.webtorrent] Torrent active. InfoHash: ${torrent.infoHash}`);
 
             if (window.MVC && window.MVC.Hook && window.MVC.Hook.Hero && typeof window.MVC.Hook.Hero.assertProgress === 'function') {

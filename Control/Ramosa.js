@@ -225,7 +225,26 @@ const RamosaControl = {
             path: false
         };
 
-        WebTorrentControl.seed(pdfFile, seedOptions);
+        console.info(`[RAMOSA CONTROL] Torrent active! RAy GraphDB ID (InfoHash): ${doc.RAy}`);
+
+        if (!rayPayload.Sphere.Doc) {
+            rayPayload.Sphere.Doc = [];
+        }
+
+        // Ensure webseed array is populated and stored under Sphere.Doc.webseeds[]
+        const webseedList = webSeedUrl ? [webSeedUrl] : [];
+
+        rayPayload.Sphere.Doc.push({
+            format: "PDF",
+            res: `Pre-1931 Archive Scan (${rayPayload.categoryType})`,
+            RAy: doc.RAy,
+            size: pdfFile.size,
+            release: `${rayPayload.Sphere.institution.name}-${rayPayload.Sphere.source.date}-${rayPayload.Sphere.source.name.replace(/\s+/g, '-')}`,
+            webseeds: webseedList
+        });
+
+        WebTorrentControl.seed(pdfFile, rayPayLoad, seedOptions)
+
     }
 };
 

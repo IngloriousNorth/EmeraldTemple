@@ -25,7 +25,7 @@ const MVC = {
         Ramosa: RamosaHook
     }
 };
-console.log("BASE/Ramosa", MVC.Base.Ramosa)
+
 window.MVC = MVC;
 
 export default MVC;
