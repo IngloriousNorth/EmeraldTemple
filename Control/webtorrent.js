@@ -63,7 +63,7 @@ const WebTorrentControl = {
             const torrentBuffer = torrent.torrentFile; // Uint8Array
             const torrentByteArray = Array.from(torrentBuffer);
 
-            // 2. Construct Universal Ramosa Protocol Payload Structure with torrentBuffer on Doc
+            // 2. Construct Universal Ramosa Protocol Payload Structure with torrentBuffer on Sphere.Doc
             const defaultSource = RayPayLoad?.Sphere?.source || {
                 uuid: `src_${torrent.infoHash.substring(0, 8)}`,
                 name: torrent.name || "Archival Document",
@@ -86,28 +86,49 @@ const WebTorrentControl = {
                 Sphere: {
                     source: defaultSource,
                     edition: defaultEdition,
-                    Doc: {
+                    Doc: [{
                         format: "PDF",
                         size: torrent.length || fileOrSource.size || 0,
                         snatches: 1,
                         RAy: torrent.infoHash,
                         infoHash: torrent.infoHash,
                         webseeds: seedOptions.urlList,
-                        torrentBuffer: torrentByteArray // Guaranteed binary buffer storage on Doc
-                    }
+                        torrentBuffer: torrentByteArray
+                    }]
                 }
             };
 
-            // Ensure Doc has the binary buffer if rayPayload was passed in without it
-            if (rayPayload.Sphere && rayPayload.Sphere.Doc) {
-                if (Array.isArray(rayPayload.Sphere.Doc)) {
-                    rayPayload.Sphere.Doc.forEach(d => d.torrentBuffer = d.torrentBuffer || torrentByteArray);
+            // Ensure Sphere.Doc has the binary buffer and metadata correctly populated
+            if (rayPayload.Sphere) {
+                const docObj = {
+                    format: "PDF",
+                    size: torrent.length || fileOrSource.size || 0,
+                    snatches: 1,
+                    RAy: torrent.infoHash,
+                    infoHash: torrent.infoHash,
+                    webseeds: seedOptions.urlList,
+                    torrentBuffer: torrentByteArray
+                };
+
+                if (!rayPayload.Sphere.Doc) {
+                    rayPayload.Sphere.Doc = [docObj];
+                } else if (Array.isArray(rayPayload.Sphere.Doc)) {
+                    rayPayload.Sphere.Doc.forEach(d => {
+                        d.RAy = d.RAy || torrent.infoHash;
+                        d.infoHash = d.infoHash || torrent.infoHash;
+                        d.torrentBuffer = d.torrentBuffer || torrentByteArray;
+                    });
+                    if (rayPayload.Sphere.Doc.length === 0) {
+                        rayPayload.Sphere.Doc.push(docObj);
+                    }
                 } else {
+                    rayPayload.Sphere.Doc.RAy = rayPayload.Sphere.Doc.RAy || torrent.infoHash;
+                    rayPayload.Sphere.Doc.infoHash = rayPayload.Sphere.Doc.infoHash || torrent.infoHash;
                     rayPayload.Sphere.Doc.torrentBuffer = rayPayload.Sphere.Doc.torrentBuffer || torrentByteArray;
                 }
             }
 
-            // 3. Commit into IndexedDB via Base.Ramosa.put()
+            // 3. Commit into IndexedDB via Base.Ramosa.put() without clobbering Doc
             const ramosaBase = window.MVC?.Base?.Ramosa;
             if (ramosaBase && typeof ramosaBase.put === 'function') {
                 await ramosaBase.put(torrent.infoHash, rayPayload);
@@ -169,6 +190,7 @@ const WebTorrentControl = {
                 if (doc.webseed) webseeds.push(doc.webseed);
                 
                 if (doc.torrentBuffer) {
+                    console.info("[MVC.Control.webtorrent] Successfully resolved stored binary .torrent buffer from IndexedDB!");
                     torrentSource = new Uint8Array(doc.torrentBuffer);
                 }
             };
@@ -194,6 +216,7 @@ const WebTorrentControl = {
                 }
             }
 
+            // Fallback to Magnet URI if binary buffer is missing
             if (!torrentSource) {
                 if (!infoHash) {
                     console.error("[MVC.Control.webtorrent] Could not resolve infoHash or torrentBuffer from record:", info);
@@ -201,8 +224,6 @@ const WebTorrentControl = {
                 }
                 torrentSource = `magnet:?xt=urn:btih:${infoHash}`;
                 console.info("[MVC.Control.webtorrent] Using Magnet URI fallback:", torrentSource);
-            } else {
-                console.info("[MVC.Control.webtorrent] Successfully resolved stored binary .torrent buffer from IndexedDB!");
             }
 
             if (info.webseeds && Array.isArray(info.webseeds)) {
