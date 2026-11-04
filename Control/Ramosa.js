@@ -236,7 +236,7 @@ const RamosaControl = {
 
         
 
-        WebTorrentControl.seed(pdfFile, rayPayLoad, seedOptions, ()=>{
+        WebTorrentControl.seed(pdfFile, rayPayLoad, seedOptions, (doc)=>{
             rayPayload.Sphere.Doc.push({
                 format: "PDF",
                 res: `Pre-1931 Archive Scan (${rayPayload.categoryType})`,

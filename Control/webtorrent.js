@@ -73,7 +73,7 @@ const WebTorrentControl = {
             }, 1000);
 
             if (typeof callback === 'function') {
-                callback(torrent);
+                cb(torrent);
             }
         });
     },
