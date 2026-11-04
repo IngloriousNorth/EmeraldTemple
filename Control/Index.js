@@ -21,7 +21,7 @@ const IndexControl = {
                         /* MAIN FUNCTION, of EmeraldTemple */
                         fn: function() {
                             //torrent-neutral table
-                            MVC.Control.Table.unfold("default");
+                            MVC.Control.Table.unfold("table");
                         }
                     },
                     {
