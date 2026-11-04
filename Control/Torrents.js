@@ -300,17 +300,17 @@ const TorrentsControl = {
       },
       drawCallback: function() {
         $(document).off('click', '.webtorrent-dl-btn').on('click', '.webtorrent-dl-btn', function(e) {
-          const index = this.id; 
-          if (!index) return;
+          const infoHash = this.id; 
+          if (!infoHash) return;
 
-          console.info("[UI] Download clicked for Ramosa index:", index);
-          const editionRecord = MVC.Base.Ramosa.get(index);//open protocol, establishes DMCA conduit Safe Harbor protection.
+          console.info("[UI] Download clicked for Ramosa RAy:", infoHash);
+          const editionRecord = MVC.Base.Ramosa.get(RAy);//open protocol, establishes DMCA conduit Safe Harbor protection.
 
           if (editionRecord && editionRecord.torrent) {
               console.info("[RAMOSA] Found torrent record, launching pipeline...");
               window.MVC.Control.webtorrent.DL(editionRecord.torrent);
           } else {
-              console.warn("[RAMOSA] No torrent record found for index:", index);
+              console.warn("[RAMOSA] No torrent record found for RAy:", infoHash);
           }
         });
       }
