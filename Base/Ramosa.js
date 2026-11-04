@@ -43,13 +43,12 @@ const RamosaBase = {
         return this.initPromise;
     },
 
-    get(index = null) {
+    get(RAy = null) {
         const records = this.Base || [];
-        if (index) {
+        if (RAy) {
             const found = records.find(r => 
-                r.index === index || 
-                r.Doc?.RAy === index ||
-                (r.entity?.edition?.Docs && r.entity.edition.Docs.some(d => d.RAy === index || d.index === index))
+                r.Doc?.RAy === RAy ||
+                (r.entity?.edition?.Docs && r.entity.edition.Docs.some(d => d.RAy === RAy || d.RAy === RAy))
             );
             if (!found && !this.isLoaded) {
                 console.warn("[RAMOSA BASE] get() called before Base was fully hydrated. Triggering background loadAll...");
