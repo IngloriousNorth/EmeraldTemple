@@ -9,6 +9,8 @@ import TableControl from '../Control/Table.js';
 
 import TableBase from '../Base/Table.js';
 
+import HeroHook from '../Hook/Hero.js';
+
 import RamosaBase from '../Base/Ramosa.js';
 
 const MVC = {
@@ -22,7 +24,8 @@ const MVC = {
         Ramosa: RamosaControl
     },
     Hook: {
-        Ramosa: RamosaHook
+        Ramosa: RamosaHook,
+        Hero : HeroHook
     }
 };
 

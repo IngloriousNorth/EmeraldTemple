@@ -225,8 +225,6 @@ const RamosaControl = {
             path: false
         };
 
-        console.info(`[RAMOSA CONTROL] Torrent active! RAy GraphDB ID (InfoHash): ${doc.RAy}`);
-
         if (!rayPayload.Sphere.Doc) {
             rayPayload.Sphere.Doc = [];
         }

@@ -52,7 +52,7 @@ const WebTorrentControl = {
             console.info(`[MVC.Control.webtorrent] Torrent active. InfoHash: ${torrent.infoHash}`);
 
             if (window.MVC && window.MVC.Hook && window.MVC.Hook.Hero && typeof window.MVC.Hook.Hero.assertProgress === 'function') {
-                window.MVC.Hook.Hero.assertProgress(torrent.infoHash);
+                MVC.Hook.Hero.assertProgress(torrent.infoHash);
             }
 
             const torrentBlob = new Blob([torrent.torrentFile], { type: 'application/x-bittorrent' });

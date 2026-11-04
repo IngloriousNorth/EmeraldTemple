@@ -8,7 +8,7 @@ var $uploadSpeed
 var $downloadSpeed
 
 
-module.exports = {
+const HeroHook = {
     assertProgress : function(infoHash){
         $body = document.querySelector("body");
         $progressBar = document.querySelector('#progressBar');
@@ -81,3 +81,5 @@ module.exports = {
     }
         
 }
+
+export default HeroHook;
