@@ -4,6 +4,7 @@
  * and routes them through specialized regex conditional blocks.
  */
 import MVC from '../MAINFRAME/MAINFRAME.js';
+import WebTorrentControl from './webtorrent.js';
 
 const RamosaControl = {
     
@@ -163,7 +164,6 @@ const RamosaControl = {
         console.info(`[RAMOSA ENGINE] Extraction complete. Category: ${detectedCategory} | Title: "${title}" | Author: "${author}" | Year: ${year} | Publisher: "${publisher}"`);
 
         const displayTitle = volSubtitle ? `${title}: ${volSubtitle}` : title;
-        // APA citation strings with all asterisks removed completely
         const apaString = translator 
             ? `${author} (${year}). ${displayTitle} (${translator}, Trans.). ${publisher}.`
             : `${author} (${year}). ${displayTitle}. ${publisher}.`;
@@ -192,7 +192,8 @@ const RamosaControl = {
                     APA: apaString,
                     webSeed: webSeedUrl || null,
                     torrents: []
-                }
+                },
+                Doc: []
             }
         };
     },
@@ -221,11 +222,10 @@ const RamosaControl = {
             dht: false,
             tracker: false,
             pex: true,
-            path: false // Prevents WebTorrent from attempting File System Access API directory handle writes
+            path: false
         };
 
         client.seed(pdfFile, seedOptions, (doc) => {
-            // WebTorrent shim for EmeraldTemple!
             doc.RAy = doc.infoHash;            
             console.info(`[RAMOSA CONTROL] Torrent active! RAy GraphDB ID (InfoHash): ${doc.RAy}`);
 
@@ -233,17 +233,23 @@ const RamosaControl = {
                 rayPayload.Sphere.Doc = [];
             }
 
-            // Push information-bearing document object into Doc array using doc.RAy
+            // Ensure webseed array is populated and stored under Sphere.Doc.webseeds[]
+            const webseedList = webSeedUrl ? [webSeedUrl] : [];
+
             rayPayload.Sphere.Doc.push({
                 format: "PDF",
                 res: `Pre-1931 Archive Scan (${rayPayload.categoryType})`,
                 RAy: doc.RAy,
                 size: pdfFile.size,
-                release: `${rayPayload.Sphere.institution.name}-${rayPayload.Sphere.source.date}-${rayPayload.Sphere.source.name.replace(/\s+/g, '-')}`
+                release: `${rayPayload.Sphere.institution.name}-${rayPayload.Sphere.source.date}-${rayPayload.Sphere.source.name.replace(/\s+/g, '-')}`,
+                webseeds: webseedList
             });
 
             if (MVC.Base?.Ramosa && typeof MVC.Base.Ramosa.put === 'function') {
                 MVC.Base.Ramosa.put(doc.RAy, rayPayload);
+                if (window.MVC?.Control?.Table && typeof window.MVC.Control.Table.unfold === 'function') {
+                    window.MVC.Control.Table.unfold("table");
+                }
             } else {
                 console.warn("[RAMOSA CONTROL] MVC.Base.Ramosa.put not found.");
             }
@@ -262,7 +268,7 @@ const RamosaControl = {
                 a.remove();
                 console.info("[RAMOSA CONTROL] .torrent metafile blob downloaded successfully.");
             } catch(err) {
-                console.warn(err);
+                console.warn("[RAMOSA CONTROL] .torrent blob download skipped:", err);
             }
         });
     }

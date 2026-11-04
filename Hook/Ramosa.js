@@ -48,7 +48,7 @@ const RamosaHook = {
                     console.info(`[RAMOSA HOOK] Extracted ${extractedText.length} characters. Requesting user metadata...`);
 
                     // ── Prompt Sequence ──────────────────────────────────
-                    const webSeedUrl  = prompt("1/3. Enter Web Seed URL:", `https://dn721902.ca.archive.org/0/items/citygod00dodsgoog/citygod00dodsgoog_text.pdf`);
+                    const webSeedUrl  = prompt("1/3. Enter whitelisted Web Seed URL:", `https://dn721902.ca.archive.org/0/items/citygod00dodsgoog/citygod00dodsgoog_text.pdf`);
                     const sourceDate  = prompt("2/3. Enter Source Publication Date (e.g. 1921 or n.d.):", "2010");
                     const userClasses = prompt("3/3. Enter comma-separated classes/categories:", "Public Domain, History");
                     // ─────────────────────────────────────────────────────

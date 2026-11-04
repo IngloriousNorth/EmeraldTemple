@@ -37,7 +37,7 @@
   },
   "scripts": {
     "build:bundle": "esbuild ./build/main.js --bundle --outfile=./src/bundle.min.js --format=esm --minify",
-    "build:gate": "node ./build/gate_build.js",
+    "build:gate": "node ./build/build.js",
     "build:nano": "npx esbuild nano.js --bundle --minify --format=iife --platform=node --outfile=./nano.min.js "
   },
   "browserify": {

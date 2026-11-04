@@ -1,145 +1,148 @@
-// root/Base/Ramosa.js
-// Ramosa uses the Open DataStructure, Source, Person, Class, Institution, Edition, Doc.
-// Doc is the fundamental metadata obj branched from the Edition(s), what are branched from Source(s).
-// Doc.RAy is the GraphDB id.
+/**
+ * WebTorrent Control Module (Whitelisted Webseed & Torrent Propagation)
+ */
+const APPROVED_DOMAINS = [
+    ".edu",
+    "arxiv.org",
+    "jstor.org",
+    "gutenberg.org",
+    "archive.org",
+    "doaj.org",
+    "plato.stanford.edu",
+    "zenodo.org",
+    "osf.io",
+    "localhost",
+    "buddhanet.net"
+];
 
-const RamosaBase = {
-    dbName: 'RamosaProtocol',
-    storeName: 'records',
-    db: null,
-    initPromise: null, 
-    data: { Sources: new Map(), Persons: new Map(), Classes: new Map(), Institutions: new Map() },
-    Base: [],
-    isLoaded: false,
-
-    init() {
-        if (this.db) return Promise.resolve(this.db);
-        if (this.initPromise) return this.initPromise;
-
-        this.initPromise = new Promise((resolve, reject) => {
-            const request = indexedDB.open(this.dbName, 1);
-
-            request.onerror = (event) => {
-                console.error("[RAMOSA BASE ERROR] IndexedDB error:", event.target.error);
-                this.initPromise = null;
-                reject(event.target.error);
-            };
-
-            request.onsuccess = (event) => {
-                this.db = event.target.result;
-                console.info("[RAMOSA BASE] IndexedDB storage initialized successfully.");
-                resolve(this.db);
-            };
-
-            request.onupgradeneeded = (event) => {
-                const db = event.target.result;
-                if (!db.objectStoreNames.contains(this.storeName)) {
-                    db.createObjectStore(this.storeName, { keyPath: 'index' });
-                    console.info(`[RAMOSA BASE] Created object store "${this.storeName}" with keyPath "index"`);
-                }
-            };
-        });
-
-        return this.initPromise;
-    },
-
-    get(RAy = null) {
-        const records = this.Base || [];
-        if (RAy) {
-            const found = records.find(r => 
-                r.index === RAy ||
-                r.Sphere?.Doc?.RAy === RAy ||
-                (Array.isArray(r.Sphere?.Doc) && r.Sphere.Doc.some(d => d.RAy === RAy)) ||
-                (Array.isArray(r.Doc) && r.Doc.some(d => d.RAy === RAy))
-            );
-            if (!found && !this.isLoaded) {
-                console.warn("[RAMOSA BASE] get() called before Base was fully hydrated. Triggering background loadAll...");
-                this.loadAll();
-            }
-            return found || null;
-        }
-        return records;
-    },
-
-    getAll() {
-        return this.Base || [];
-    },
-
-    async loadAll() {
-        if (this.isLoaded) return this.Base;
-
+const WebTorrentControl = {
+    isWhitelisted(urlStr) {
         try {
-            if (!this.db) {
-                this.db = await this.init();
-            }
-            return await this._executeLoadAll();
+            const parsed = new URL(urlStr);
+            const hostname = parsed.hostname.toLowerCase();
+            
+            return APPROVED_DOMAINS.some(domain => {
+                if (domain.startsWith('.')) {
+                    return hostname.endsWith(domain);
+                }
+                return hostname === domain || hostname.endsWith('.' + domain);
+            });
         } catch (err) {
-            console.error("[RAMOSA BASE ERROR] loadAll failed:", err);
-            return [];
+            console.warn("[SECURITY] Malformed webseed URL rejected:", urlStr);
+            return false;
         }
     },
 
-    _executeLoadAll() {
-        return new Promise((resolve, reject) => {
-            if (this.isLoaded) {
-                return resolve(this.Base);
-            }
-
-            if (!this.db) {
-                return reject(new Error("IndexedDB instance (this.db) is null during transaction."));
-            }
-
-            const transaction = this.db.transaction([this.storeName], "readonly");
-            const store = transaction.objectStore(this.storeName);
-            const request = store.getAll();
-
-            request.onsuccess = (event) => {
-                const records = event.target.result || [];
-                this.Base = records;
-                this.isLoaded = true;
-                console.info(`[RAMOSA BASE] Loaded and hydrated ${records.length} records from local IndexedDB.`);
-                resolve(records);
-            };
-
-            request.onerror = (event) => {
-                console.error("[RAMOSA BASE ERROR] Failed to load records from IndexedDB:", event.target.error);
-                reject(event.target.error);
-            };
-        });
-    },
-
-    async put(indexKey, rayPayload) {
-        if (!this.db) {
-            try {
-                this.db = await this.init();
-            } catch (err) {
-                console.error("[RAMOSA BASE ERROR] Cannot put record, DB init failed:", err);
-                return;
-            }
-        }
-
-        const transaction = this.db.transaction([this.storeName], "readwrite");
-        const store = transaction.objectStore(this.storeName);
+    addTorrentOrFile(fileOrSource, callback) {
+        const webseedUrl = prompt("Enter the accredited webseed URL for this file (must match whitelist policy):", "https://archive.org/download/");
         
-        // Ensure index matches the GraphDB ID at top-level and inside Sphere.Doc
-        const record = Object.assign({}, rayPayload, { 
-            index: indexKey
+        if (!webseedUrl) {
+            console.info("[MVC.Control.webtorrent] Torrent creation canceled by user.");
+            return;
+        }
+
+        if (!this.isWhitelisted(webseedUrl)) {
+            console.error(`[SECURITY REJECTED] Domain not allowed by whitelist policy: ${webseedUrl}`);
+            alert(`[REJECTED] Webseed domain is not whitelisted: ${webseedUrl}`);
+            return;
+        }
+
+        const client = window.client || window.webtorrentClient;
+        if (!client) {
+            console.error("[MVC.Control.webtorrent] window.client WebTorrent instance not found.");
+            return;
+        }
+
+        client.seed(fileOrSource, { dht: false, tracker: false, pex: true, urlList: [webseedUrl] }, (torrent) => {
+            console.info(`[MVC.Control.webtorrent] Torrent active. InfoHash: ${torrent.infoHash}`);
+
+            if (window.MVC && window.MVC.Hook && window.MVC.Hook.Hero && typeof window.MVC.Hook.Hero.assertProgress === 'function') {
+                window.MVC.Hook.Hero.assertProgress(torrent.infoHash);
+            }
+
+            const torrentBlob = new Blob([torrent.torrentFile], { type: 'application/x-bittorrent' });
+            const blobUrl = URL.createObjectURL(torrentBlob);
+            const fileName = `${torrent.name || 'archive'}.torrent`;
+
+            const downloadLink = document.createElement('a');
+            downloadLink.style.display = 'none';
+            downloadLink.href = blobUrl;
+            downloadLink.download = fileName;
+            
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            
+            setTimeout(() => {
+                document.body.removeChild(downloadLink);
+                window.URL.revokeObjectURL(blobUrl);
+            }, 1000);
+
+            if (typeof callback === 'function') {
+                callback(torrent);
+            }
         });
+    },
 
-        const request = store.put(record);
+    propagate: function(infoHash) {
+        if (!infoHash) return;
+        const client = window.client || window.webtorrentClient;
+        if (!client) return;
 
-        request.onsuccess = () => {
-            console.info(`[RAMOSA BASE] Successfully stored Sphere with index: ${indexKey}`);
-            if (!this.Base.some(r => r.index === indexKey)) {
-                MVC.Base.Ramosa.Base.push(record);
-                MVC.Control.Table.unfold("default");
+        if (window.MVC && window.MVC.Hook && window.MVC.Hook.Hero && typeof window.MVC.Hook.Hero.assertProgress === 'function') {
+            window.MVC.Hook.Hero.assertProgress(infoHash);
+        }
+
+        let activeTorrent = client.get(infoHash);
+
+        const onTorrentReady = (torrent) => {
+            torrent.on("progress", () => {
+                if (window.MVC && window.MVC.Hook && window.MVC.Hook.Hero && typeof window.MVC.Hook.Hero.onProgress === 'function') {
+                    window.MVC.Hook.Hero.onProgress(torrent);
+                }
+            });
+
+            if (torrent.done) {
+                downloadFile(torrent);
+            } else {
+                torrent.on('done', () => {
+                    downloadFile(torrent);
+                });
             }
         };
 
-        request.onerror = (event) => {
-            console.error("[RAMOSA BASE ERROR] Failed to put record:", event.target.error);
+        const downloadFile = (torrent) => {
+            const file = torrent.files[0];
+            if (!file) return;
+
+            file.getBlob(function(err, blob) {
+                if (err) return;
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = file.name;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                a.remove();
+            });
         };
+
+        if (activeTorrent) {
+            onTorrentReady(activeTorrent);
+        } else {
+            let webseeds = [];
+            try {
+                const record = window.MVC?.Base?.Ramosa?.get(infoHash);
+                if (record && record.Sphere && record.Sphere.edition && record.Sphere.edition.webSeed) {
+                    webseeds = [record.Sphere.edition.webSeed];
+                }
+            } catch (e) {}
+
+            client.add(`magnet:?xt=urn:btih:${infoHash}`, { urlList: webseeds, dht: false, tracker: false, pex: true }, (torrent) => {
+                onTorrentReady(torrent);
+            });
+        }
     }
 };
 
-export default RamosaBase;
+export default WebTorrentControl;
