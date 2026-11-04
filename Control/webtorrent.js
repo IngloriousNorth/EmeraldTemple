@@ -98,17 +98,34 @@ const WebTorrentControl = {
 
             // Extract infoHash and webseeds directly from the torrent file / record structure
             let infoHash = info.infoHash || info.RAy || info.index;
-            let torrentSource = info; // Can be Uint8Array, ArrayBuffer, Buffer, or file descriptor
+            // Extract infoHash and check for stored binary buffer or magnet URI
+            let torrentSource = null;
 
-            if (info.Sphere && Array.isArray(info.Sphere.Doc) && info.Sphere.Doc.length > 0) {
-                const docRecord = info.Sphere.Doc[0];
-                infoHash = infoHash || docRecord.RAy || docRecord.infoHash;
-                if (docRecord.torrentBuffer) {
-                    torrentSource = new Uint8Array(docRecord.torrentBuffer);
-                }
-            } else if (info.torrentBuffer) {
-                torrentSource = new Uint8Array(info.torrentBuffer);
-            }
+                        // 1. Check if stored in Sphere.Doc[0]
+                        if (info.Sphere && Array.isArray(info.Sphere.Doc) && info.Sphere.Doc.length > 0) {
+                            const docRecord = info.Sphere.Doc[0];
+                            infoHash = infoHash || docRecord.RAy || docRecord.infoHash;
+                            
+                            if (docRecord.torrentBuffer) {
+                                // Reconstruct Uint8Array from stored array buffer representation
+                                torrentSource = new Uint8Array(docRecord.torrentBuffer);
+                            }
+                        } 
+                        // 2. Check if stored directly on info object
+                        else if (info.torrentBuffer) {
+                            torrentSource = new Uint8Array(info.torrentBuffer);
+                        }
+
+                        // 3. Fallback: if no binary buffer is available, use the standard magnet URI string
+                        if (!torrentSource) {
+                            if (!infoHash) {
+                                console.error("[MVC.Control.webtorrent] Could not resolve infoHash or torrentBuffer from record:", info);
+                                return;
+                            }
+                            torrentSource = `magnet:?xt=urn:btih:${infoHash}`;
+                        }
+
+                        console.info("[MVC.Control.webtorrent] Resolved torrentSource type:", typeof torrentSource === 'string' ? 'Magnet URI' : 'Binary Buffer', torrentSource);
 
             if (!infoHash && torrentSource.infoHash) {
                 infoHash = torrentSource.infoHash;
@@ -208,6 +225,8 @@ const WebTorrentControl = {
                     tracker: false,
                     pex: true
                 };
+
+
 
                 client.add(torrentSource, opts, (torrent) => {
                     if (!torrent) return;
