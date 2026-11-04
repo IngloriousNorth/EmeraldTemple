@@ -30,7 +30,7 @@ const WebTorrentControl = {
         }
     },
 
-    addTorrentOrFile(fileOrSource, callback) {
+    seed(fileOrSource, callback) {
         const webseedUrl = prompt("Enter the accredited webseed URL for this file (must match whitelist policy):", "https://archive.org/download/");
         
         if (!webseedUrl) {
@@ -80,16 +80,12 @@ const WebTorrentControl = {
         });
     },
 
-    propagate: function(infoHash) {
-        if (!infoHash) return;
+    propagate: function(info) {
+        if (!info || isEmptyObject(info)) return;
         const client = window.client || window.webtorrentClient;
         if (!client) return;
 
-        if (window.MVC && window.MVC.Hook && window.MVC.Hook.Hero && typeof window.MVC.Hook.Hero.assertProgress === 'function') {
-            window.MVC.Hook.Hero.assertProgress(infoHash);
-        }
-
-        let activeTorrent = client.get(infoHash);
+        window.MVC.Hook.Hero.assertProgress(infoHash);
 
         const onTorrentReady = (torrent) => {
             torrent.on("progress", () => {
@@ -135,15 +131,11 @@ const WebTorrentControl = {
                 }
             } catch (e) {}
 
-            client.add(`magnet:?xt=urn:btih:${infoHash}`, { urlList: webseeds, dht: false, tracker: false, pex: true }, (torrent) => {
+            client.add(`magnet:?xt=urn:btih:${info.RAy}`, { urlList: webseeds, dht: false, tracker: false, pex: true }, (torrent) => {
                 onTorrentReady(torrent);
             });
         }
     }
 };
-
-window.MVC = window.MVC || {};
-window.MVC.Control = window.MVC.Control || {};
-window.MVC.Control.webtorrent = WebTorrentControl;
 
 export default WebTorrentControl;

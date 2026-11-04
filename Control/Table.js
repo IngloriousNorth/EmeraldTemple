@@ -71,49 +71,7 @@ function parseRAyData(rayArray) {
   return rows;
 }
 
-function seed(pdfFile, seedOptions){
-  client.seed(pdfFile, seedOptions, (doc) => {
-      // WebTorrent shim for EmeraldTemple!
-      doc.RAy = doc.infoHash;            
-      console.info(`[RAMOSA CONTROL] Torrent active! RAy GraphDB ID (InfoHash): ${doc.RAy}`);
 
-      if (!rayPayload.Sphere.Doc) {
-          rayPayload.Sphere.Doc = [];
-      }
-
-      // Push information-bearing document object into Doc array using doc.RAy
-      rayPayload.Sphere.Doc.push({
-          format: "PDF",
-          res: `Pre-1931 Archive Scan (${rayPayload.categoryType})`,
-          RAy: doc.RAy,
-          size: pdfFile.size,
-          release: `${rayPayload.Sphere.institution.name}-${rayPayload.Sphere.source.date}-${rayPayload.Sphere.source.name.replace(/\s+/g, '-')}`
-      });
-
-      if (MVC.Base?.Ramosa && typeof MVC.Base.Ramosa.put === 'function') {
-          MVC.Base.Ramosa.put(doc.RAy, rayPayload);
-      } else {
-          console.warn("[RAMOSA CONTROL] MVC.Base.Ramosa.put not found.");
-      }
-
-      console.log("[CONTROL.TORRENTS]: Routing via MVC namespace!");
-
-      try {
-          const blob = new Blob([doc.torrentFile], { type: 'application/x-bittorrent' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `${pdfFile.name}.torrent`;
-          document.body.appendChild(a);
-          a.click();
-          URL.revokeObjectURL(url);
-          a.remove();
-          console.info("[RAMOSA CONTROL] .torrent metafile blob downloaded successfully.");
-      } catch(err) {
-          console.warn(err);
-      }
-  });
-}
 function renderChildTorrentsTable(torrents) {
   if (!torrents || torrents.length === 0) {
     return '<div class="p-3 bg-light border rounded"><p class="mb-0 text-muted">No torrents available.</p></div>';
@@ -314,12 +272,12 @@ const TableControl = {
           if (!RAy) return;
 
           console.info("[UI] Download clicked for Ramosa RAy ID:", RAy);
-          const record = MVC.Base.Ramosa.get(RAy);
+          const info = MVC.Base.Ramosa.get(RAy);
 
           if (record) {
-              console.info("[RAMOSA] Found record via Base, launching pipeline...", record);
+              console.info("[RAMOSA] Found record via Base, launching pipeline...", info);
               if (window.MVC?.Control?.webtorrent && typeof window.MVC.Control.webtorrent.propagate === 'function') {
-                  window.MVC.Control.webtorrent.propagate(RAy);
+                  window.MVC.Control.webtorrent.propagate(info);
               } else {
                   const client = window.client || window.webtorrentClient;
                   if (client) {

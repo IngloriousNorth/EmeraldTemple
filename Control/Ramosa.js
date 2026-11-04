@@ -225,52 +225,7 @@ const RamosaControl = {
             path: false
         };
 
-        client.seed(pdfFile, seedOptions, (doc) => {
-            doc.RAy = doc.infoHash;            
-            console.info(`[RAMOSA CONTROL] Torrent active! RAy GraphDB ID (InfoHash): ${doc.RAy}`);
-
-            if (!rayPayload.Sphere.Doc) {
-                rayPayload.Sphere.Doc = [];
-            }
-
-            // Ensure webseed array is populated and stored under Sphere.Doc.webseeds[]
-            const webseedList = webSeedUrl ? [webSeedUrl] : [];
-
-            rayPayload.Sphere.Doc.push({
-                format: "PDF",
-                res: `Pre-1931 Archive Scan (${rayPayload.categoryType})`,
-                RAy: doc.RAy,
-                size: pdfFile.size,
-                release: `${rayPayload.Sphere.institution.name}-${rayPayload.Sphere.source.date}-${rayPayload.Sphere.source.name.replace(/\s+/g, '-')}`,
-                webseeds: webseedList
-            });
-
-            if (MVC.Base?.Ramosa && typeof MVC.Base.Ramosa.put === 'function') {
-                MVC.Base.Ramosa.put(doc.RAy, rayPayload);
-                if (window.MVC?.Control?.Table && typeof window.MVC.Control.Table.unfold === 'function') {
-                    window.MVC.Control.Table.unfold("table");
-                }
-            } else {
-                console.warn("[RAMOSA CONTROL] MVC.Base.Ramosa.put not found.");
-            }
-
-            console.log("[CONTROL.TORRENTS]: Routing via MVC namespace!");
-
-            try {
-                const blob = new Blob([doc.torrentFile], { type: 'application/x-bittorrent' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `${pdfFile.name}.torrent`;
-                document.body.appendChild(a);
-                a.click();
-                URL.revokeObjectURL(url);
-                a.remove();
-                console.info("[RAMOSA CONTROL] .torrent metafile blob downloaded successfully.");
-            } catch(err) {
-                console.warn("[RAMOSA CONTROL] .torrent blob download skipped:", err);
-            }
-        });
+        WebTorrentControl.seed(pdfFile, seedOptions);
     }
 };
 
