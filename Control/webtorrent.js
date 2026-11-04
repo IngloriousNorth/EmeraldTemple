@@ -125,21 +125,18 @@ const WebTorrentControl = {
             });
         };
 
-        if (torrent) {
-            onTorrentReady(torrent);
-        } else {
-            let webseeds = [];
-            try {
-                const record = window.MVC?.Base?.Ramosa?.get(infoHash);
-                if (record && record.Sphere && record.Sphere.edition && record.Sphere.edition.webSeed) {
-                    webseeds = [record.Sphere.edition.webSeed];
-                }
-            } catch (e) { console.warn(e) }
+        let webseeds = [];
+        try {
+            const record = window.MVC?.Base?.Ramosa?.get(infoHash);
+            if (record && record.Sphere && record.Sphere.edition && record.Sphere.edition.webSeed) {
+                webseeds = [record.Sphere.edition.webSeed];
+            }
+        } catch (e) { console.warn(e) }
 
-            client.add(`magnet:?xt=urn:btih:${info.RAy}`, { urlList: webseeds, dht: false, tracker: false, pex: true }, (torrent) => {
-                onTorrentReady(torrent);
-            });
-        }
+
+        client.add(`magnet:?xt=urn:btih:${torrent.RAy}`, { urlList: webseeds, dht: false, tracker: false, pex: true }, (torrent) => {
+            onTorrentReady(torrent);
+        });
     }
 };
 
