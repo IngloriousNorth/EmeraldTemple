@@ -134,7 +134,7 @@ const WebTorrentControl = {
                 if (record && record.Sphere && record.Sphere.edition && record.Sphere.edition.webSeed) {
                     webseeds = [record.Sphere.edition.webSeed];
                 }
-            } catch (e) {}
+            } catch (e) { console.warn(e) }
 
             client.add(`magnet:?xt=urn:btih:${info.RAy}`, { urlList: webseeds, dht: false, tracker: false, pex: true }, (torrent) => {
                 onTorrentReady(torrent);
