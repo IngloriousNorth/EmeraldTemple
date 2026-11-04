@@ -39,17 +39,22 @@ const RamosaBase = {
         return this.initPromise;
     },
 
-    get(i = null) {
+    get(index = null) {
+        const records = this.RAy || [];
         if (i) {
-            return (this.RAy || []).find(r => 
+            const found = records.find(r => 
                 r.index === i || 
                 r.infoHash === i || 
                 (r.entity?.edition?.torrents && r.entity.edition.torrents.some(t => t.index === i || t.infoHash === i))
-            ) || null;
+            );
+            if (!found && !this.isLoaded) {
+                console.warn("[RAMOSA BASE] get() called before RAy was fully hydrated. Triggering background loadAll...");
+                this.loadAll();
+            }
+            return found || null;
         }
-        return this.RAy || [];
+        return records;
     },
-
     getAll() {
         return this.RAy || [];
     },
@@ -114,7 +119,7 @@ const RamosaBase = {
         const request = store.put(record);
 
         request.onsuccess = () => {
-            console.info(`[RAMOSA BASE] Successfully stored entity with InfoHash: ${infoHash}`);
+            console.info(`[RAMOSA BASE] Successfully stored entity with index: ${infoHash}`);
             if (!this.RAy.some(r => r.infoHash === infoHash)) {
                 MVC.Base.Ramosa.RAy.push(record);
                 MVC.Control.Torrents.table("torrents");
