@@ -30,10 +30,8 @@ const WebTorrentControl = {
         }
     },
 
-    seed(fileOrSource, rayPayLoad, seedOptions, callback) {
-        const webseedUrl = prompt("Enter the accredited webseed URL for this file (must match whitelist policy):", "https://archive.org/download/");
-        
-        if (!webseedUrl) {
+    seed(fileOrSource, rayPayLoad, seedOptions, callback) {        
+        if (rayPayLoad.urlList.length === 0) {//white-listed.
             console.info("[MVC.Control.webtorrent] Torrent creation canceled by user.");
             return;
         }

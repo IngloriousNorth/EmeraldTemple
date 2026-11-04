@@ -72,7 +72,6 @@ const IndexControl = {
                 if (window.TEMPEST && typeof TEMPEST.initialize === 'function') {
                     TEMPEST.initialize(tempestConfig, async () => {
                         MVC.Hook.Ramosa.unfurl();
-                        WebTorrentHook.initialize();
                     });
                 }
             });
