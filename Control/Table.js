@@ -274,7 +274,7 @@ const TableControl = {
           console.info("[UI] Download clicked for Ramosa RAy ID:", RAy);
           const info = MVC.Base.Ramosa.get(RAy);
 
-          if (record) {
+          if (info) {
               console.info("[RAMOSA] Found record via Base, launching pipeline...", info);
               if (window.MVC?.Control?.webtorrent && typeof window.MVC.Control.webtorrent.propagate === 'function') {
                   window.MVC.Control.webtorrent.propagate(info);
