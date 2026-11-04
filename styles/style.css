@@ -787,6 +787,11 @@ a{
 .apa-citation-column{
   font-family: "Times New Roman", sans-serif;
   text-align:justify;
+    width: 60%;
+    max-width: 60%;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: normal; /* ensures it doesn't stay on a single line */
 }
 
 .torrentClasses a{
@@ -798,6 +803,11 @@ a{
   box-shadow:2px 3px paleGOLDENROD;
   border-radius:4px;
   background:linear-gradient(#007BFF, silver);
+}
+
+.webtorrent-download-btn:hover{
+  cursor:pointer;
+  color:gold;
 }
 
 .dataTable thead th{

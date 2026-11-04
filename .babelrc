@@ -1,0 +1,12 @@
+{
+  "sourceType": "unambiguous",
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "modules": "commonjs"
+      }
+    ]
+  ],
+  "plugins": ["@babel/plugin-transform-export-namespace-from"]
+}

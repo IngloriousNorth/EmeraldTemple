@@ -11,7 +11,6 @@
     <link rel="stylesheet" type="text/css" href="styles/BS5.css"/>
     <link rel="stylesheet" type="text/css" href="styles/rowGroup.min.css"/>
     <link rel="stylesheet" type="text/css" href="styles/scroller.jqueryui.min.css"/>
-    <script src="TEMPEST/TEMPEST.js" type="module"></script>
 
     <script type="module">
         import TEMPEST from './TEMPEST/TEMPEST.js';
@@ -26,12 +25,12 @@
 
     <!-- attaches client to window !-->
     <script type='module'>
-            import WebTorrent from 'https://esm.sh/webtorrent/dist/webtorrent.min.js'
+            import WebTorrent from './lib/webtorrent.min.js';
             const client = new WebTorrent();
-            /*const controller = await navigator.serviceWorker.register('/sw.min.js', { scope: './' })
+            window.client = client;
+            const controller = await navigator.serviceWorker.register('/sw.min.js', { scope: './' })
             await navigator.serviceWorker.ready
-            client.createServer({ controller })*/
-            window.client = client;         
+            window.client.createServer({ controller })
     </script>
 
     <!-- DECRYPTS GATE.ENC.JS and sets window.client.torrents[0].ripemd160IntegrityHash for PEX swarm !-->

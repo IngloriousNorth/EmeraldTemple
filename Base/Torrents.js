@@ -1,5 +1,4 @@
-// In your Model definition (e.g., inside MAINFRAME or Model base)
-module.exports = {
+const TorrentsBase = {
     tableData: [],
     dtRecs: [],
     refresh: function() {
@@ -12,3 +11,9 @@ module.exports = {
         this.dtRecs.unshift(row);
     }
 };
+
+window.MVC = window.MVC || {};
+window.MVC.Base = window.MVC.Base || {};
+window.MVC.Base.Torrents = TorrentsBase;
+
+export default TorrentsBase;

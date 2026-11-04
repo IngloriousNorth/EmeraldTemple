@@ -1,3 +1,5 @@
+SET INSTITUTIONAL_PRIVATE_KEY in Gate.js
+
 npm install
 
 npm run build:bundle

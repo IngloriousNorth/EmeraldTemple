@@ -1,3 +1,4 @@
+
 // Gate.js
 import { ripemd160 } from '@noble/hashes/ripemd160'; // or your local helper
 import { bytesToHex } from '@noble/hashes/utils';
@@ -32,7 +33,7 @@ export const Gate = {
         console.info("[TEMPLE] Awaiting sovereign bundle ingestion...");
         
         //anchorPexSwarm();
-        $(".crossRoad").fadeOut(4444);
+        $(".crossRoad").fadeOut(777);
         MVC.Control.Index.initialize();
         console.info("[TEMPLE SUCCESS] Sovereign bundle loaded and executed successfully.");
        

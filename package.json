@@ -5,9 +5,13 @@
   "name": "emerald-temple",
   "type": "module",
   "devDependencies": {
-    "@babel/core": "^8.0.9",
+    "@babel/core": "^8.1.0",
+    "@babel/plugin-transform-export-namespace-from": "^8.1.0",
+    "@babel/preset-env": "^8.0.7",
+    "@huggingface/transformers": "^4.3.2",
     "@noble/hashes": "1.7",
     "async": "^3.2.6",
+    "babelify": "^10.0.0",
     "browserify": "^17.0.1",
     "crypto": "^1.0.1",
     "d3": "^7.9.0",
@@ -15,7 +19,6 @@
     "datatables.net-jqui": "^3.1.4",
     "datatables.net-responsive-dt": "^4.1.1",
     "datatables.net-responsive-jqui": "^4.1.1",
-    "datatables.net-rowgroup-dt": "^2.1.1",
     "datatables.net-rowgroup-jqui": "^2.1.1",
     "datatables.net-scroller-dt": "^3.1.1",
     "datatables.net-scroller-jqui": "^3.1.1",
@@ -29,13 +32,13 @@
     "moment": "^2.31.0",
     "path": "^0.12.7",
     "path-browserify": "^1.0.1",
-    "pdfjs": "^2.5.4",
+    "pdfjs-dist": "^6.5.438",
     "tinyify": "^4.0.0",
     "webtorrent": "^3.0.21"
   },
   "scripts": {
-    "build:bundle": "browserify ./build/main.js -P tinyify -p esmify -o './src/bundle.min.js'",
-    "build:gate": "node ./build/build.js",
+    "build:bundle": "esbuild ./build/main.js --bundle --outfile=./src/bundle.min.js --format=esm --minify",
+    "build:gate": "node ./build/gate_build.js",
     "build:nano": "npx esbuild nano.js --bundle --minify --format=iife --platform=node --outfile=./nano.min.js "
   },
   "browserify": {
