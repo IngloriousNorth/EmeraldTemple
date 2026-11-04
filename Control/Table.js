@@ -84,7 +84,7 @@ function renderChildTorrentsTable(torrents) {
       <td>${t.snatches}</td>
       <td>${typeof timeSince === 'function' ? timeSince(t.created_at) : (t.created_at ? t.created_at : '-')}</td>
       <td>
-        <button class="webtorrent-dl-btn" id="${t.infoHash}">Download</button>
+        <button class="webtorrent-dl-btn" id="${t.infoHash}">WebTorrent</button>
       </td>
     </tr>
   `).join('');
