@@ -181,10 +181,7 @@ const WebTorrentControl = {
                 }
             };
 
-            if (activeTorrent) {
-                console.info("[MVC.Control.webtorrent] Found active torrent in client swarm:", infoHash);
-                onTorrentReady(activeTorrent);
-            } else {
+            
                 let webseeds = [];
                 try {
                     if (info.webseeds && Array.isArray(info.webseeds)) {
@@ -228,7 +225,7 @@ const WebTorrentControl = {
                         }, 500);
                     }
                 });
-            }
+            
         
         } catch (err) {
             console.error("[MVC.Control.webtorrent ERROR] Uncaught exception inside propagate():", err);
