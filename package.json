@@ -8,7 +8,6 @@
     "@babel/core": "^8.1.0",
     "@babel/plugin-transform-export-namespace-from": "^8.1.0",
     "@babel/preset-env": "^8.0.7",
-    "@huggingface/transformers": "^4.3.2",
     "@noble/hashes": "1.7",
     "async": "^3.2.6",
     "babelify": "^10.0.0",
