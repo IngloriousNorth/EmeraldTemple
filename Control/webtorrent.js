@@ -106,45 +106,10 @@ const WebTorrentControl = {
             MVC.Hook.Hero.assertProgress(infoHash);
         }
 
-        let activeTorrent = client.get(infoHash);
+        let torrent = client.get(infoHash);
 
-        const onTorrentReady = (torrent) => {
-            torrent.on("progress", () => {
-                if (window.MVC?.Hook?.Hero && typeof window.MVC.Hook.Hero.assertProgress === 'function') {
-                    window.MVC.Hook.Hero.assertProgress(torrent.infoHash);
-                }
-            });
-
-            if (torrent.done) {
-                downloadFile(torrent);
-            } else {
-                torrent.on('done', () => {
-                    downloadFile(torrent);
-                });
-            }
-        };
-
-        const downloadFile = (torrent) => {
-            const file = torrent.files[0];
-            if (!file) return;
-
-            file.getBlob(function(err, blob) {
-                if (err) return;
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = file.name;
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-                a.remove();
-            });
-        };
-
-        if (activeTorrent) {
-            onTorrentReady(activeTorrent);
-        } else {
-            let webseeds = [];
+        
+        let webseeds = [];
             try {
                 // Extract webseeds from Sphere.Doc array or edition webSeed
                 if (info.Sphere) {
@@ -161,9 +126,31 @@ const WebTorrentControl = {
             } catch (e) { console.warn(e); }
 
             client.add(`magnet:?xt=urn:btih:${infoHash}`, { urlList: webseeds, dht: false, tracker: false, pex: true }, (torrent) => {
-                onTorrentReady(torrent);
+                torrent.on("progress", () => {
+                if (window.MVC?.Hook?.Hero && typeof window.MVC.Hook.Hero.assertProgress === 'function') {
+                        window.MVC.Hook.Hero.assertProgress(torrent.infoHash);
+                    }
+                });
+
+                torrent.on('done', ()=>{
+                    const file = torrent.files[0];
+                    if (!file) return;
+
+                    file.getBlob(function(err, blob) {
+                        if (err) return;
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = file.name;
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        a.remove();
+                    })
+                })
+                    
             });
-        }
+        
     }
 };
 
