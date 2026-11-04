@@ -1,11 +1,13 @@
 /**
- * Webtorrent Drag-and-Drop Hook using Ferooss drag-drop package & table targeting
+ * Webtorrent Drag-and-Drop Hook (webtorrent.hook.js)
+ * Detects .torrent file drops, adds to WebTorrent client, and triggers browser downloads folder save.
  */
+import MVC from '../MAINFRAME/MAINFRAME.js';
+
 const WebtorrentHook = {
-    //for DL testing purposes.
     initialize(selector = 'table') {
         if (!window.dragDrop) {
-            console.error("[MVC.Hook.Webtorrent] Ferooss drag-drop is not attached to window.dragDrop");
+            console.error("[MVC.Hook.Webtorrent] Ferooss drag-drop library is not attached to window.dragDrop");
             return;
         }
 
@@ -19,8 +21,9 @@ const WebtorrentHook = {
             const droppedFile = files[0];
             console.info(`[MVC.Hook.Webtorrent] File dropped on ${selector}: ${droppedFile.name}`);
 
-            if (!window.client) {
-                console.error("[MVC.Hook.Webtorrent] window.client WebTorrent instance not found.");
+            const client = window.client || window.webtorrentClient;
+            if (!client) {
+                console.error("[MVC.Hook.Webtorrent] WebTorrent client instance not found.");
                 return;
             }
 
@@ -28,18 +31,19 @@ const WebtorrentHook = {
 
             if (isTorrentFile) {
                 console.info("[MVC.Hook.Webtorrent] Detected .torrent file drop. Adding to WebTorrent client...");
-                
-                window.client.add(droppedFile, (torrent) => {
-                    console.info(`[MVC.Hook.Webtorrent] Torrent added successfully: ${torrent.name} (${torrent.infoHash})`);
+
+                client.add(droppedFile, (torrent) => {
+                    console.info(`[MVC.Hook.Webtorrent] Torrent active: ${torrent.name} (${torrent.infoHash})`);
 
                     torrent.on('done', () => {
-                        console.log(`[MVC.Hook.Webtorrent] Torrent is complete: ${torrent.name}`);
+                        console.info(`[MVC.Hook.Webtorrent] Download complete for torrent: ${torrent.name}`);
                         const file = torrent.files[0];
                         if (!file) {
                             console.warn("[MVC.Hook.Webtorrent] No files found in torrent archive.");
                             return;
                         }
 
+                        // Stream file chunks into memory and dispatch browser download
                         const stream = file.createReadStream();
                         const chunks = [];
 
@@ -48,32 +52,24 @@ const WebtorrentHook = {
                         });
 
                         stream.on('end', () => {
-                            // Native browser-safe concatenation without Node's Buffer
-                            const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
-                            const result = new Uint8Array(totalLength);
-                            let offset = 0;
-                            for (let chunk of chunks) {
-                                result.set(chunk, offset);
-                                offset += chunk.length;
-                            }
-
-                            const blob = new Blob([result]);
+                            const buffer = Buffer.concat(chunks);
+                            const blob = new Blob([buffer]);
                             const blobURL = URL.createObjectURL(blob);
 
                             const downloadAnchor = document.createElement('a');
                             downloadAnchor.style.display = 'none';
                             downloadAnchor.href = blobURL;
                             downloadAnchor.download = file.name;
-                            
+
                             document.body.appendChild(downloadAnchor);
                             downloadAnchor.click();
-                            
+
                             setTimeout(() => {
                                 window.URL.revokeObjectURL(blobURL);
                                 downloadAnchor.remove();
                             }, 1000);
 
-                            console.info(`[MVC.Hook.Webtorrent] Triggered browser download via stream for: ${file.name}`);
+                            console.info(`[MVC.Hook.Webtorrent] File successfully dispatched to browser downloads folder: ${file.name}`);
                         });
 
                         stream.on('error', (err) => {
@@ -81,15 +77,13 @@ const WebtorrentHook = {
                         });
                     });
                 });
+            } else {
+                console.warn("[MVC.Hook.Webtorrent] Dropped file is not a valid .torrent metafile.");
             }
         });
 
-        console.info(`[MVC.Hook.Webtorrent] Drag-and-drop hook initialized for selector: ${selector}`);
+        console.info(`[MVC.Hook.Webtorrent] Drag-and-drop hook initialized successfully on selector: ${selector}`);
     }
 };
-
-window.MVC = window.MVC || {};
-window.MVC.Hook = window.MVC.Hook || {};
-window.MVC.Hook.webtorrent = WebtorrentHook;
 
 export default WebtorrentHook;
