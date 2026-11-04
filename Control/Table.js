@@ -276,23 +276,8 @@ const TableControl = {
 
           if (info) {
               console.info("[RAMOSA] Found record via Base, launching pipeline...", info);
-              if (window.MVC?.Control?.webtorrent && typeof window.MVC.Control.webtorrent.propagate === 'function') {
-                  window.MVC.Control.webtorrent.propagate(info);
-              } else {
-                  const client = window.client || window.webtorrentClient;
-                  if (client) {
-                      let torrent = client.get(RAy);
-                      if (!torrent) {
-                          client.add(`magnet:?xt=urn:btih:${RAy}`, (t) => {
-                              if (typeof window.MVC?.Control?.webtorrent?.propagate === 'function') {
-                                  window.MVC.Control.webtorrent.propagate(RAy);
-                              }
-                          });
-                      } else if (typeof window.MVC?.Control?.webtorrent?.propagate === 'function') {
-                          window.MVC.Control.webtorrent.propagate(RAy);
-                      }
-                  }
-              }
+              WebTorrentControl.propagate(info);
+          
           } else {
               console.warn("[RAMOSA] No record found for RAy ID:", RAy);
           }

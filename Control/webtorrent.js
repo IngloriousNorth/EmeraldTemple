@@ -91,7 +91,7 @@ const WebTorrentControl = {
         const onTorrentReady = (torrent) => {
             torrent.on("progress", () => {
                 if (window.MVC && window.MVC.Hook && window.MVC.Hook.Hero && typeof window.MVC.Hook.Hero.onProgress === 'function') {
-                    window.MVC.Hook.Hero.onProgress(torrent);
+                    MVC.Hook.Hero.onProgress(torrent);
                 }
             });
 
