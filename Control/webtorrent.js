@@ -82,8 +82,8 @@ const WebTorrentControl = {
     },
 
     propagate: function(info) {
-        if (!info || isEmptyObject(info)) return;
-        const client = window.client || window.webtorrentClient;
+        if (Object.keys(info).length === 0) return;
+        
         if (!client) return;
 
         MVC.Hook.Hero.assertProgress(infoHash);
