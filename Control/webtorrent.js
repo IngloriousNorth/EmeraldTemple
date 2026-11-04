@@ -83,10 +83,10 @@ const WebTorrentControl = {
 
     propagate: function(info) {
         if (Object.keys(info).length === 0) return;
-        
+
         if (!client) return;
 
-        MVC.Hook.Hero.assertProgress(infoHash);
+        MVC.Hook.Hero.assertProgress(info.infoHash);
 
         const onTorrentReady = (torrent) => {
             torrent.on("progress", () => {
