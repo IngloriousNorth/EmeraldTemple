@@ -133,7 +133,7 @@ const RamosaBase = {
 
         request.onsuccess = () => {
             console.info(`[RAMOSA BASE] Successfully stored record with index: ${indexKey}`);
-            if (!this.Base.some(r => r.index === indexKey)) {
+            if (!this.Base.some(r => r.Doc.RAy === indexKey)) {
                 this.Base.push(record);
             }
             MVC.Control.Table.unfold("table");

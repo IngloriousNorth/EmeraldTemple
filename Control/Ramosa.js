@@ -204,8 +204,8 @@ const RamosaControl = {
     async process(pdfFile, fileText, webSeedUrl, sourceDate, userClasses) {
         console.info("[RAMOSA CONTROL] Processing extracted PDF text via fflag router with webseed options...");
 
-        const rayPayload = this.parseMetadata(fileText, userClasses, pdfFile.name, sourceDate, webSeedUrl);
-        console.info(`[RAMOSA CONTROL] Generated local APA: ${rayPayload.Sphere.edition.APA}`);
+        const rayPayLoad = this.parseMetadata(fileText, userClasses, pdfFile.name, sourceDate, webSeedUrl);
+        console.info(`[RAMOSA CONTROL] Generated local APA: ${rayPayLoad.Sphere.edition.APA}`);
 
         const client = window.client || window.webtorrentClient;
         if (!client) {
@@ -213,11 +213,11 @@ const RamosaControl = {
             return;
         }
 
-        const cleanTorrentName = rayPayload.Sphere.edition.APA.replace(/[*_]/g, '');
+        const cleanTorrentName = rayPayLoad.Sphere.edition.APA.replace(/[*_]/g, '');
 
         const seedOptions = {
             name: cleanTorrentName,
-            comment: JSON.stringify(rayPayload),
+            comment: JSON.stringify(rayPayLoad),
             urlList: webSeedUrl ? [webSeedUrl] : [],
             dht: false,
             tracker: false,
@@ -225,8 +225,8 @@ const RamosaControl = {
             path: false
         };
 
-        if (!rayPayload.Sphere.Doc) {
-            rayPayload.Sphere.Doc = [];
+        if (!rayPayLoad.Sphere.Doc) {
+            rayPayLoad.Sphere.Doc = [];
         }
 
         // Ensure webseed array is populated and stored under Sphere.Doc.webseeds[]
@@ -234,15 +234,16 @@ const RamosaControl = {
 
         
 
-        WebTorrentControl.seed(pdfFile, rayPayload, seedOptions, (doc)=>{
-            rayPayload.Sphere.Doc.push({
+        WebTorrentControl.seed(pdfFile, rayPayLoad, seedOptions, (doc)=>{
+            rayPayLoad.Sphere.Doc.push({
                 format: "PDF",
-                res: `Pre-1931 Archive Scan (${rayPayload.categoryType})`,
+                res: `Pre-1931 Archive Scan (${rayPayLoad.categoryType})`,
                 RAy: doc.RAy,
                 size: pdfFile.size,
-                release: `${rayPayload.Sphere.institution.name}-${rayPayload.Sphere.source.date}-${rayPayload.Sphere.source.name.replace(/\s+/g, '-')}`,
+                release: `${rayPayLoad.Sphere.institution.name}-${rayPayLoad.Sphere.source.date}-${rayPayLoad.Sphere.source.name.replace(/\s+/g, '-')}`,
                 webseeds: webseedList
             });
+            MVC.Base.Ramosa.put(doc.RAy, rayPayLoad)
         })
 
     }
