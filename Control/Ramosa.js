@@ -228,32 +228,36 @@ const RamosaControl = {
             path: false // Prevents WebTorrent from attempting File System Access API directory handle writes
         };
 
-        client.seed(pdfFile, seedOptions, (torrent) => {
-            console.info(`[RAMOSA CONTROL] Torrent active with webseed! InfoHash: ${torrent.infoHash}`);
+        client.seed(pdfFile, seedOptions, (doc) => {
+            console.info(`[RAMOSA CONTROL] Torrent active! RAy GraphDB ID (InfoHash): ${doc.RAy}`);
 
-            if (!rayPayload.entity.edition.torrents) {
-                rayPayload.entity.edition.torrents = [];
+            //webtorrent shim for EmeraldTemple!;
+            doc.RAy = doc.infoHash;            
+
+            if (!rayPayload.entity.Doc) {
+                rayPayload.entity.Doc = [];
             }
 
-            rayPayload.entity.edition.torrents.push({
+            // Push information-bearing document object into Doc array
+            rayPayload.entity.Doc.push({
                 format: "PDF",
                 res: `Pre-1931 Archive Scan (${rayPayload.categoryType})`,
-                infoHash: torrent.infoHash,
+                RAy: torrent.infoHash, // Doc.RAy acts as the GraphDB ID
                 size: pdfFile.size,
                 release: `${rayPayload.entity.institution.name}-${rayPayload.entity.source.date}-${rayPayload.entity.source.name.replace(/\s+/g, '-')}`
             });
 
             if (MVC.Base?.Ramosa && typeof MVC.Base.Ramosa.put === 'function') {
-                MVC.Base.Ramosa.put(torrent.infoHash, rayPayload);
+                // Pass torrent.infoHash as the primary index key for IndexedDB
+                MVC.Base.Ramosa.put(doc.RAy, rayPayload);
             } else {
                 console.warn("[RAMOSA CONTROL] MVC.Base.Ramosa.put not found.");
             }
 
             console.log("[CONTROL.TORRENTS]: Routing via MVC namespace!");
 
-            try {
-                if (torrent.torrentFile) {
-                    const blob = new Blob([torrent.torrentFile], { type: 'application/x-bittorrent' });
+            try {//including whitelisted webtorrent.js conduit
+                    const blob = new Blob([doc.torrentFile], { type: 'application/x-bittorrent' });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
@@ -264,8 +268,8 @@ const RamosaControl = {
                     a.remove();
                     console.info("[RAMOSA CONTROL] .torrent metafile blob downloaded successfully.");
                 }
-            } catch (err) {
-                console.error("[RAMOSA CONTROL] Failed to generate .torrent blob:", err);
+            catch(err){
+                console.warn(err); //end whitelisted webtorrent.js conduit
             }
         });
     }

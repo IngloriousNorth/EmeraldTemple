@@ -1,11 +1,15 @@
 // root/Base/Ramosa.js
+// Ramosa uses the Open DataStructure, Source, Person, Class, Institution, Edition, Doc.
+// Doc is the fundamental metadata obj branched from the Edition(s), what are branched from Source(s).
+// Doc.RAy is the GraphDB id.
+
 const RamosaBase = {
-    dbName: 'RamosaUniversalDB',
+    dbName: 'RamosaProtocol',
     storeName: 'records',
     db: null,
     initPromise: null, 
     data: { Sources: new Map(), Persons: new Map(), Classes: new Map(), Institutions: new Map() },
-    RAy: [],
+    Base: [],
     isLoaded: false,
 
     init() {
@@ -40,27 +44,28 @@ const RamosaBase = {
     },
 
     get(index = null) {
-        const records = this.RAy || [];
-        if (i) {
+        const records = this.Base || [];
+        if (index) {
             const found = records.find(r => 
-                r.index === i || 
-                r.infoHash === i || 
-                (r.entity?.edition?.torrents && r.entity.edition.torrents.some(t => t.index === i || t.infoHash === i))
+                r.index === index || 
+                r.Doc?.RAy === index ||
+                (r.entity?.edition?.Docs && r.entity.edition.Docs.some(d => d.RAy === index || d.index === index))
             );
             if (!found && !this.isLoaded) {
-                console.warn("[RAMOSA BASE] get() called before RAy was fully hydrated. Triggering background loadAll...");
+                console.warn("[RAMOSA BASE] get() called before Base was fully hydrated. Triggering background loadAll...");
                 this.loadAll();
             }
             return found || null;
         }
         return records;
     },
+
     getAll() {
-        return this.RAy || [];
+        return this.Base || [];
     },
 
     async loadAll() {
-        if (this.isLoaded) return this.RAy;
+        if (this.isLoaded) return this.Base;
 
         try {
             if (!this.db) {
@@ -76,7 +81,7 @@ const RamosaBase = {
     _executeLoadAll() {
         return new Promise((resolve, reject) => {
             if (this.isLoaded) {
-                return resolve(this.RAy);
+                return resolve(this.Base);
             }
 
             if (!this.db) {
@@ -89,7 +94,7 @@ const RamosaBase = {
 
             request.onsuccess = (event) => {
                 const records = event.target.result || [];
-                this.RAy = records;
+                this.Base = records;
                 this.isLoaded = true;
                 console.info(`[RAMOSA BASE] Loaded and hydrated ${records.length} records from local IndexedDB.`);
                 resolve(records);
@@ -102,7 +107,7 @@ const RamosaBase = {
         });
     },
 
-    async put(infoHash, rayPayload) {
+    async put(indexKey, rayPayload) {
         if (!this.db) {
             try {
                 this.db = await this.init();
@@ -115,14 +120,21 @@ const RamosaBase = {
         const transaction = this.db.transaction([this.storeName], "readwrite");
         const store = transaction.objectStore(this.storeName);
         
-        const record = Object.assign({}, rayPayload, { infoHash });
+        // Structure payload ensuring Doc and Doc.RAy anchor the GraphDB identifier
+        const record = Object.assign({}, rayPayload, { 
+            index: indexKey,
+            Doc: Object.assign({}, rayPayload.Doc || {}, { RAy: indexKey })
+        });
+
         const request = store.put(record);
 
         request.onsuccess = () => {
-            console.info(`[RAMOSA BASE] Successfully stored entity with index: ${infoHash}`);
-            if (!this.RAy.some(r => r.infoHash === infoHash)) {
-                MVC.Base.Ramosa.RAy.push(record);
-                MVC.Control.Torrents.table("torrents");
+            console.info(`[RAMOSA BASE] Successfully stored entity with Doc.RAy index: ${indexKey}`);
+            if (!this.Base.some(r => r.index === indexKey || r.Doc?.RAy === indexKey)) {
+                MVC.Base.Ramosa.Base.push(record);
+                if (typeof MVC.Control?.Torrents?.table === 'function') {
+                    MVC.Control.Torrents.table("torrents");
+                }
             }
         };
 
