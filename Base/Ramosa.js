@@ -47,8 +47,8 @@ const RamosaBase = {
         const records = this.Base || [];
         if (RAy) {
             const found = records.find(r => 
-                r.Doc?.RAy === RAy ||
-                (r.entity?.edition?.Docs && r.entity.edition.Docs.some(d => d.RAy === RAy || d.RAy === RAy))
+                r.Sphere.Doc?.RAy === RAy ||
+                (r.Sphere?.Doc.RAy === RAy)
             );
             if (!found && !this.isLoaded) {
                 console.warn("[RAMOSA BASE] get() called before Base was fully hydrated. Triggering background loadAll...");
@@ -128,8 +128,8 @@ const RamosaBase = {
         const request = store.put(record);
 
         request.onsuccess = () => {
-            console.info(`[RAMOSA BASE] Successfully stored entity with Doc.RAy index: ${indexKey}`);
-            if (!this.Base.some(r => r.index === indexKey || r.Doc?.RAy === indexKey)) {
+            console.info(`[RAMOSA BASE] Successfully stored Sphere with Doc.RAy index: ${indexKey}`);
+            if (!this.Base.some(r => r.index === indexKey || r.Sphere.Doc?.RAy === indexKey)) {
                 MVC.Base.Ramosa.Base.push(record);
                 if (typeof MVC.Control?.Torrents?.table === 'function') {
                     MVC.Control.Torrents.table("torrents");

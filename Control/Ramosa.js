@@ -99,17 +99,14 @@ const RamosaControl = {
                 if (yearMatch) year = yearMatch[1];
             }
 
-            // 1. Precise Author Extraction (Looking for "By [Name]" or prominent capitalized author lines)
             const authorMatch = cleanText.match(/(?:(?:By|AUTHOR)\s+|By\s+the\s+Author\s+of\s+)([A-Z][a-zA-Z\s\.,-]+?)(?=\s+(?:D\.D\.|LL\.D\.|M\.A\.|VOL|PUBLISHED|LONDON|EDINBURGH|NEW\s+YORK|\d{4}|$))/i);
             if (authorMatch && !/Internet Archive|Digitized|Microsoft|Google/i.test(authorMatch[1])) {
                 author = authorMatch[1].trim();
             } else {
-                // Fallback: Look for known classic author signatures or capitalized name patterns near top
                 const nameFallback = cleanText.match(/(?:AURELIUS\s+AUGUSTINE|AUGUSTINE|PLATO|ARISTOTLE|THOMAS\s+A\s+KEMPIS|JOHN\s+CALVIN|MARTIN\s+LUTHER)/i);
                 if (nameFallback) author = nameFallback[0].trim();
             }
 
-            // 2. Publisher Imprint Detection (Looking for 19th-century publishers near cities)
             const pubMatch = cleanText.match(/(?:([A-Z][a-zA-Z\s&,.-]{3,35})\s+(?:Co\.|Publishers|Sons|Brothers|Company|Limited|Ltd))\b/i) ||
                              cleanText.match(/(?:London|Edinburgh|Oxford|Cambridge|Dublin|Boston|New\s+York)[:,\s]+([A-Z][a-zA-Z\s&,.-]{3,35})/i);
             if (pubMatch) {
@@ -119,7 +116,6 @@ const RamosaControl = {
                 }
             }
 
-            // 3. Source Name / Title Extraction (Filtering out funding/URL boilerplate)
             const worksMatch = cleanText.match(/(THE\s+WORKS(?:\s+OF\s+[A-Z\s,]+)?)/i);
             if (worksMatch) {
                 title = worksMatch[1].trim();
@@ -133,7 +129,6 @@ const RamosaControl = {
                 }
             }
 
-            // 4. Volume / Subtitle Extraction
             const volMatch = cleanText.match(/(VOL\.\s*[IVXLCDM]+\.?[\s\w,.-]{3,60})/i);
             if (volMatch) {
                 volSubtitle = volMatch[1].trim();
@@ -168,16 +163,17 @@ const RamosaControl = {
         console.info(`[RAMOSA ENGINE] Extraction complete. Category: ${detectedCategory} | Title: "${title}" | Author: "${author}" | Year: ${year} | Publisher: "${publisher}"`);
 
         const displayTitle = volSubtitle ? `${title}: ${volSubtitle}` : title;
+        // APA citation strings with all asterisks removed completely
         const apaString = translator 
-            ? `${author} (${year}). *${displayTitle}* (${translator}, Trans.). ${publisher}.`
-            : `${author} (${year}). *${displayTitle}*. ${publisher}.`;
+            ? `${author} (${year}). ${displayTitle} (${translator}, Trans.). ${publisher}.`
+            : `${author} (${year}). ${displayTitle}. ${publisher}.`;
 
         const classList = userClasses ? userClasses.split(',').map(c => c.trim()).filter(Boolean) : ["Public Domain"];
 
         return {
             rayVersion: "1.0",
             categoryType: detectedCategory,
-            entity: {
+            Sphere: {
                 source: {
                     name: title,
                     genus: "Historical Book",
@@ -208,7 +204,7 @@ const RamosaControl = {
         console.info("[RAMOSA CONTROL] Processing extracted PDF text via fflag router with webseed options...");
 
         const rayPayload = this.parseMetadata(fileText, userClasses, pdfFile.name, sourceDate, webSeedUrl);
-        console.info(`[RAMOSA CONTROL] Generated local APA: ${rayPayload.entity.edition.APA}`);
+        console.info(`[RAMOSA CONTROL] Generated local APA: ${rayPayload.Sphere.edition.APA}`);
 
         const client = window.client || window.webtorrentClient;
         if (!client) {
@@ -216,7 +212,7 @@ const RamosaControl = {
             return;
         }
 
-        const cleanTorrentName = rayPayload.entity.edition.APA.replace(/[*_]/g, '');
+        const cleanTorrentName = rayPayload.Sphere.edition.APA.replace(/[*_]/g, '');
 
         const seedOptions = {
             name: cleanTorrentName,
@@ -229,26 +225,24 @@ const RamosaControl = {
         };
 
         client.seed(pdfFile, seedOptions, (doc) => {
+            // WebTorrent shim for EmeraldTemple!
+            doc.RAy = doc.infoHash;            
             console.info(`[RAMOSA CONTROL] Torrent active! RAy GraphDB ID (InfoHash): ${doc.RAy}`);
 
-            //webtorrent shim for EmeraldTemple!;
-            doc.RAy = doc.infoHash;            
-
-            if (!rayPayload.entity.Doc) {
-                rayPayload.entity.Doc = [];
+            if (!rayPayload.Sphere.Doc) {
+                rayPayload.Sphere.Doc = [];
             }
 
-            // Push information-bearing document object into Doc array
-            rayPayload.entity.Doc.push({
+            // Push information-bearing document object into Doc array using doc.RAy
+            rayPayload.Sphere.Doc.push({
                 format: "PDF",
                 res: `Pre-1931 Archive Scan (${rayPayload.categoryType})`,
-                RAy: torrent.infoHash, // Doc.RAy acts as the GraphDB ID
+                RAy: doc.RAy,
                 size: pdfFile.size,
-                release: `${rayPayload.entity.institution.name}-${rayPayload.entity.source.date}-${rayPayload.entity.source.name.replace(/\s+/g, '-')}`
+                release: `${rayPayload.Sphere.institution.name}-${rayPayload.Sphere.source.date}-${rayPayload.Sphere.source.name.replace(/\s+/g, '-')}`
             });
 
             if (MVC.Base?.Ramosa && typeof MVC.Base.Ramosa.put === 'function') {
-                // Pass torrent.infoHash as the primary index key for IndexedDB
                 MVC.Base.Ramosa.put(doc.RAy, rayPayload);
             } else {
                 console.warn("[RAMOSA CONTROL] MVC.Base.Ramosa.put not found.");
@@ -256,20 +250,19 @@ const RamosaControl = {
 
             console.log("[CONTROL.TORRENTS]: Routing via MVC namespace!");
 
-            try {//including whitelisted webtorrent.js conduit
-                    const blob = new Blob([doc.torrentFile], { type: 'application/x-bittorrent' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `${pdfFile.name}.torrent`;
-                    document.body.appendChild(a);
-                    a.click();
-                    URL.revokeObjectURL(url);
-                    a.remove();
-                    console.info("[RAMOSA CONTROL] .torrent metafile blob downloaded successfully.");
-                }
-            catch(err){
-                console.warn(err); //end whitelisted webtorrent.js conduit
+            try {
+                const blob = new Blob([doc.torrentFile], { type: 'application/x-bittorrent' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${pdfFile.name}.torrent`;
+                document.body.appendChild(a);
+                a.click();
+                URL.revokeObjectURL(url);
+                a.remove();
+                console.info("[RAMOSA CONTROL] .torrent metafile blob downloaded successfully.");
+            } catch(err) {
+                console.warn(err);
             }
         });
     }

@@ -3,47 +3,6 @@
  * Loads data dynamically from MVC.Base.Ramosa asynchronously.
  */
 
-function decodeEntities(encodedString) {
-  var textArea = document.createElement('textarea');
-  textArea.innerHTML = encodedString;
-  return textArea.value;
-}
-
-function assertAPACitation(record, edition_torrent) {
-    var publisherHtml = "";
-    var formerPart = ""; // Authors + Date + Title
-
-    // 1. Build Authors Part
-    if (record._fields && record._fields[1]) {
-        record._fields[1].forEach(function(field, i) {
-            if (field && field.properties && field.properties.name) {
-                formerPart += decodeEntities(field.properties.name);
-                if (record._fields[1][i + 1]) formerPart += ", ";
-                else formerPart += (field.properties.name.endsWith(".")) ? " " : ". ";
-            }
-        });
-    }
-
-    // 2. Build Date Part
-    var editionDate = edition_torrent.edition.properties.date || record._fields[0].properties.date || "n.d.";
-    var yearMatch = String(editionDate).match(/\b(1[6-9]\d{2}|20\d{2})\b/);
-    var year = yearMatch ? yearMatch[1] : "n.d.";
-    formerPart += "(" + year + "). ";
-
-    // 3. Build Title Part (Explicitly NO asterisks)
-    var title = edition_torrent.edition.properties.title || record._fields[0].properties.name || "Untitled Work";
-    title = title.replace(/\*/g, '').trim();
-    formerPart += "*" + title + "*.";
-
-    // 4. Build Publisher Part (if available) as a clickable anchor with .publisher_name class
-    if (edition_torrent.publisher && edition_torrent.publisher.properties && edition_torrent.publisher.properties.name) {
-        var pubName = decodeEntities(edition_torrent.publisher.properties.name);
-        publisherHtml = ' <a href="#" class="publisher_name text-decoration-none">' + pubName + '</a>.';
-    }
-
-    return formerPart + publisherHtml;
-}
-
 function parseRAyData(rayArray) {
   const rows = [];
 
@@ -54,6 +13,7 @@ function parseRAyData(rayArray) {
     const categories = (entity.classes || []).map(c => c.name).filter(Boolean);
     const institution = entity.institution || {};
     const edition = entity.edition || {};
+    const docArray = entity.Doc || [];
 
     const cleanSourceName = (source.name || 'Historical Work').replace(/\s*\([^)]*\)/g, '').trim();
     const groupKey = source.uuid || cleanSourceName.toLowerCase().replace(/[^a-z0-9]/g, '_');
@@ -61,20 +21,19 @@ function parseRAyData(rayArray) {
     const publisherName = institution.name || '';
     const title = (edition.title || cleanSourceName).replace(/\*/g, '').trim();
     
-    // Construct clean APA citation string without raw asterisks in dn if needed, but keeping markdown/HTML for display
-    let apaCitation = edition.APA || `${authors.join(', ') || 'Unknown Author'} (${edition.date || source.date || 'n.d.'}). *${title}*.`;
+    let apaCitation = edition.APA || `${authors.join(', ') || 'Unknown Author'} (${edition.date || source.date || 'n.d.'}). ${title}.`;
     if (publisherName) {
       apaCitation += ` <a href="#" class="publisher_name text-decoration-none">${publisherName}</a>.`;
     }
 
-    const torrentsList = edition.torrents || [];
-    const formattedTorrents = torrentsList.map(tor => ({
-      format: tor.format || 'PDF',
-      size: tor.size || 0,
-      snatches: tor.snatches || 0,
-      infoHash: tor.infoHash,
-      webseeds: tor.webseeds || tor.urlList || [tor.webseed].filter(Boolean),
-      created_at: tor.created_at || edition.created_at || Date.now()
+    // Map entity.Doc entries to torrent/document conduits
+    const formattedTorrents = docArray.map(doc => ({
+      format: doc.format || 'PDF',
+      size: doc.size || 0,
+      snatches: doc.snatches || 0,
+      infoHash: doc.RAy || doc.infoHash,
+      webseeds: doc.webseeds || doc.urlList || [doc.webseed].filter(Boolean),
+      created_at: doc.created_at || edition.created_at || Date.now()
     }));
 
     rows.push({
@@ -166,7 +125,6 @@ const TorrentsControl = {
       <tbody></tbody>
     `);
 
-    // Fetch records safely from Ramosa Base
     let rawRayData = [];
     try {
       const ramBase = window.MVC?.Base?.Ramosa;
@@ -176,12 +134,12 @@ const TorrentsControl = {
         } else if (typeof ramBase.get === 'function') {
           rawRayData = ramBase.get();
         } else {
-          rawRayData = ramBase.RAy || [];
+          rawRayData = ramBase.Base || [];
         }
       }
     } catch (e) {
       console.warn("[TORRENTS CONTROLLER] Error fetching Ramosa records:", e);
-      rawRayData = window.MVC?.Base?.Ramosa?.RAy || [];
+      rawRayData = window.MVC?.Base?.Ramosa?.Base || [];
     }
 
     console.info(`[TORRENTS CONTROLLER] Hydrated ${rawRayData.length} records into DataTable.`);
@@ -300,17 +258,29 @@ const TorrentsControl = {
       },
       drawCallback: function() {
         $(document).off('click', '.webtorrent-dl-btn').on('click', '.webtorrent-dl-btn', function(e) {
-          const infoHash = this.id; 
-          if (!infoHash) return;
+          const rayId = this.id; 
+          if (!rayId) return;
 
-          console.info("[UI] Download clicked for Ramosa RAy:", infoHash);
-          const editionRecord = MVC.Base.Ramosa.get(RAy);//open protocol, establishes DMCA conduit Safe Harbor protection.
+          console.info("[UI] Download clicked for Ramosa RAy ID:", rayId);
+          // Query base using Doc?.RAy / open protocol safe harbor conduit
+          const record = MVC.Base.Ramosa.get(rayId);
 
-          if (editionRecord && editionRecord.torrent) {
-              console.info("[RAMOSA] Found torrent record, launching pipeline...");
-              window.MVC.Control.webtorrent.DL(editionRecord.torrent);
+          if (record) {
+              console.info("[RAMOSA] Found record via Base, launching pipeline...", record);
+              if (window.MVC?.Control?.webtorrent && typeof window.MVC.Control.webtorrent.DL === 'function') {
+                  window.MVC.Control.webtorrent.DL(record);
+              } else {
+                  // Fallback: lookup active torrent in client by RAy ID
+                  const client = window.client || window.webtorrentClient;
+                  if (client) {
+                      let torrent = client.get(rayId);
+                      if (torrent && typeof window.MVC?.Control?.webtorrent?.DL === 'function') {
+                          window.MVC.Control.webtorrent.DL(torrent);
+                      }
+                  }
+              }
           } else {
-              console.warn("[RAMOSA] No torrent record found for RAy:", infoHash);
+              console.warn("[RAMOSA] No record found for RAy ID:", rayId);
           }
         });
       }
