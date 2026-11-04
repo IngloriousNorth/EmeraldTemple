@@ -125,8 +125,8 @@ const WebTorrentControl = {
             });
         };
 
-        if (activeTorrent) {
-            onTorrentReady(activeTorrent);
+        if (torrent) {
+            onTorrentReady(torrent);
         } else {
             let webseeds = [];
             try {
