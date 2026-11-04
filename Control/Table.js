@@ -1,5 +1,5 @@
 //EmeraldTemple Universal p2p GraphDB imports webtorrent functions
-import './webtorrent.js'
+import WebTorrentControl from './webtorrent.js'
 
 /**
  * Table.js Controller (Bootstrap 5 + jQuery UI Hybrid)
