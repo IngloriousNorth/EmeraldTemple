@@ -149,9 +149,7 @@ const RamosaBase = {
             } else {
                 this.Base.push(record);
             }
-            if (window.MVC?.Control?.Table && typeof window.MVC.Control.Table.unfold === 'function') {
-                window.MVC.Control.Table.unfold("table");
-            }
+            window.MVC.Control.Table.unfold("default");
         };
 
         request.onerror = (event) => {
