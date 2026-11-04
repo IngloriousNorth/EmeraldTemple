@@ -136,7 +136,7 @@ const RamosaBase = {
             if (!this.Base.some(r => r.Doc.RAy === indexKey)) {
                 this.Base.push(record);
             }
-            MVC.Control.Table.unfold("table");
+            MVC.Control.Table.unfold("default");
         };
 
         request.onerror = (event) => {
