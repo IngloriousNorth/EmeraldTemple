@@ -127,7 +127,7 @@ const WebTorrentControl = {
 
         let webseeds = [];
         try {
-            const record = window.MVC?.Base?.Ramosa?.get(infoHash);
+            const record = window.MVC?.Base?.Ramosa?.get(info.RAy);
             if (record && record.Sphere && record.Sphere.edition && record.Sphere.edition.webSeed) {
                 webseeds = [record.Sphere.edition.webSeed];
             }
