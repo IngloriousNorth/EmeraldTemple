@@ -303,14 +303,14 @@ const TorrentsControl = {
           const index = this.id; 
           if (!index) return;
 
-          console.info("[UI] Download clicked for Ramosa hash index:", index);
+          console.info("[UI] Download clicked for Ramosa index:", index);
           const editionRecord = MVC.Base.Ramosa.get(index);//open protocol, establishes DMCA conduit Safe Harbor protection.
 
           if (editionRecord && editionRecord.torrent) {
               console.info("[RAMOSA] Found torrent record, launching pipeline...");
               window.MVC.Control.webtorrent.DL(editionRecord.torrent);
           } else {
-              console.warn("[RAMOSA] No torrent record found for hash index:", index);
+              console.warn("[RAMOSA] No torrent record found for index:", index);
           }
         });
       }
