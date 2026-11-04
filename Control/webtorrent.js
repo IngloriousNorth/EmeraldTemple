@@ -134,7 +134,7 @@ const WebTorrentControl = {
         } catch (e) { console.warn(e) }
 
 
-        client.add(`magnet:?xt=urn:btih:${torrent.RAy}`, { urlList: webseeds, dht: false, tracker: false, pex: true }, (torrent) => {
+        client.add(`magnet:?xt=urn:btih:${info.RAy}`, { urlList: webseeds, dht: false, tracker: false, pex: true }, (torrent) => {
             onTorrentReady(torrent);
         });
     }
