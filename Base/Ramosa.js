@@ -132,9 +132,7 @@ const RamosaBase = {
             console.info(`[RAMOSA BASE] Successfully stored Sphere with index: ${indexKey}`);
             if (!this.Base.some(r => r.index === indexKey)) {
                 MVC.Base.Ramosa.Base.push(record);
-                if (typeof MVC.Control?.Table?.unfold === 'function') {
-                    MVC.Control.Table.unfold("table");
-                }
+                MVC.Control.Table.unfold("default");
             }
         };
 
