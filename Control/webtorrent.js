@@ -31,7 +31,7 @@ const WebTorrentControl = {
     },
 
     seed(fileOrSource, RayPayLoad, seedOptions, cb) {        
-        if (seedOptions.urlList.length === 0) {//white-listed.
+        if (seedOptions.urlList.length === 0) {
             console.info("[MVC.Control.webtorrent] Torrent creation canceled by user.");
             return;
         }
@@ -40,11 +40,11 @@ const WebTorrentControl = {
 
         seedOptions.urlList.forEach(function(URL){
             if(!that.isWhitelisted(URL)){
+                console.error(`[SECURITY REJECTED] Domain not allowed by whitelist policy: ${URL}`);
+                alert(`[REJECTED] Webseed domain is not whitelisted: ${URL}`);
                 return;
-                console.error(`[SECURITY REJECTED] Domain not allowed by whitelist policy: ${webseedUrl}`);
-                alert(`[REJECTED] Webseed domain is not whitelisted: ${webseedUrl}`);
             }
-        })
+        });
 
         const client = window.client || window.webtorrentClient;
         if (!client) {
@@ -56,7 +56,7 @@ const WebTorrentControl = {
             console.info(`[MVC.Control.webtorrent] Torrent active. InfoHash: ${torrent.infoHash}`);
 
             if (window.MVC && window.MVC.Hook && window.MVC.Hook.Hero && typeof window.MVC.Hook.Hero.assertProgress === 'function') {
-                MVC.Hook.Hero.assertProgress(torrent.infoHash);
+                window.MVC.Hook.Hero.assertProgress(torrent.infoHash);
             }
 
             const torrentBlob = new Blob([torrent.torrentFile], { type: 'application/x-bittorrent' });
@@ -77,27 +77,43 @@ const WebTorrentControl = {
             }, 1000);
 
             torrent.RAy = torrent.infoHash;
-            cb(torrent);
+            if (typeof cb === 'function') cb(torrent);
         });
     },
 
     propagate: function(info) {
-        if (Object.keys(info).length === 0) return;
+        if (!info || Object.keys(info).length === 0) return;
 
-        if (!client) return;
+        if (!client) {
+            console.error("[MVC.Control.webtorrent] WebTorrent client not found during propagate()");
+            return;
+        }
 
-        MVC.Hook.Hero.assertProgress(info.infoHash);
+        // Extract infoHash / RAy from Ramosa record structure (record root index, Doc array, or edition metadata)
+        let infoHash = info.index || info.RAy || info.infoHash;
+        if (!infoHash && info.Sphere) {
+            if (Array.isArray(info.Sphere.Doc) && info.Sphere.Doc.length > 0) {
+                infoHash = info.Sphere.Doc[0].RAy || info.Sphere.Doc[0].infoHash;
+            }
+        }
+
+        if (!infoHash) {
+            console.error("[MVC.Control.webtorrent] Could not resolve infoHash from record:", info);
+            return;
+        }
+
+        if (window.MVC?.Hook?.Hero && typeof window.MVC.Hook.Hero.assertProgress === 'function') {
+            window.MVC.Hook.Hero.assertProgress(infoHash);
+        }
+
+        let activeTorrent = client.get(infoHash);
 
         const onTorrentReady = (torrent) => {
             torrent.on("progress", () => {
-                if (window.MVC && window.MVC.Hook && window.MVC.Hook.Hero && typeof window.MVC.Hook.Hero.onProgress === 'function') {
-                    MVC.Hook.Hero.onProgress(torrent);
+                if (window.MVC?.Hook?.Hero && typeof window.MVC.Hook.Hero.assertProgress === 'function') {
+                    window.MVC.Hook.Hero.assertProgress(torrent.infoHash);
                 }
             });
-
-            torrent.on("progress", ()=>{
-                MVC.Hook.Hero.assertProgress();            
-            })
 
             if (torrent.done) {
                 downloadFile(torrent);
@@ -125,18 +141,29 @@ const WebTorrentControl = {
             });
         };
 
-        let webseeds = [];
-        try {
-            const record = window.MVC?.Base?.Ramosa?.get(info.RAy);
-            if (record && record.Sphere && record.Sphere.edition && record.Sphere.edition.webSeed) {
-                webseeds = [record.Sphere.edition.webSeed];
-            }
-        } catch (e) { console.warn(e) }
+        if (activeTorrent) {
+            onTorrentReady(activeTorrent);
+        } else {
+            let webseeds = [];
+            try {
+                // Extract webseeds from Sphere.Doc array or edition webSeed
+                if (info.Sphere) {
+                    if (Array.isArray(info.Sphere.Doc)) {
+                        info.Sphere.Doc.forEach(d => {
+                            if (Array.isArray(d.webseeds)) webseeds.push(...d.webseeds);
+                            if (d.webseed) webseeds.push(d.webseed);
+                        });
+                    }
+                    if (info.Sphere.edition?.webSeed) {
+                        webseeds.push(info.Sphere.edition.webSeed);
+                    }
+                }
+            } catch (e) { console.warn(e); }
 
-
-        client.add(`magnet:?xt=urn:btih:${info.RAy}`, { urlList: webseeds, dht: false, tracker: false, pex: true }, (torrent) => {
-            onTorrentReady(torrent);
-        });
+            client.add(`magnet:?xt=urn:btih:${infoHash}`, { urlList: webseeds, dht: false, tracker: false, pex: true }, (torrent) => {
+                onTorrentReady(torrent);
+            });
+        }
     }
 };
 
