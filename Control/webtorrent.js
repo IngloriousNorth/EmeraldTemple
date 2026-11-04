@@ -169,44 +169,40 @@ const WebTorrentControl = {
                 }
             };
 
-            if (activeTorrent) {
-                console.info("[MVC.Control.webtorrent] Found active torrent in client swarm:", infoHash);
-                onTorrentReady(activeTorrent);
-            } else {
-                let webseeds = [];
-                try {
-                    if (info.Sphere) {
-                        if (Array.isArray(info.Sphere.Doc)) {
-                            info.Sphere.Doc.forEach(d => {
-                                if (Array.isArray(d.webseeds)) webseeds.push(...d.webseeds);
-                                if (d.webseed) webseeds.push(d.webseed);
-                            });
-                        }
-                        if (info.Sphere.edition?.webSeed) {
-                            webseeds.push(info.Sphere.edition.webSeed);
-                        }
+            let webseeds = [];
+            try {
+                if (info.Sphere) {
+                    if (Array.isArray(info.Sphere.Doc)) {
+                        info.Sphere.Doc.forEach(d => {
+                            if (Array.isArray(d.webseeds)) webseeds.push(...d.webseeds);
+                            if (d.webseed) webseeds.push(d.webseed);
+                        });
                     }
-                } catch (e) { console.warn(e); }
-
-                console.info("[MVC.Control.webtorrent] Adding magnet via client.add with webseeds:", webseeds);
-
-                client.add(`magnet:?xt=urn:btih:${infoHash}`, { urlList: webseeds, dht: false, tracker: false, pex: true }, (torrent) => {
-                    if (!torrent) return;
-                    
-                    if (torrent.ready || (torrent.files && torrent.files.length > 0)) {
-                        onTorrentReady(torrent);
-                    } else if (typeof torrent.on === 'function') {
-                        torrent.on('ready', () => onTorrentReady(torrent));
-                    } else {
-                        const poll = setInterval(() => {
-                            if (torrent.files && torrent.files.length > 0) {
-                                clearInterval(poll);
-                                onTorrentReady(torrent);
-                            }
-                        }, 500);
+                    if (info.Sphere.edition?.webSeed) {
+                        webseeds.push(info.Sphere.edition.webSeed);
                     }
-                });
-            }
+                }
+            } catch (e) { console.warn(e); }
+
+            console.info("[MVC.Control.webtorrent] Adding magnet via client.add with webseeds:", webseeds);
+
+            client.add(`magnet:?xt=urn:btih:${infoHash}`, { urlList: webseeds, dht: false, tracker: false, pex: true }, (torrent) => {
+                if (!torrent) return;
+                
+                if (torrent.ready || (torrent.files && torrent.files.length > 0)) {
+                    onTorrentReady(torrent);
+                } else if (typeof torrent.on === 'function') {
+                    torrent.on('ready', () => onTorrentReady(torrent));
+                } else {
+                    const poll = setInterval(() => {
+                        if (torrent.files && torrent.files.length > 0) {
+                            clearInterval(poll);
+                            onTorrentReady(torrent);
+                        }
+                    }, 500);
+                }
+            });
+        
         } catch (err) {
             console.error("[MVC.Control.webtorrent ERROR] Uncaught exception inside propagate():", err);
         }
