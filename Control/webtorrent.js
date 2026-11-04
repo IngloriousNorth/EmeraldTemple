@@ -30,7 +30,7 @@ const WebTorrentControl = {
         }
     },
 
-    seed(fileOrSource, rayPayLoad, seedOptions, callback) {        
+    seed(fileOrSource, rayPayLoad, seedOptions, cb) {        
         if (rayPayLoad.urlList.length === 0) {//white-listed.
             console.info("[MVC.Control.webtorrent] Torrent creation canceled by user.");
             return;
