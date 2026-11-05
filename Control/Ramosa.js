@@ -204,30 +204,23 @@ const RamosaControl = {
                 torrentBuffer: serializedBuffer
             });
 
-            // EXPLICIT BROADCAST CALL INSIDE PROCESS() ON SEED
-            const broadcastOnWire = (wire) => {
-                wire.use(WebTorrentBase.RamosaWireExtension);
-                const sendPayload = () => {
-                    if (wire.extendedMapping && wire.extendedMapping.ramosa !== undefined) {
-                        wire.ramosa.send(rayPayload);
-                        console.info("[RAMOSA CONTROL] Broadcasted newly processed rayPayload over wire.ramosa from process().");
-                    } else {
-                        setTimeout(sendPayload, 250);
-                    }
-                };
-                setTimeout(sendPayload, 400);
-            };
-
+            // 1. Handle any future wires connecting to this seed
             doc.on('wire', (wire) => {
-                broadcastOnWire(wire);
+                wire.use(WebTorrentBase.RamosaWireExtension);
+                wire.ramosa.send(rayPayload);
+                console.info("[RAMOSA CONTROL] Sent rayPayload over new wire in process().");
             });
 
+            // 2. Handle any wires already connected before seeding finished
             if (doc.wires && Array.isArray(doc.wires)) {
-                doc.wires.forEach(wire => broadcastOnWire(wire));
+                doc.wires.forEach(wire => {
+                    wire.use(WebTorrentBase.RamosaWireExtension);
+                    wire.ramosa.send(rayPayload);
+                    console.info("[RAMOSA CONTROL] Sent rayPayload over pre-existing wire in process().");
+                });
             }
 
             RamosaControl.put(doc.RAy, rayPayload);
-            setTimeout(TEMPEST.route("#table"), 0);
         });       
 
         return rayPayload;
