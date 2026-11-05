@@ -2,6 +2,8 @@
 import { ripemd160 } from '@noble/hashes/ripemd160';
 import { bytesToHex } from '@noble/hashes/utils';
 
+const webseedURL = "https://www.gutenberg.org/files/23652/23652.txt";
+
 (async function() {
     // Put this as line 1 of nano.min.js
     try {
@@ -18,72 +20,85 @@ import { bytesToHex } from '@noble/hashes/utils';
         const keyBytes = Uint8Array.from(matchHex(packageData.secretKeyMock));
         const authTag = Uint8Array.from(matchHex(packageData.authTag));
         
-        // Decode base64 ciphertext (representing the whole encrypted payload)
-        const rawCiphertext = Uint8Array.from(atob(packageData.ciphertext), c => c.charCodeAt(0));
+       // 1. Perform the security audit first by pulling the file via AJAX
+$.get(webseedURL, async (rawFileData) => {
+    try {
+        // Convert to Uint8Array for RIPEMD-160 validation
+        const rawCiphertext = typeof rawFileData === 'string' 
+            ? Uint8Array.from(rawFileData, c => c.charCodeAt(0)) 
+            : new Uint8Array(rawFileData);
 
-        // 2. Perform RIPEMD-160 integrity verification on the whole ciphertext package
+        // 2. Perform strict RIPEMD-160 integrity verification
         const computedHashDigest = ripemd160(rawCiphertext);
         const computedHex = bytesToHex(computedHashDigest);
 
         if (computedHex !== packageData.ripemd160Hash) {
-            throw new Error(`[SECURITY ALERT] RIPEMD-160 mismatch! Expected ${packageData.ripemd160Hash}, got ${computedHashHex}`);
+            throw new Error(`[SECURITY ALERT] RIPEMD-160 mismatch! Expected ${packageData.ripemd160Hash}, got ${computedHex}`);
         }
         console.info('[nano.js KERNEL] RIPEMD-160 integrity verification passed securely.');
 
-        // 3. Grab client from window.client and bind the verified cryptographic hash
-        // 3. Grab window.client, attach the verified hash globally, and add the torrent if ready
-        let seedContent;
-        $.get('./src/Gate.bundle.enc', (data)=>{
-            seedContent = data;
-            const seedContentBuffer = new Uint8Arr(seedContent);
-            //Keep
+        // 3. Construct the deterministic magnet link using your verified hash
+        const magnetURI = `magnet:?xt=urn:btih:${computedHex}&dn=Gate.enc.js`;
 
-            if (window.client) {
-                try{
-                    // Always check via client.get() first to prevent duplicate errors
-                    window.client.seed(seedContentBuffer, {
-                        announce: [], // No public trackers
-                        dht: false,
-                        pex: true
-                    })
-                    console.info(`[NANO KERNEL] Torrent already loaded in window.client.`);
-                }
-                catch(err){
-                    console.warn(err);
-                }
-
+        if (window.client) {
+            let existingTorrent = window.client.get(computedHex);
+            if (existingTorrent) {
+                console.info(`[NANO KERNEL] Swarm already active: ${existingTorrent.infoHash}`);
+                window.WebTorrentBase = window.WebTorrentBase || {};
+                window.WebTorrentBase.SWARM = existingTorrent;
+                if (typeof onGateReady === 'function') onGateReady(existingTorrent);
+                return;
             }
 
-        })
+            // 4. Add the torrent with the webseed URL explicitly included in urlList
+            window.client.add(magnetURI, {
+                infoHash: computedHex,
+                urlList: [webseedURL], // <-- Restored webseed URL for data pulling/seeding
+                announce: [],          // No public trackers
+                dht: false,
+                pex: true              // Peer Exchange enabled for local mesh discovery
+            }, (torrent) => {
+                console.info(`[NANO KERNEL] Sovereign swarm locked with active webseed: ${torrent.infoHash}`);
+                
+                window.WebTorrentBase = window.WebTorrentBase || {};
+                window.WebTorrentBase.SWARM = torrent;
+                
+                if (typeof onGateReady === 'function') onGateReady(torrent);
+            });
+            // 4. Prepare AES-GCM data (append authTag to raw ciphertext for Web Crypto compliance)
+            const encryptedData = new Uint8Array(rawCiphertext.length + authTag.length);
+            encryptedData.set(rawCiphertext);
+            encryptedData.set(authTag, rawCiphertext.length);
 
-        
+            // 5. Decrypt payload via SubtleCrypto
+            const cryptoKey = await crypto.subtle.importKey(
+                'raw',
+                keyBytes,
+                { name: 'AES-GCM' },
+                false,
+                ['decrypt']
+            );
 
-        // 4. Prepare AES-GCM data (append authTag to raw ciphertext for Web Crypto compliance)
-        const encryptedData = new Uint8Array(rawCiphertext.length + authTag.length);
-        encryptedData.set(rawCiphertext);
-        encryptedData.set(authTag, rawCiphertext.length);
+            const decryptedBuffer = await crypto.subtle.decrypt(
+                { name: 'AES-GCM', iv: iv, tagLength: 128 },
+                cryptoKey,
+                encryptedData
+            );
 
-        // 5. Decrypt payload via SubtleCrypto
-        const cryptoKey = await crypto.subtle.importKey(
-            'raw',
-            keyBytes,
-            { name: 'AES-GCM' },
-            false,
-            ['decrypt']
-        );
+            const decryptedCode = new TextDecoder().decode(decryptedBuffer);
 
-        const decryptedBuffer = await crypto.subtle.decrypt(
-            { name: 'AES-GCM', iv: iv, tagLength: 128 },
-            cryptoKey,
-            encryptedData
-        );
+            // 6. Execute decrypted code natively in window scope
+            const executeCode = new Function(decryptedCode);
+            executeCode();
+            console.info('[nano.js KERNEL SUCCESS] Gate.bundle.enc successfully compiled and executed.');
+        }
 
-        const decryptedCode = new TextDecoder().decode(decryptedBuffer);
-
-        // 6. Execute decrypted code natively in window scope
-        const executeCode = new Function(decryptedCode);
-        executeCode();
-        console.info('[nano.js KERNEL SUCCESS] Gate.bundle.enc successfully compiled and executed.');
+    } catch (err) {
+        console.error('[NANO KERNEL] Integrity check or swarm initialization failed:', err);
+    }
+}).fail((jqXHR, textStatus, errorThrown) => {
+    console.error(`[NANO KERNEL] Failed to pull payload from webseed URL (${webseedURL}):`, textStatus, errorThrown);
+});
 
     } catch (err) {
         console.error('[nano.js KERNEL ERROR]:', err);
