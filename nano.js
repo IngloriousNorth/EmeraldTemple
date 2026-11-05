@@ -37,9 +37,11 @@ import { bytesToHex } from '@noble/hashes/utils';
             const magnetURI = `magnet:?xt=urn:btih:${computedHashHex}&dn=EmeraldTemple_Enclave`;
             try{
                 // Always check via client.get() first to prevent duplicate errors
-                window.client.add(magnetURI, { dht: false, tracker: false, pex: true }, (torrent) => {
-                    console.info(`[NANO KERNEL] Swarm mounted: ${torrent.infoHash}`);
-                });
+                window.client.add(magnetURI, {
+                    announce: [], // No public trackers
+                    dht: false,
+                    pex: true
+                })
                 console.info(`[NANO KERNEL] Torrent already loaded in window.client.`);
             }
             catch(err){
