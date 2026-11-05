@@ -23,7 +23,7 @@ const IndexControl = {
                             WebTorrentBase.initialize(()=>{
                                 MVC.Control.Table.unfold("table");
                             });
-                            setTImeout(function(){
+                            setTimeout(function(){
                                 MVC.Control.Table(unfold("table"));
                             }, 4444);
                         }

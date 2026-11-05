@@ -309,6 +309,7 @@ const RamosaControl = {
 
             // Save locally and route table view immediately upon seeding
             RamosaControl.put(doc.RAy, rayPayload);
+            TEMPEST.route("#table");
         });       
 
         return rayPayload;
