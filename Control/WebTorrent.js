@@ -49,6 +49,8 @@ const WebTorrentControl = {
             }
         });
 
+        console.info("null?:", seedOptions.announce);
+
         const client = window.client || window.webtorrentClient;
         if (!client) {
             console.error("[MVC.Control.webtorrent] window.client WebTorrent instance not found.");

@@ -97,6 +97,8 @@ const WebTorrentBase = {
             wire.on('close', () => {
                 console.info(`[PEX IP GRAPH] Peer disconnected: ${peerAddr}`);
             });
+
+            cb();
         };
 
         swarm.on('wire', handleWire);
@@ -104,11 +106,7 @@ const WebTorrentBase = {
         if (swarm.wires && Array.isArray(swarm.wires)) {
             swarm.wires.forEach(wire => handleWire(wire));
         }
-
-        setTimeout(function(){
-        	cb();
-        }, 888)
-
+        
         console.info(`[PEX CATALOG SYNC] Bound successfully to swarm: ${swarm.infoHash}`);
     }
 };
