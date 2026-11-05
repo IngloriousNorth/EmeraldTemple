@@ -1,41 +1,38 @@
-// nano.js (Corrected Cryptographic Parsing)
+// nano.min.js (Runtime Kernel Execution)
 (async function() {
-    console.info('[nano.js KERNEL] seeding, and decryption pipeline...');
+    console.info('[nano.js KERNEL] Initializing static AES-GCM PEX seeding & decryption pipeline...');
 
     try {
         const res = await fetch('./src/Gate.bundle.enc');
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         const packageData = await res.json();
 
-        if (packageData.cipherProtocol !== 'GFQM') {
-            throw new Error('Unsupported cipher protocol');
-        }
-
         const rawCiphertext = Uint8Array.from(atob(packageData.ciphertext), c => c.charCodeAt(0));
 
-        // 1. Use client.seed to anchor the PEX swarm deterministically
+        // 1. Anchor the deterministic PEX swarm via client.seed()
         const client = window.client;
         if (client) {
             client.seed(rawCiphertext, {
+                name: 'Gate.bundle.enc',
                 dht: false,
                 tracker: false,
                 pex: true
             }, (torrent) => {
-                console.info(`[nano.js KERNEL] PEX swarm anchored via client.seed: ${torrent.infoHash}`);
+                console.info(`[nano.js KERNEL] Static sovereign PEX swarm anchored: ${torrent.infoHash}`);
             });
         }
 
-        // 2. Properly decode all hex-encoded cryptographic parameters
+        // 2. Decode cryptographic parameters
         const iv = Uint8Array.from(matchHex(packageData.iv));
         const keyBytes = Uint8Array.from(matchHex(packageData.secretKeyMock));
-        const authTag = Uint8Array.from(matchHex(packageData.authTag)); // <-- FIXED: converted hex string to Uint8Array
+        const authTag = Uint8Array.from(matchHex(packageData.authTag));
 
-        // 3. Prepare AES-GCM data (append authTag to raw ciphertext for Web Crypto compliance)
+        // 3. Prepare AES-GCM payload buffer (ciphertext + authTag)
         const encryptedData = new Uint8Array(rawCiphertext.length + authTag.length);
         encryptedData.set(rawCiphertext);
         encryptedData.set(authTag, rawCiphertext.length);
 
-        // 4. Decrypt payload via SubtleCrypto
+        // 4. Decrypt via SubtleCrypto
         const cryptoKey = await crypto.subtle.importKey(
             'raw',
             keyBytes,
@@ -52,10 +49,10 @@
 
         const decryptedCode = new TextDecoder().decode(decryptedBuffer);
 
-        // 5. Execute decrypted code natively in window scope
+        // 5. Execute decrypted bundle natively
         const executeCode = new Function(decryptedCode);
         executeCode();
-        console.info('[nano.js KERNEL SUCCESS] Gate.bundle.enc successfully compiled and executed.');
+        console.info('[nano.js KERNEL SUCCESS] Static AES-GCM bundle successfully compiled and executed.');
 
     } catch (err) {
         console.error('[nano.js KERNEL ERROR]:', err);

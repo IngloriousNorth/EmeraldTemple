@@ -10,8 +10,12 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// University-grade static cryptographic constants for 100% deterministic builds
+const STATIC_KEY_HEX = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef'; // 32 bytes (256-bit)
+const STATIC_IV_HEX  = 'fedcba9876543210fedcba98'; // 12 bytes (96-bit for AES-GCM)
+
 async function runBuild() {
-    console.info('[BUILD] Initializing deterministic GFQM compilation & encryption pipeline (RIPEMD removed)...');
+    console.info('[BUILD] Initializing static AES-GCM deterministic compilation & packaging...');
 
     const targetClientDir = path.join(__dirname, 'client/src');
     fs.mkdirSync(targetClientDir, { recursive: true });
@@ -49,21 +53,17 @@ async function runBuild() {
         const rawBundleCode = fs.readFileSync(tempBundlePath, 'utf8');
         const iifeWrappedCode = `(function() {\n"use strict";\n${rawBundleCode}\n})();`;
 
-        // 3. Generate a deterministic 12-byte IV derived from the bundle code hash 
-        // (Guarantees WebTorrent computes the exact same infoHash across builds for identical source code)
-        const codeHash = crypto.createHash('sha256').update(iifeWrappedCode).digest();
-        const iv = codeHash.subarray(0, 12); 
+        const key = Buffer.from(STATIC_KEY_HEX, 'hex');
+        const iv = Buffer.from(STATIC_IV_HEX, 'hex');
 
-        // Generate a fresh random AES-256-GCM key per build under GFQM spec
-        const key = crypto.randomBytes(32);
-
+        // Encrypt with static key and IV -> guaranteed identical ciphertext bytes per build
         const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
         let encrypted = cipher.update(iifeWrappedCode, 'utf8');
         encrypted = Buffer.concat([encrypted, cipher.final()]);
         const authTag = cipher.getAuthTag();
 
         const encPackage = JSON.stringify({
-            cipherProtocol: 'GFQM',
+            cipherProtocol: 'AES-GCM',
             iv: iv.toString('hex'),
             authTag: authTag.toString('hex'),
             secretKeyMock: key.toString('hex'),
@@ -76,8 +76,7 @@ async function runBuild() {
             fs.unlinkSync(tempBundlePath);
         }
 
-        console.info(`[BUILD SUCCESS] Deterministic GFQM bundle sealed at client/src/bundle.enc`);
-        console.info(`[Deterministic IV]: ${iv.toString('hex')}`);
+        console.info(`[BUILD SUCCESS] Static deterministic AES-GCM bundle sealed at client/src/bundle.enc`);
     }
 }
 
