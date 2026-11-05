@@ -4,9 +4,9 @@ import MVC from '../MAINFRAME/MAINFRAME.js';
 
 const WebTorrentBase = {
     //so annoying, Gemini
-    SWARM : client.torrents[0],
+    SWARM : null,
 
-    init() {
+    initialize() {
         if (this.client) return this.client;
         
         if (typeof window !== 'undefined') {
@@ -15,6 +15,8 @@ const WebTorrentBase = {
                 window.client = this.client;
             }
         }
+        this.SWARM = client.torrents[0];
+        this.bindPEX();
         return this.client;
     },
 
