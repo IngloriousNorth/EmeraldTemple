@@ -20,8 +20,6 @@
     <script src = "lib/jQuery-4.0.0.min.js"></script>
 
     <script src="lib/util.js"></script>    
-    <!-- MVC Architecture bundle !-->
-    <script src="src/bundle.min.js" type="module"></script>
 
     <!-- attaches client to window !-->
     <script type='module'>
@@ -38,6 +36,9 @@
             const controller = await navigator.serviceWorker.register(swUrl, { scope: swScope });            await navigator.serviceWorker.ready
             window.client.createServer({ controller })
     </script>
+
+    <!-- MVC Architecture bundle !-->
+    <script src="src/bundle.min.js" type="module"></script>
 
     <!-- DECRYPTS GATE.ENC.JS and sets window.client.torrents[0].ripemd160IntegrityHash for PEX swarm !-->
     <script type="module">

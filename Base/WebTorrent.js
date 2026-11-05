@@ -3,8 +3,6 @@ import WebTorrentControl from '../Control/WebTorrent.js';
 import MVC from '../MAINFRAME/MAINFRAME.js';
 
 const WebTorrentBase = {
-    client: null,
-    
     //so annoying, Gemini
     SWARM : client.torrents[0],
 
