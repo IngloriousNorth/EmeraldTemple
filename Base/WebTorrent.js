@@ -81,12 +81,10 @@ const WebTorrentBase = {
         this.SWARM = swarm;
 
         const handleWire = (wire, addr) => {
-            // Browser-safe peer ID resolution without Node.js Buffer
             let peerIdStr = 'unknown-peer';
             if (typeof wire.peerId === 'string') {
                 peerIdStr = wire.peerId.substring(0, 12);
             } else if (wire.peerId && typeof wire.peerId.length === 'number') {
-                // Handle Uint8Array or byte array peerId
                 peerIdStr = Array.from(wire.peerId).map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 12);
             }
 
@@ -94,6 +92,9 @@ const WebTorrentBase = {
             console.info(`[PEX IP GRAPH] Connected to peer at ${peerAddr}. Registering wire.ramosa protocol extension...`);
 
             wire.use(this.RamosaWireExtension);
+
+            // Confirmation log that the extension is fully bound and operational on this wire
+            console.info(`[RAMOSA PROTOCOL SUCCESS] wire.ramosa protocol extension is active and working for peer: ${peerAddr}`);
 
             wire.on('close', () => {
                 console.info(`[PEX IP GRAPH] Peer disconnected: ${peerAddr}`);

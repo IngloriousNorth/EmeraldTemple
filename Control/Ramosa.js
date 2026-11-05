@@ -23,17 +23,8 @@ const RamosaControl = {
 
         console.info("[RAMOSA CONTROL] Storing incoming peer RAy record for key:", key);
         
-        if (RamosaModel && typeof RamosaModel.put === 'function') {
-            RamosaModel.put(key, rayPayload);
-        } else if (window.MVC?.Base?.Ramosa?.put) {
-            window.MVC.Base.Ramosa.put(key, rayPayload);
-        }
-
-        if (typeof TEMPEST !== 'undefined' && typeof TEMPEST.route === 'function') {
-            TEMPEST.route("#table");
-        } else if (window.MVC?.Control?.Table && typeof window.MVC.Control.Table.unfold === 'function') {
-            window.MVC.Control.Table.unfold("table");
-        }
+        RamosaModel.put(key, rayPayload);
+        window.MVC.Control.Table.unfold("table");
     },
 
     toTitleCase(str) {
@@ -269,36 +260,27 @@ const RamosaControl = {
                 torrentBuffer: serializedBuffer
             });
 
-            // Helper to handle wire connection and cleanly resolve peerAddr
-            const handleWireConnection = (wire, addr) => {
-                const peerIdShort = wire.peerId ? Buffer.from(wire.peerId).toString('hex').substring(0, 8) : 'unknown';
-                const peerAddr = addr || wire.remoteAddress || wire.addr || (wire._socket && wire._socket.remoteAddress) || `WebRTC-Peer[${peerIdShort}]`;
+            // Automatically send rayPayload to connected peers upon handshake completion
+            const handleWireConnection = (wire) => {
+                wire.use(WebTorrentBase.RamosaWireExtension);
 
-                console.info(`[PEX IP GRAPH] Connected to peer at ${peerAddr}. Registering wire.ramosa protocol extension...`);
-
-                if (typeof wire.use === 'function') {
-                    wire.use(WebTorrentBase.RamosaWireExtension);
-                }
-
-                const sendPayloadWhenReady = () => {
-                    if (wire.extendedMapping && wire.extendedMapping.ramosa !== undefined) {
-                        if (wire.ramosa && typeof wire.ramosa.send === 'function') {
-                            console.info(`[RAMOSA CONTROL] Peer extended handshake confirmed with ${peerAddr}. Broadcasting RAyPayload...`);
-                            wire.ramosa.send(rayPayload, peerAddr);
-                        }
+                const sendWhenReady = () => {
+                    if (wire.extendedMapping.ramosa !== undefined) {
+                        wire.ramosa.send(rayPayload);
+                        console.info("[RAMOSA CONTROL] Automatically broadcasted RAyPayload to newly connected peer.");
                     } else {
-                        setTimeout(sendPayloadWhenReady, 200);
+                        setTimeout(sendWhenReady, 250);
                     }
                 };
-                setTimeout(sendPayloadWhenReady, 400);
+                setTimeout(sendWhenReady, 400);
 
                 wire.on('close', () => {
-                    console.info(`[PEX IP GRAPH] Peer disconnected: ${peerAddr}`);
+                    console.info("[PEX IP GRAPH] Peer disconnected.");
                 });
             };
 
-            doc.on('wire', (wire, addr) => {
-                handleWireConnection(wire, addr);
+            doc.on('wire', (wire) => {
+                handleWireConnection(wire);
             });
 
             if (doc.wires && Array.isArray(doc.wires)) {
@@ -308,7 +290,7 @@ const RamosaControl = {
             }
 
             RamosaControl.put(doc.RAy, rayPayload);
-            MVC.Control.Table.unfold("table");
+            TEMPEST.route("#table");
         });       
 
         return rayPayload;
