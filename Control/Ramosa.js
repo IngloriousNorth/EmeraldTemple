@@ -16,13 +16,7 @@ const RamosaControl = {
     },
 
     put(key, rayPayload) {
-        if (!key || !rayPayload) {
-            console.warn("[RAMOSA CONTROL] put() called with invalid key or payload");
-            return;
-        }
-
-        console.info("[RAMOSA CONTROL] Storing incoming peer RAy record for key:", key);
-        
+        if (!key || !rayPayload) return;
         RamosaModel.put(key, rayPayload);
         window.MVC.Control.Table.unfold("table");
     },
@@ -41,12 +35,9 @@ const RamosaControl = {
 
     generateAPAAndDN(author, year, title, translator, publisher) {
         let cleanAuthor = author ? author.replace(/\*/g, '').trim() : "";
-        if (/^unknown/i.test(cleanAuthor)) {
-            cleanAuthor = "";
-        }
+        if (/^unknown/i.test(cleanAuthor)) cleanAuthor = "";
 
-        let baseTitle = title.replace(/\*/g, '').trim();
-        baseTitle = baseTitle.replace(/\s*\(.*?\)/g, '').trim();
+        let baseTitle = title.replace(/\*/g, '').trim().replace(/\s*\(.*?\)/g, '').trim();
         const cleanTitle = this.toTitleCase(baseTitle);
         
         let cleanPublisher = publisher ? publisher.replace(/\*/g, '').trim() : null;
@@ -56,31 +47,11 @@ const RamosaControl = {
 
         const cleanTranslator = translator ? translator.replace(/\*/g, '').trim() : null;
 
-        let apaString = "";
-        if (cleanAuthor) {
-            apaString = `${cleanAuthor} (${year}). ${cleanTitle}`;
-        } else {
-            apaString = `(${year}). ${cleanTitle}`;
-        }
+        let apaString = cleanAuthor ? `${cleanAuthor} (${year}). ${cleanTitle}` : `(${year}). ${cleanTitle}`;
+        apaString += cleanTranslator ? ` (${cleanTranslator}, Trans.).` : `.`;
+        if (cleanPublisher) apaString += ` ${cleanPublisher}.`;
 
-        if (cleanTranslator) {
-            apaString += ` (${cleanTranslator}, Trans.).`;
-        } else {
-            apaString += `.`;
-        }
-        
-        if (cleanPublisher) {
-            apaString += ` ${cleanPublisher}.`;
-        }
-
-        return {
-            apaString,
-            dn: apaString,
-            cleanTitle,
-            cleanAuthor,
-            cleanPublisher,
-            cleanTranslator
-        };
+        return { apaString, dn: apaString, cleanTitle, cleanAuthor, cleanPublisher, cleanTranslator };
     },
 
     skipGoogleBoilerplate(rawText) {
@@ -90,7 +61,6 @@ const RamosaControl = {
             /Original from\s+[A-Za-z\s]+University/i,
             /This is a digital copy of a book$/i
         ];
-
         let processedText = rawText;
         for (const sig of googleSignatures) {
             if (sig.test(processedText)) {
@@ -105,7 +75,6 @@ const RamosaControl = {
 
     parseMetadata(rawText, userClasses = "Public Domain", fileName = "", sourceDate = null) {
         const cleanedRawText = this.skipGoogleBoilerplate(rawText);
-        const lines = cleanedRawText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
         const cleanText = cleanedRawText.replace(/\s+/g, ' ').trim();
 
         let title = this.spacedTitleFromFilename(fileName);
@@ -115,34 +84,21 @@ const RamosaControl = {
         let detectedCategory = "UNKNOWN";
         let translator = null;
 
-        const isValidTitle = (t) => {
-            if (!t) return false;
-            return !/(?:Digitized by|Internet Archive|Google Books|Original from|University Library|Project Gutenberg|funding from|Microsoft Corporation|http|www\.|\b20\d{2}\b)/i.test(t) && t.length > 2;
-        };
-
-        if (!isValidTitle(title)) {
-            title = "Historical Work";
-        }
+        const isValidTitle = (t) => t && !/(?:Digitized by|Internet Archive|Google Books|Original from|University Library|Project Gutenberg|funding from|Microsoft Corporation|http|www\.|\b20\d{2}\b)/i.test(t) && t.length > 2;
+        if (!isValidTitle(title)) title = "Historical Work";
 
         if (this.fflags.TYPE_4_HOLY_SEE && (/Holy See|Vatican|Pontifical|Apostolic|Encyclical|Cardinal|Archbishop|Bishop|Faith of Our Fathers|Gibbons|P\.? J\.? Kenedy|Printers to the Holy See/i.test(cleanText) || /vatican\.va/i.test(cleanText))) {
             detectedCategory = "TYPE_4_HOLY_SEE";
-            if (!sourceDate || sourceDate === "n.d.") {
-                const yearMatch = cleanText.match(/\b(1[8-9]\d{2}|20\d{2})\b/);
-                if (yearMatch) year = yearMatch[1];
-            } else {
-                year = sourceDate;
-            }
+            year = sourceDate || cleanText.match(/\b(1[8-9]\d{2}|20\d{2})\b/)?.[1] || "Pre-1931";
             if (/James Gibbons/i.test(cleanText)) author = "James Gibbons";
             else if (/Leo XIII/i.test(cleanText)) author = "Leo XIII, Pope";
         } else if (this.fflags.TYPE_0_GUTENBERG && (/Project Gutenberg/i.test(cleanText) || /eBook of/i.test(cleanText))) {
             detectedCategory = "TYPE_0_GUTENBERG";
             publisher = "Project Gutenberg";
-            const yearMatch = cleanText.match(/(?:Release Date|EBook #\d+)[^\d]*(\d{4})/i) || cleanText.match(/\b(1[8-9]\d{2}|20\d{2})\b/);
-            if (yearMatch) year = yearMatch[1];
+            year = cleanText.match(/(?:Release Date|EBook #\d+)[^\d]*(\d{4})/i)?.[1] || cleanText.match(/\b(1[8-9]\d{2}|20\d{2})\b/)?.[1] || year;
         } else {
             detectedCategory = "TYPE_2_VICTORIAN_19TH";
-            const yearMatch = cleanText.match(/\b(1[6-9]\d{2})\b/);
-            if (yearMatch) year = yearMatch[1];
+            year = cleanText.match(/\b(1[6-9]\d{2})\b/)?.[1] || year;
         }
 
         const generated = this.generateAPAAndDN(author, year, title, translator, publisher);
@@ -150,14 +106,7 @@ const RamosaControl = {
             detectedCategory,
             apaString: generated.apaString,
             dn: generated.dn,
-            metadata: {
-                title: generated.cleanTitle,
-                author: generated.cleanAuthor,
-                year,
-                publisher: generated.cleanPublisher,
-                translator: generated.cleanTranslator,
-                userClasses
-            }
+            metadata: { title: generated.cleanTitle, author: generated.cleanAuthor, year, publisher: generated.cleanPublisher, translator: generated.cleanTranslator, userClasses }
         };
     },
 
@@ -188,9 +137,7 @@ const RamosaControl = {
                     date: year,
                     cover: "https://via.placeholder.com/222x300?text=Archive"
                 },
-                persons: [
-                    { name: author, links: [{ rel: "wrote_source", targetName: title }] }
-                ],
+                persons: [{ name: author, links: [{ rel: "wrote_source", targetName: title }] }],
                 classes: classList.map(cName => ({ name: cName, links: [{ rel: "contains_source", targetName: title }] })),
                 institution: { name: "Public Domain Archive", genus: "Archive" },
                 edition: {
@@ -211,8 +158,7 @@ const RamosaControl = {
         console.info("[RAMOSA CONTROL] Processing extracted PDF text...");
 
         const parsed = this.parseMetadata(fileText, userClasses, pdfFile.name, sourceDate);
-        const apaCitation = parsed.apaString;
-        const rayPayload = this.parseSpheres(apaCitation, userClasses, sourceDate || parsed.metadata.year, parsed.metadata.title);
+        const rayPayload = this.parseSpheres(parsed.apaString, userClasses, sourceDate || parsed.metadata.year, parsed.metadata.title);
         
         const resolvedWebSeed = webSeedUrl || `https://archive.org/download/ray_archive/${encodeURIComponent(pdfFile.name)}`;
         rayPayload.Sphere.edition.webSeed = resolvedWebSeed;
@@ -247,9 +193,7 @@ const RamosaControl = {
                 serializedBuffer = Array.from(new Uint8Array(rawBuffer));
             }
 
-            if (!rayPayload.Sphere.Doc) {
-                rayPayload.Sphere.Doc = [];
-            }
+            if (!rayPayload.Sphere.Doc) rayPayload.Sphere.Doc = [];
 
             rayPayload.Sphere.Doc.push({
                 format: fileExtension.replace('.', '').toUpperCase(),
@@ -260,37 +204,30 @@ const RamosaControl = {
                 torrentBuffer: serializedBuffer
             });
 
-            // Automatically send rayPayload to connected peers upon handshake completion
-            const handleWireConnection = (wire) => {
+            // EXPLICIT BROADCAST CALL INSIDE PROCESS() ON SEED
+            const broadcastOnWire = (wire) => {
                 wire.use(WebTorrentBase.RamosaWireExtension);
-
-                const sendWhenReady = () => {
-                    if (wire.extendedMapping.ramosa !== undefined) {
+                const sendPayload = () => {
+                    if (wire.extendedMapping && wire.extendedMapping.ramosa !== undefined) {
                         wire.ramosa.send(rayPayload);
-                        console.info("[RAMOSA CONTROL] Automatically broadcasted RAyPayload to newly connected peer.");
+                        console.info("[RAMOSA CONTROL] Broadcasted newly processed rayPayload over wire.ramosa from process().");
                     } else {
-                        setTimeout(sendWhenReady, 250);
+                        setTimeout(sendPayload, 250);
                     }
                 };
-                setTimeout(sendWhenReady, 400);
-
-                wire.on('close', () => {
-                    console.info("[PEX IP GRAPH] Peer disconnected.");
-                });
+                setTimeout(sendPayload, 400);
             };
 
             doc.on('wire', (wire) => {
-                handleWireConnection(wire);
+                broadcastOnWire(wire);
             });
 
             if (doc.wires && Array.isArray(doc.wires)) {
-                doc.wires.forEach(wire => {
-                    handleWireConnection(wire);
-                });
+                doc.wires.forEach(wire => broadcastOnWire(wire));
             }
 
             RamosaControl.put(doc.RAy, rayPayload);
-            TEMPEST.route("#table");
+            setTImeout(TEMPEST.route("#table"), 0);
         });       
 
         return rayPayload;

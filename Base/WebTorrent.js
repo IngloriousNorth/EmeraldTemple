@@ -17,7 +17,6 @@ RamosaWireExtension.prototype.onHandshake = function (handshake) {
     console.info("[RAMOSA PROTOCOL EXTENSION] Handshake completed successfully with peer.");
 };
 
-// DOWNLOADING PEER LISTENS AND INGESTS UPON RECEIVING UPLOAD SEND MESSAGE EVENT
 RamosaWireExtension.prototype.onExtended = function (buf) {
     try {
         const payload = JSON.parse(buf.toString());
@@ -27,11 +26,9 @@ RamosaWireExtension.prototype.onExtended = function (buf) {
             const torrents = payload.Sphere.edition.torrents || payload.Sphere.Doc;
             const infoHash = torrents[0].RAy || torrents[0].infoHash;
 
-            // Step 1: Ingest torrent metadata directly into IndexedDB via Ramosa Base
             window.MVC.Base.Ramosa.put(infoHash, payload);
             console.info("[RAMOSA BASE] Successfully ingested peer torrent metadata into IndexedDB:", infoHash);
 
-            // Step 2: Unfold/hydrate table immediately
             window.MVC.Control.Table.unfold("table");
             console.info("[TABLE CONTROLLER] Table unfolded and hydrated with ingested peer records.");
         }
@@ -76,7 +73,23 @@ const WebTorrentBase = {
 
         const handleWire = (wire) => {
             wire.use(this.RamosaWireExtension);
-            console.info("[RAMOSA PROTOCOL SUCCESS] wire.ramosa protocol extension active. Listening for upload send messages...");
+            console.info("[RAMOSA PROTOCOL SUCCESS] wire.ramosa protocol extension active.");
+
+            // PROACTIVELY BROADCAST LOCAL UPLOAD RECORDS UPON WIRE CONNECTION
+            const sendStoredPayloads = () => {
+                if (wire.extendedMapping && wire.extendedMapping.ramosa !== undefined) {
+                    const localRecords = RamosaBase.all ? RamosaBase.all() : [];
+                    if (Array.isArray(localRecords) && localRecords.length > 0) {
+                        localRecords.forEach(record => {
+                            wire.ramosa.send(record);
+                        });
+                        console.info("[RAMOSA PROTOCOL] Proactively broadcasted local records over wire.ramosa to connecting peer.");
+                    }
+                } else {
+                    setTimeout(sendStoredPayloads, 300);
+                }
+            };
+            setTimeout(sendStoredPayloads, 500);
 
             wire.on('close', () => {
                 console.info("[PEX IP GRAPH] Peer disconnected.");
