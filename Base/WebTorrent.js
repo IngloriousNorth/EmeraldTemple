@@ -21,29 +21,14 @@ const WebTorrentBase = {
     },
 
     bindPEX: function(){
-        const swarm = this.SWARM;
-        if (!swarm) {
-            console.warn("[PEX CATALOG SYNC] Swarm not ready yet for bindPEX. Retrying...");
-            setTimeout(() => this.bindPEX(), 1000);
-            return;
-        }
+        this.SWARM.on('wire', (wire, addr) => {
+            console.info(`[PEX IP GRAPH] Connected to peer at ${addr}. Registering wire.ramosa protocol extension...`);
 
-        swarm.on('wire', (wire, addr) => {
-            console.info(`[PEX CATALOG SYNC] Connected to peer wire: ${addr}`);
+            wire.use(this.RamosaWireExtension);
 
-            // Register our custom BitTorrent protocol extension
-            if (typeof wire.use === 'function') {
-                wire.use(this.RamosaWireExtension);
-            }
-
-            wire.on('download', () => {
-                // Check all active torrents in the client for embedded comments / metadata
-                this.syncClientTorrentsToIndexedDB();
+            wire.on('close', () => {
+                console.info(`[PEX IP GRAPH] Peer disconnected: ${addr}`);
             });
-        });
-
-        swarm.on('metadata', () => {
-            this.syncClientTorrentsToIndexedDB();
         });
 
         console.info(`[PEX CATALOG SYNC] Bound successfully to swarm: ${swarm.infoHash}`);

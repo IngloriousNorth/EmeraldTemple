@@ -146,20 +146,6 @@ const TableControl = {
 
         console.info(`[TABLE PEX] Hooking into active Gate PEX swarm: ${pexTorrent.infoHash}`);
 
-        // Ferooss-style IP graph wire listener
-        pexTorrent.on('wire', (wire, addr) => {
-            console.info(`[TABLE PEX IP GRAPH] Peer connected via ${wire.type} at ${addr} | PeerID: ${wire.peerId}`);
-
-            // Listen for metadata or data chunk exchanges across the PEX wire
-            wire.on('download', (bytes) => {
-                // Streaming chunks from peer mesh
-            });
-
-            wire.on('close', () => {
-                console.info(`[TABLE PEX IP GRAPH] Peer disconnected: ${addr}`);
-            });
-        });
-
         // Listen for torrent metadata / comment payloads containing Ramosa GraphDB nodes
         pexTorrent.on('metadata', () => {
             if (pexTorrent.comment) {
@@ -181,7 +167,7 @@ const TableControl = {
             }
         });
     }
-    ,
+},
   unfold: async function(table, cb) {
     const tableSelector = (typeof table === 'string' && !table.startsWith('#') && !table.startsWith('.')) 
       ? `#${table}` 
