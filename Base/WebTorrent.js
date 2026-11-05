@@ -37,12 +37,27 @@ RamosaWireExtension.prototype.onExtended = function (buf) {
     }
 };
 
-RamosaWireExtension.prototype.send = function (rayPayload) {
-        const jsonBuf = new TextEncoder().encode(JSON.stringify(rayPayload));
-        this.wire.extended('ramosa', jsonBuf);
-        console.info("[RAMOSA PROTOCOL] Broadcasted RAyPayload over wire.ramosa.");
+RamosaWireExtension.prototype.onHandshake = function (handshake) {
+    console.info("[RAMOSA PROTOCOL EXTENSION] Handshake completed successfully with peer.");
+    
+    // Broadcast payload if attached directly to the wire or its parent torrent
+    if (this.wire.rayPayload) {
+        this.send(this.wire.rayPayload);
+    } else if (this.wire.torrent && this.wire.torrent.comment) {
+        try {
+            const payload = JSON.parse(this.wire.torrent.comment);
+            this.send(payload);
+        } catch (e) {
+            // Ignore if comment is not JSON
+        }
+    }
 };
 
+RamosaWireExtension.prototype.send = function (rayPayload) {
+    const jsonBuf = new TextEncoder().encode(JSON.stringify(rayPayload));
+    this.wire.extended('ramosa', jsonBuf);
+    console.info("[RAMOSA PROTOCOL] Broadcasted RAyPayload over wire.ramosa.");
+};
 const WebTorrentBase = {
     SWARM : null,
     RamosaWireExtension,
