@@ -15,28 +15,6 @@ const APPROVED_DOMAINS = [
 ];
 
 const WebTorrentControl = {
-    PEXinitialize() {
-        //the first torrent is added by nano.min.js after it decrypts the RIPEMD hash of Gate.enc.
-        WebTorrentBase.PEXt = client.torrents[0];
-        console.log(WebTorrentBase.PEXt.infoHash)
-        /* ***IT IS IMPOSSIBLE TO JOIN THE PEX SWARM WITHOUT A HARD-CODED GATE.ENC.JS, with an INSTITUTIONAL_PRIVATE_KEY *** */
-        // while Desktop clients can seed to EmeraldTemple hard-coded builds, they cannot transfer Ramosa metadata to our clients.
-        // It is thus a Zero-Trust architecture; exposing the infoHash [makes no difference].
-        // TODO: consider
-        WebTorrentBase.PEXt.on('wire', (wire, addr) => {
-            console.info(`[PEX IP GRAPH] Peer connected via ${wire.type} at ${addr} | PeerID: ${wire.peerId}`);
-
-            // Listen for metadata or data chunk exchanges across the PEX wire
-            wire.on('download', (bytes) => {
-                // Chunks are streaming directly from peer mesh or webseed fallback
-            });
-
-            wire.on('close', () => {
-                console.info(`[PEX IP GRAPH] Peer disconnected: ${addr}`);
-            });
-        });
-    }
-    ,
     isWhitelisted(urlStr) {
         try {
             const parsed = new URL(urlStr);
