@@ -5,11 +5,8 @@ import MVC from '../MAINFRAME/MAINFRAME.js';
 const WebTorrentBase = {
     client: null,
     
-    get SWARM() {
-        return (this.client && this.client.torrents && this.client.torrents.length > 0) 
-            ? this.client.torrents[0] 
-            : null;
-    },
+    //so annoying, Gemini
+    SWARM : client.torrents[0],
 
     init() {
         if (this.client) return this.client;
