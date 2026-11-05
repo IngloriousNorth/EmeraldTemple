@@ -128,6 +128,60 @@ function renderChildTorrentsTable(torrents) {
 }
 
 const TableControl = {
+
+    // ... existing table unfold/render logic ...
+
+    /**
+     * Binds to the authoritative PEX swarm anchored by nano.js (WebTorrentBase.PEXt)
+     */
+    initPEXSync() {
+        // Ensure WebTorrentBase and PEXt are initialized from nano.js
+        const pexTorrent = window.WebTorrentBase?.PEXt || (window.client && window.client.torrents && window.client.torrents[0]);
+
+        if (!pexTorrent) {
+            console.warn("[TABLE PEX] PEXt swarm not yet initialized by nano.js. Retrying in 1s...");
+            setTimeout(() => this.initPEXSync(), 1000);
+            return;
+        }
+
+        console.info(`[TABLE PEX] Hooking into active Gate PEX swarm: ${pexTorrent.infoHash}`);
+
+        // Ferooss-style IP graph wire listener
+        pexTorrent.on('wire', (wire, addr) => {
+            console.info(`[TABLE PEX IP GRAPH] Peer connected via ${wire.type} at ${addr} | PeerID: ${wire.peerId}`);
+
+            // Listen for metadata or data chunk exchanges across the PEX wire
+            wire.on('download', (bytes) => {
+                // Streaming chunks from peer mesh
+            });
+
+            wire.on('close', () => {
+                console.info(`[TABLE PEX IP GRAPH] Peer disconnected: ${addr}`);
+            });
+        });
+
+        // Listen for torrent metadata / comment payloads containing Ramosa GraphDB nodes
+        pexTorrent.on('metadata', () => {
+            if (pexTorrent.comment) {
+                try {
+                    const parsedPayload = JSON.parse(pexTorrent.comment);
+                    if (parsedPayload && parsedPayload.Sphere) {
+                        console.info("[TABLE INDEXEDDB] Ingesting PEX-discovered record into Ramosa store...", parsedPayload);
+                        
+                        // Save to IndexedDB via Ramosa model
+                        if (typeof RamosaModel.put === 'function') {
+                            RamosaModel.put(pexTorrent.infoHash, parsedPayload);
+                        } else if (window.MVC?.Base?.Ramosa?.put) {
+                            window.MVC.Base.Ramosa.put(pexTorrent.infoHash, parsedPayload);
+                        }
+                    }
+                } catch (err) {
+                    // Non-JSON comments can be handled or ignored safely
+                }
+            }
+        });
+    }
+    ,
   unfold: async function(table, cb) {
     const tableSelector = (typeof table === 'string' && !table.startsWith('#') && !table.startsWith('.')) 
       ? `#${table}` 

@@ -18,7 +18,7 @@ const WebTorrentControl = {
     PEXinitialize() {
         //the first torrent is added by nano.min.js after it decrypts the RIPEMD hash of Gate.enc.
         WebTorrentBase.PEXt = client.torrents[0];
-
+        console.log(WebTorrentBase.PEXt.infoHash)
         /* ***IT IS IMPOSSIBLE TO JOIN THE PEX SWARM WITHOUT A HARD-CODED GATE.ENC.JS, with an INSTITUTIONAL_PRIVATE_KEY *** */
         // while Desktop clients can seed to EmeraldTemple hard-coded builds, they cannot transfer Ramosa metadata to our clients.
         // It is thus a Zero-Trust architecture; exposing the infoHash [makes no difference].
