@@ -66,7 +66,7 @@ const WebTorrentBase = {
         return this.client;
     },
 
-    bindPEX: function(){
+    bindPEX: function(cb){
         const swarm = this.SWARM || (window.client && window.client.torrents && window.client.torrents.find(t => t.name === 'Gate.enc.js' || t === window.client.torrents[0]));
         if (!swarm) {
             setTimeout(() => this.bindPEX(), 1000);
