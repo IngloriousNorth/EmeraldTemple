@@ -37,8 +37,7 @@ import { bytesToHex } from '@noble/hashes/utils';
         const gateBuffer = typeof Buffer !== 'undefined' ? Buffer.from(gateContent) : new TextEncoder().encode(gateContent);
 
         if (window.client) {
-            window.client.seed(gateBuffer, {
-                name: 'Gate.enc.js',
+            window.client.add(computedHexHash, {
                 announce: [],
                 urlList : ["https://www.gutenberg.org/files/5740/5740-pdf.pdf"],
                 dht: false,
