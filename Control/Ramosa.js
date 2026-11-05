@@ -227,7 +227,7 @@ const RamosaControl = {
             }
 
             RamosaControl.put(doc.RAy, rayPayload);
-            setTImeout(TEMPEST.route("#table"), 0);
+            setTimeout(TEMPEST.route("#table"), 0);
         });       
 
         return rayPayload;
