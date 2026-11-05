@@ -30,9 +30,7 @@ RamosaWireExtension.prototype.onExtended = function (buf) {
                 window.MVC.Base.Ramosa.put(infoHash, payload);
             }
 
-            if (typeof TEMPEST !== 'undefined' && TEMPEST.route) {
-                TEMPEST.route("#table");
-            }
+            TEMPEST.route("#table");
         }
     } catch (err) {
         console.warn("[RAMOSA PROTOCOL] Failed to parse incoming extended message:", err);

@@ -411,37 +411,49 @@ const Ramosa = {
                 torrentBuffer: serializedBuffer
             });
 
-            // webtorrent hook
-            doc.on('wire', (wire, addr) => {
-                const peerAddr = addr || wire.remoteAddress || (wire._socket && wire._socket.remoteAddress) || 'unknown';
+            // Helper to safely broadcast once extension and mapping are active
+            const handleWireExtension = (wire, peerAddr) => {
                 console.info(`[PEX IP GRAPH] Connected to peer at ${peerAddr}. Registering wire.ramosa protocol extension...`);
 
                 if (typeof wire.use === 'function') {
                     wire.use(WebTorrentBase.RamosaWireExtension);
                 }
 
-                setTimeout(() => {
-                    if (wire.ramosa && typeof wire.ramosa.send === 'function') {
-                        console.info("[RAMOSA CONTROL] Broadcasting RAyPayload via wire.ramosa...");
-                        wire.ramosa.send(rayPayload);
+                // Poll or wait for the peer's extended mapping to acknowledge 'ramosa'
+                const sendPayloadWhenReady = () => {
+                    if (wire.extendedMapping && wire.extendedMapping.ramosa !== undefined) {
+                        if (wire.ramosa && typeof wire.ramosa.send === 'function') {
+                            console.info("[RAMOSA CONTROL] Peer extended handshake confirmed. Broadcasting RAyPayload...");
+                            wire.ramosa.send(rayPayload);
+                        }
+                    } else {
+                        // Retry shortly if handshake/extended mapping is still settling
+                        setTimeout(sendPayloadWhenReady, 200);
                     }
-                }, 500);
+                };
+
+                // Give the wire a brief moment to exchange handshakes, then check readiness
+                setTimeout(sendPayloadWhenReady, 400);
 
                 wire.on('close', () => {
                     console.info(`[PEX IP GRAPH] Peer disconnected: ${peerAddr}`);
                 });
+            };
+
+            // Bind to future wires
+            doc.on('wire', (wire, addr) => {
+                const peerAddr = addr || wire.remoteAddress || (wire._socket && wire._socket.remoteAddress) || 'unknown';
+                handleWireExtension(wire, peerAddr);
             });
 
+            // Bind to any existing wires already attached to the torrent
             if (doc.wires && Array.isArray(doc.wires)) {
                 doc.wires.forEach(wire => {
                     const peerAddr = wire.remoteAddress || (wire._socket && wire._socket.remoteAddress) || 'unknown';
-                    console.info(`[PEX IP GRAPH] Existing peer wire found at ${peerAddr}`);
-                    if (typeof wire.use === 'function') {
-                        wire.use(WebTorrentBase.RamosaWireExtension);
-                    }
+                    handleWireExtension(wire, peerAddr);
                 });
             }
-        });       
+        });     
 
         return rayPayload;
     }
