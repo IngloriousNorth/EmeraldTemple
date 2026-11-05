@@ -20,10 +20,12 @@ const IndexControl = {
                     {
                         page: "table",
                         fn: function() {
-
                             WebTorrentBase.initialize(()=>{
                                 MVC.Control.Table.unfold("table");
                             });
+                            setTImeout(function(){
+                                MVC.Control.Table(unfold("table"));
+                            }, 4444);
                         }
                     },
                     {
