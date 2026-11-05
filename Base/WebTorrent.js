@@ -26,9 +26,7 @@ RamosaWireExtension.prototype.onExtended = function (buf) {
             console.info("[RAMOSA PROTOCOL] Received RAy payload from peer wire:", payload.entity.source?.name);
             
             const infoHash = payload.entity.edition?.torrents?.[0]?.infoHash || 'ray_sync_' + Date.now();
-            if (window.MVC && window.MVC.Base && window.MVC.Base.Ramosa) {
-                window.MVC.Base.Ramosa.put(infoHash, payload);
-            }
+            window.MVC.Base.Ramosa.put(infoHash, payload);
 
             TEMPEST.route("#table");
         }

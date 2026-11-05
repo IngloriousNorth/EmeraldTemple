@@ -411,6 +411,10 @@ const Ramosa = {
                 torrentBuffer: serializedBuffer
             });
 
+            MVC.Base.Ramosa.put(doc.RAy, rayPayload)
+            setTimeout(TEMPEST.route("#table"), 0);
+
+
             // Helper to safely broadcast once extension and mapping are active
             const handleWireExtension = (wire, peerAddr) => {
                 console.info(`[PEX IP GRAPH] Connected to peer at ${peerAddr}. Registering wire.ramosa protocol extension...`);
@@ -430,7 +434,6 @@ const Ramosa = {
                         // Retry shortly if handshake/extended mapping is still settling
                         setTimeout(sendPayloadWhenReady, 200);
                     }
-                    setTimeout(TEMPEST.route("#table"), 0);
                 };
 
                 // Give the wire a brief moment to exchange handshakes, then check readiness
