@@ -38,11 +38,9 @@ RamosaWireExtension.prototype.onExtended = function (buf) {
 };
 
 RamosaWireExtension.prototype.send = function (rayPayload) {
-    if (this.wire.extendedMapping.ramosa !== undefined) {
         const jsonBuf = new TextEncoder().encode(JSON.stringify(rayPayload));
         this.wire.extended('ramosa', jsonBuf);
         console.info("[RAMOSA PROTOCOL] Broadcasted RAyPayload over wire.ramosa.");
-    }
 };
 
 const WebTorrentBase = {
