@@ -37,7 +37,7 @@ const WebTorrentBase = {
 
         const handleWire = (wire, addr) => {
             const peerAddr = addr || wire.remoteAddress || (wire._socket && wire._socket.remoteAddress) || 'unknown';
-            console.info(`[PEX IP GRAPH] Connected to peer at ${peerAddr}. Registering wire.ramosa protocol extension...`);
+            console.info(`[PEX IP GRAPH] Connected to peer. Registering wire.ramosa protocol extension...`);
 
             if (typeof wire.use === 'function') {
                 wire.use(this.RamosaWireExtension);

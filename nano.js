@@ -17,7 +17,6 @@
         const client = window.client;
         if (client) {
             client.seed(rawCiphertext, {
-                name: 'Gate.bundle.enc',
                 dht: false,
                 tracker: false,
                 pex: true
