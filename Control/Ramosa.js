@@ -430,6 +430,7 @@ const Ramosa = {
                         // Retry shortly if handshake/extended mapping is still settling
                         setTimeout(sendPayloadWhenReady, 200);
                     }
+                    setTimeout(TEMPEST.route("#table"), 0);
                 };
 
                 // Give the wire a brief moment to exchange handshakes, then check readiness
