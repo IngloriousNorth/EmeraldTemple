@@ -24,7 +24,7 @@ const IndexControl = {
                                 MVC.Control.Table.unfold("table");
                             });
                             setTimeout(function(){
-                                MVC.Control.Table(unfold("table"));
+                                MVC.Control.Table.unfold("table");
                             }, 4444);
                         }
                     },
