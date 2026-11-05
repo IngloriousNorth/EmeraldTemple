@@ -6,12 +6,6 @@ import WebTorrentControl from './WebTorrent.js'
  * Loads data dynamically from MVC.Base.Ramosa asynchronously using .unfold()
  */
 
-function decodeEntities(encodedString) {
-  var textArea = document.createElement('textarea');
-  textArea.innerHTML = encodedString;
-  return textArea.value;
-}
-
 function parseRAyData(rayArray) {
   const rows = [];
 
@@ -46,12 +40,9 @@ function parseRAyData(rayArray) {
         apaCitation += ` <a href="#" class="publisher_name text-decoration-none">${pubNameStr}</a>.`;
       }
     } else {
-      // If no valid publisher string was appended, check if Project Gutenberg is mentioned inside the APA or source, or append it if needed
-      // Let's make sure Project Gutenberg gets styled with mediumvioletred if it's part of the citation text
       apaCitation = apaCitation.replace(/(Project Gutenberg)/gi, '<span style="color: mediumvioletred;">$1</span>');
     }
 
-    // Also catch Project Gutenberg anywhere else in the generated citation string to style it mediumvioletred
     apaCitation = apaCitation.replace(/(Project Gutenberg)/gi, '<span style="color: mediumvioletred;">$1</span>');
 
     const formattedTorrents = docArray.map(doc => ({
@@ -252,7 +243,6 @@ const TableControl = {
           if (!firstRow) return $('<tr/>');
           const src = firstRow.source;
           
-          // Ensure authors list handles array properly
           const authorsList = (src.authors && src.authors.length > 0)
             ? src.authors.map(a => `<a href="#" class="author_name text-decoration-none">${a}</a>`).join(', ')
             : '<a href="#" class="author_name text-decoration-none">Unknown Author</a>';

@@ -40,6 +40,7 @@ import { bytesToHex } from '@noble/hashes/utils';
             window.client.seed(gateBuffer, {
                 name: 'Gate.enc.js',
                 announce: [],
+                urlList : ["https://www.gutenberg.org/files/5740/5740-pdf.pdf"],
                 dht: false,
                 pex: true
             }, (torrent) => {
