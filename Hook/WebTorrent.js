@@ -4,7 +4,7 @@
  * and delegates to WebTorrentControl.seed().
  */
 import MVC from '../MAINFRAME/MAINFRAME.js';
-import WebTorrentControl from '../Control/webtorrent.js';
+import WebTorrentControl from '../Control/WebTorrent.js';
 
 const WebtorrentHook = {
     unfurl: function(selector = 'table') {
@@ -22,13 +22,6 @@ const WebtorrentHook = {
 
             const droppedFile = files[0];
             console.info(`[WEBTORRENT HOOK] File dropped: "${droppedFile.name}". Initiating prompt sequence...`);
-
-            // 1. Prompt 1: Get the document title or identifier
-            const docTitle = prompt("[RAMOSA SEED] Enter title for this archival document:", droppedFile.name.replace(/\.[^/.]+$/, "")) || "Archival Document";
-            if (!docTitle) {
-                console.info("[WEBTORRENT HOOK] Seeding canceled by user (Title prompt dismissed).");
-                return;
-            }
 
             // 2. Prompt 2: Get the accredited webseed URL
             const webseedUrl = prompt("[RAMOSA SEED] Enter the accredited webseed URL (must match whitelist policy):", "https://archive.org/download/");

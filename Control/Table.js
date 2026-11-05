@@ -1,5 +1,5 @@
 //EmeraldTemple Universal p2p GraphDB imports webtorrent functions
-import WebTorrentControl from './webtorrent.js'
+import WebTorrentControl from './WebTorrent.js'
 
 /**
  * Table.js Controller (Bootstrap 5 + jQuery UI Hybrid)
@@ -186,7 +186,7 @@ const TableControl = {
         }
       },
       scroller: true,
-      scrollY: 'calc(100vh - 190px)',
+      scrollY: 'calc(100% - 100px)',
       scrollCollapse: true,
       dom: 'rt<"clear">',
       paging: true,

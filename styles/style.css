@@ -96,6 +96,10 @@ div.dataTables_wrapper div.dataTables_scrollBody,
   border-bottom: 7px dotted lightgoldenrodyellow !important;
 }
 
+.dt-scroll-body{
+  height:777px !important;
+}
+
 @font-face {
   font-family: 'Noto Sans Egyptian Hieroglyphs';
   font-style: normal;
@@ -183,6 +187,9 @@ td.dtr-control::before{
 .dataTable th:last-child, .dataTable td:last-child{
 }
 
+.group-header{
+  height:333px !important;
+}
 
 .group-header{
   text-align:left;
@@ -690,8 +697,6 @@ h2{
 
 /* Force DataTables scroll body to fill remaining space in the TEMPEST container */
 .dt-scroll {
-  height: calc(100vh - 169px) !important;
-  max-height: none !important;
 }
 
 .col-md-6{
@@ -810,6 +815,8 @@ a{
   color:gold;
 }
 
+
+
 .dataTable thead th{
   padding:32px;
   background:linear-gradient(180deg, lightseagreen, #03fc9c, lightgoldenrodyellow) !important;
@@ -843,7 +850,7 @@ a{
 }
 
 .dataTable td:not(.group-header td){
-  background:lightcyan !important;
+  background:lightgoldenrodyellow !important;
 }
 
 .class_name{
@@ -1001,7 +1008,6 @@ h3{
 
 .dataTables_wrapper .dataTables_scrollBody {
   flex: 1 1 auto;
-  max-height: none !important;
 }
 
 .dtr-details{
@@ -1712,7 +1718,18 @@ footer{
   padding-top:77px;
 }
 
+/* Force DataTables wrapper and scroll body to dynamically fill the full TEMPEST height */
+.dataTables_wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100vh !important; /* Fill the whole page */
+}
 
+.dt_scroll-body {
+    flex: 1 !important; /* Expand to fill remaining vertical space */
+    width: 100%;
+    height:calc(100vh -100px);
+}
 
 .author span{
   color:silver !important;

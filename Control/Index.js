@@ -1,5 +1,5 @@
 // src/Control/Index.js
-import WebTorrentHook from '../Hook/webtorrent.js';
+import WebTorrentHook from '../Hook/WebTorrent.js';
 
 const IndexControl = {
     initialize: function() {

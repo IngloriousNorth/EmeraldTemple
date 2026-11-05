@@ -3,7 +3,7 @@ import MVC from '../MAINFRAME/MAINFRAME.js';
 
 //imports webtorrent upload fn() with hard-coded whitelist
 //EmeraldTemple's *original public domain whitelist, via Open Source coding intent* can be found in Hook/webtorrent.js
-import WebTorrentControl from '../Control/webtorrent.js';
+import WebTorrentControl from '../Control/WebTorrent.js';
 //extra control factor
 //FF
 
@@ -49,8 +49,8 @@ const RamosaHook = {
 
                     // ── Prompt Sequence ──────────────────────────────────
                     const webSeedUrl  = prompt("1/3. Enter whitelisted Web Seed URL:", `https://dn721902.ca.archive.org/0/items/citygod00dodsgoog/citygod00dodsgoog_text.pdf`);
-                    const sourceDate  = prompt("2/3. Enter Source Publication Date (e.g. 1921 or n.d.):", "2010");
-                    const userClasses = prompt("3/3. Enter comma-separated classes/categories:", "Public Domain, History");
+                    const sourceDate  = prompt("2/3. Enter Source Publication Date (e.g. 1921 or n.d.):", "426");
+                    const userClasses = prompt("3/3. Enter comma-separated classes/categories:", "Public Domain, kingdom of god");
                     // ─────────────────────────────────────────────────────
 
                     if(!webSeedUrl){

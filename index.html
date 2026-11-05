@@ -28,8 +28,14 @@
             import WebTorrent from './lib/webtorrent.min.js';
             const client = new WebTorrent();
             window.client = client;
-            const controller = await navigator.serviceWorker.register('/sw.min.js', { scope: './' })
-            await navigator.serviceWorker.ready
+            const isGitHubPages = window.location.hostname.endsWith('.github.io');
+            // Extracts the first path segment on GitHub Pages (e.g., '/EmeraldTemple/' -> 'EmeraldTemple'), or empty string locally
+            const repoPrefix = isGitHubPages ? '/' + window.location.pathname.split('/')[1] + '/' : '/';
+
+            const swUrl = `${repoPrefix}sw.min.js`.replace(/\/+/g, '/'); // Clean up double slashes if root
+            const swScope = repoPrefix;
+
+            const controller = await navigator.serviceWorker.register(swUrl, { scope: swScope });            await navigator.serviceWorker.ready
             window.client.createServer({ controller })
     </script>
 

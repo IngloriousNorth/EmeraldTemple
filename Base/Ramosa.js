@@ -142,16 +142,23 @@ const RamosaBase = {
 
         const request = store.put(record);
 
-        request.onsuccess = () => {
+       request.onsuccess = () => {
             console.info(`[RAMOSA BASE] Successfully stored record and binary buffer with index: ${indexKey}`);
-            const existingIdx = this.Base.findIndex(r => r.index === indexKey);
+            
+            const existingIdx = this.Base.findIndex(r => 
+                r.index === indexKey || 
+                r.RAy === indexKey || 
+                r.infoHash === indexKey ||
+                r.Doc?.RAy === indexKey ||
+                r.Doc?.infoHash === indexKey
+            );
+
             if (existingIdx >= 0) {
                 this.Base[existingIdx] = record;
             } else {
                 this.Base.push(record);
             }
 
-            window.MVC.Control.Table.unfold("table");
         };
 
         request.onerror = (event) => {

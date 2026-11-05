@@ -38,6 +38,7 @@ const WebTorrentControl = {
 
         const that = this;
 
+        console.info(seedOptions.urlList);
         seedOptions.urlList.forEach(function(URL){
             if(!that.isWhitelisted(URL)){
                 console.error(`[SECURITY REJECTED] Domain not allowed by whitelist policy: ${URL}`);
@@ -53,6 +54,11 @@ const WebTorrentControl = {
         }
 
         client.seed(fileOrSource, seedOptions, async (torrent) => {
+            MVC.Hook.Hero.assertProgress(torrent.infoHash);
+            setInterval(MVC.Hook.Hero.onProgress(torrent), 500);
+            torrent.on('done', ()=>{
+                MVC.Hook.Hero.onProgress(torrent);
+            })
             console.info(`[MVC.Control.webtorrent] Torrent active. InfoHash: ${torrent.infoHash}`);
 
             if (window.MVC?.Hook?.Hero && typeof window.MVC.Hook.Hero.assertProgress === 'function') {
@@ -78,68 +84,7 @@ const WebTorrentControl = {
                 date: new Date().toISOString().split('T')[0],
                 created_at: Date.now(),
                 webSeed: seedOptions.urlList[0] || ""
-            };
-
-            const rayPayload = RayPayLoad || {
-                rayVersion: "1.0",
-                categoryType: "TYPE_1_MODERN_SCAN",
-                Sphere: {
-                    source: defaultSource,
-                    edition: defaultEdition,
-                    Doc: [{
-                        format: "PDF",
-                        size: torrent.length || fileOrSource.size || 0,
-                        snatches: 1,
-                        RAy: torrent.infoHash,
-                        infoHash: torrent.infoHash,
-                        webseeds: seedOptions.urlList,
-                        torrentBuffer: torrentByteArray
-                    }]
-                }
-            };
-
-            // Ensure Sphere.Doc has the binary buffer and metadata correctly populated
-            if (rayPayload.Sphere) {
-                const docObj = {
-                    format: "PDF",
-                    size: torrent.length || fileOrSource.size || 0,
-                    snatches: 1,
-                    RAy: torrent.infoHash,
-                    infoHash: torrent.infoHash,
-                    webseeds: seedOptions.urlList,
-                    torrentBuffer: torrentByteArray
-                };
-
-                if (!rayPayload.Sphere.Doc) {
-                    rayPayload.Sphere.Doc = [docObj];
-                } else if (Array.isArray(rayPayload.Sphere.Doc)) {
-                    rayPayload.Sphere.Doc.forEach(d => {
-                        d.RAy = d.RAy || torrent.infoHash;
-                        d.infoHash = d.infoHash || torrent.infoHash;
-                        d.torrentBuffer = d.torrentBuffer || torrentByteArray;
-                    });
-                    if (rayPayload.Sphere.Doc.length === 0) {
-                        rayPayload.Sphere.Doc.push(docObj);
-                    }
-                } else {
-                    rayPayload.Sphere.Doc.RAy = rayPayload.Sphere.Doc.RAy || torrent.infoHash;
-                    rayPayload.Sphere.Doc.infoHash = rayPayload.Sphere.Doc.infoHash || torrent.infoHash;
-                    rayPayload.Sphere.Doc.torrentBuffer = rayPayload.Sphere.Doc.torrentBuffer || torrentByteArray;
-                }
-            }
-
-            // 3. Commit into IndexedDB via Base.Ramosa.put() without clobbering Doc
-            const ramosaBase = window.MVC?.Base?.Ramosa;
-            if (ramosaBase && typeof ramosaBase.put === 'function') {
-                await ramosaBase.put(torrent.infoHash, rayPayload);
-                console.info(`[RAMOSA BASE] Successfully anchored seeded torrent record & binary buffer into IndexedDB: ${torrent.infoHash}`);
-                
-                if (window.MVC?.Control?.Table && typeof window.MVC.Control.Table.unfold === 'function') {
-                    window.MVC.Control.Table.unfold("table");
-                }
-            } else {
-                console.warn("[RAMOSA BASE] MVC.Base.Ramosa.put not found during seeding.");
-            }
+            };            
 
             // 4. Trigger download of the .torrent file to browser
             // 4. Trigger download of the .torrent file to browser
@@ -159,7 +104,7 @@ const WebTorrentControl = {
             setTimeout(() => {
                 document.body.removeChild(downloadLink);
                 window.URL.revokeObjectURL(blobUrl);
-            }, 1000);
+            }, 1000);``
 
             torrent.RAy = torrent.infoHash;
             if (typeof cb === 'function') cb(torrent);
@@ -238,6 +183,24 @@ const WebTorrentControl = {
                 window.MVC.Hook.Hero.assertProgress(infoHash);
             }
 
+            console.info("[MVC.Control.webtorrent] Adding torrent source directly with webseeds:", webseeds);
+
+            const opts = {
+                urlList: webseeds,
+                dht: false,
+                tracker: false,
+                pex: true
+            };
+
+            client.add(torrentSource, opts, (torrent) => {
+                MVC.Hook.Hero.assertProgress(torrent.infoHash);
+
+                setInterval(MVC.Hook.Hero.onProgress(torrent), 500)
+                
+                downloadFile(torrent);
+                
+            });
+
             const downloadFile = (torrent) => {
                 if (!torrent || !torrent.files || torrent.files.length === 0) {
                     console.warn("[MVC.Control.webtorrent] Torrent has no files available to download.");
@@ -272,59 +235,6 @@ const WebTorrentControl = {
                     console.error("[MVC.Control.webtorrent] Error reading file stream:", err);
                 });
             };
-
-            const onTorrentReady = (torrent) => {
-                if (!torrent) return;
-
-                if (typeof torrent.on === 'function') {
-                    torrent.on("progress", () => {
-                        if (window.MVC?.Hook?.Hero && typeof window.MVC.Hook.Hero.assertProgress === 'function') {
-                            window.MVC.Hook.Hero.assertProgress(torrent.infoHash);
-                        }
-                    });
-                }
-
-                if (torrent.done || (torrent.files && torrent.files.length > 0 && torrent.progress === 1)) {
-                    downloadFile(torrent);
-                } else if (typeof torrent.on === 'function') {
-                    torrent.on('done', () => {
-                        downloadFile(torrent);
-                    });
-                } else {
-                    const checkInterval = setInterval(() => {
-                        if (torrent.done || (torrent.files && torrent.files.length > 0)) {
-                            clearInterval(checkInterval);
-                            downloadFile(torrent);
-                        }
-                    }, 1000);
-                }
-            };
-
-            console.info("[MVC.Control.webtorrent] Adding torrent source directly with webseeds:", webseeds);
-
-            const opts = {
-                urlList: webseeds,
-                dht: false,
-                tracker: false,
-                pex: true
-            };
-
-            client.add(torrentSource, opts, (torrent) => {
-                if (!torrent) return;
-                
-                if (torrent.ready || (torrent.files && torrent.files.length > 0)) {
-                    onTorrentReady(torrent);
-                } else if (typeof torrent.on === 'function') {
-                    torrent.on('ready', () => onTorrentReady(torrent));
-                } else {
-                    const poll = setInterval(() => {
-                        if (torrent.files && torrent.files.length > 0) {
-                            clearInterval(poll);
-                            onTorrentReady(torrent);
-                        }
-                    }, 500);
-                }
-            });
         
         } catch (err) {
             console.error("[MVC.Control.webtorrent ERROR] Uncaught exception inside propagate():", err);
