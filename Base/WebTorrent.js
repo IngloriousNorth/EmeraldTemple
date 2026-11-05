@@ -1,8 +1,53 @@
 // src/Base/WebTorrent.js
 import MVC from '../MAINFRAME/MAINFRAME.js';
 
+// 1. Define the extension as a standard constructor function
+function RamosaWireExtension(wire) {
+    this.wire = wire;
+}
+
+// 2. REQUIRED: Set the extension name statically on the function itself for WebTorrent's initial check
+RamosaWireExtension.name = 'ramosa';
+
+// 3. Define methods on the prototype
+RamosaWireExtension.prototype.onHandshake = function (handshake) {
+    // Handshake complete with peer over BitTorrent protocol
+};
+
+RamosaWireExtension.prototype.onExtended = function (buf) {
+    try {
+        const payload = JSON.parse(buf.toString());
+        if (payload && payload.entity) {
+            console.info("[RAMOSA PROTOCOL] Received RAy payload from peer wire:", payload.entity.source?.name);
+            
+            const infoHash = payload.entity.edition?.torrents?.[0]?.infoHash || 'ray_sync_' + Date.now();
+            if (window.MVC && window.MVC.Base && window.MVC.Base.Ramosa) {
+                window.MVC.Base.Ramosa.put(infoHash, payload);
+            }
+
+            if (typeof TEMPEST !== 'undefined' && TEMPEST.route) {
+                TEMPEST.route("#table");
+            }
+        }
+    } catch (err) {
+        console.warn("[RAMOSA PROTOCOL] Failed to parse incoming extended message:", err);
+    }
+};
+
+RamosaWireExtension.prototype.send = function (rayPayload) {
+    if (this.wire.extendedMapping && this.wire.extendedMapping.ramosa !== undefined) {
+        const jsonBuf = typeof TextEncoder !== 'undefined' 
+            ? new TextEncoder().encode(JSON.stringify(rayPayload))
+            : Buffer.from(JSON.stringify(rayPayload));
+        
+        this.wire.extended('ramosa', jsonBuf);
+        console.info("[RAMOSA PROTOCOL] Broadcasted RAyPayload over wire.ramosa.");
+    }
+};
+
 const WebTorrentBase = {
     SWARM : null,
+    RamosaWireExtension, // Expose constructor function
 
     initialize() {
         if (this.client) return this.client;
@@ -14,7 +59,6 @@ const WebTorrentBase = {
             }
         }
         
-        // Use client.torrents.find to reliably match the active Gate.enc.js swarm
         this.SWARM = (window.client && window.client.torrents) 
             ? window.client.torrents.find(t => t.name === 'Gate.enc.js' || t === window.client.torrents[0]) 
             : null;
@@ -33,7 +77,7 @@ const WebTorrentBase = {
         if (swarm._pexWired) return;
         swarm._pexWired = true;
 
-        this.SWARM = swarm; // Keep reference updated
+        this.SWARM = swarm;
 
         const handleWire = (wire, addr) => {
             const peerAddr = addr || wire.remoteAddress || (wire._socket && wire._socket.remoteAddress) || 'unknown';
@@ -55,46 +99,6 @@ const WebTorrentBase = {
         }
 
         console.info(`[PEX CATALOG SYNC] Bound successfully to swarm: ${swarm.infoHash}`);
-    },
-
-    RamosaWireExtension(wire) {
-        this.wire = wire;
-    }
-};
-
-// Properly attach extension name and methods to the prototype so WebTorrent instantiates it correctly via 'new'
-WebTorrentBase.RamosaWireExtension.prototype.name = 'ramosa';
-
-WebTorrentBase.RamosaWireExtension.prototype.onHandshake = function (handshake) {
-    // Handshake complete with peer over BitTorrent protocol
-};
-
-WebTorrentBase.RamosaWireExtension.prototype.onExtended = function (buf) {
-    try {
-        const payload = JSON.parse(buf.toString());
-        if (payload && payload.entity) {
-            console.info("[RAMOSA PROTOCOL] Received RAy payload from peer wire:", payload.entity.source?.name);
-            
-            // Ingest directly into local IndexedDB / Base.Ramosa registry
-            const infoHash = payload.entity.edition?.torrents?.[0]?.infoHash || 'ray_sync_' + Date.now();
-            window.MVC.Base.Ramosa.put(infoHash, payload);
-
-            // Refresh UI / DataTables if active
-            TEMPEST.route("#table");
-        }
-    } catch (err) {
-        console.warn("[RAMOSA PROTOCOL] Failed to parse incoming extended message:", err);
-    }
-};
-
-WebTorrentBase.RamosaWireExtension.prototype.send = function (rayPayload) {
-    if (this.wire.extendedMapping && this.wire.extendedMapping.ramosa !== undefined) {
-        const jsonBuf = typeof TextEncoder !== 'undefined' 
-            ? new TextEncoder().encode(JSON.stringify(rayPayload))
-            : Buffer.from(JSON.stringify(rayPayload));
-        
-        this.wire.extended('ramosa', jsonBuf);
-        console.info("[RAMOSA PROTOCOL] Broadcasted RAyPayload over wire.ramosa.");
     }
 };
 
