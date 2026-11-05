@@ -1,15 +1,20 @@
 // src/Base/WebTorrent.js
 import MVC from '../MAINFRAME/MAINFRAME.js';
 
-// 1. Define the extension as a standard constructor function
+// 1. Define the constructor function
 function RamosaWireExtension(wire) {
     this.wire = wire;
 }
 
-// 2. REQUIRED: Set the extension name statically on the function itself for WebTorrent's initial check
-RamosaWireExtension.name = 'ramosa';
+// 2. Safely define 'name' on the prototype using Object.defineProperty to bypass read-only restrictions
+Object.defineProperty(RamosaWireExtension.prototype, 'name', {
+    value: 'ramosa',
+    writable: false,
+    configurable: true,
+    enumerable: true
+});
 
-// 3. Define methods on the prototype
+// 3. Define protocol methods on the prototype
 RamosaWireExtension.prototype.onHandshake = function (handshake) {
     // Handshake complete with peer over BitTorrent protocol
 };
@@ -47,7 +52,7 @@ RamosaWireExtension.prototype.send = function (rayPayload) {
 
 const WebTorrentBase = {
     SWARM : null,
-    RamosaWireExtension, // Expose constructor function
+    RamosaWireExtension,
 
     initialize() {
         if (this.client) return this.client;
