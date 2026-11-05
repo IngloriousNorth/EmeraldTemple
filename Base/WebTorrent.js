@@ -56,7 +56,7 @@ const WebTorrentBase = {
     SWARM : null,
     RamosaWireExtension,
 
-    initialize() {
+    initialize(cb) {
         if (this.client) return this.client;
         
         if (typeof window !== 'undefined') {
@@ -70,11 +70,11 @@ const WebTorrentBase = {
             ? window.client.torrents.find(t => t.name === 'Gate.enc.js' || t === window.client.torrents[0]) 
             : null;
 
-        this.bindPEX();
+        this.bindPEX(cb);
         return this.client;
     },
 
-    bindPEX: function(){
+    bindPEX: function(cb){
         const swarm = this.SWARM || (window.client && window.client.torrents && window.client.torrents.find(t => t.name === 'Gate.enc.js' || t === window.client.torrents[0]));
         if (!swarm) {
             setTimeout(() => this.bindPEX(), 1000);
@@ -104,6 +104,10 @@ const WebTorrentBase = {
         if (swarm.wires && Array.isArray(swarm.wires)) {
             swarm.wires.forEach(wire => handleWire(wire));
         }
+
+        setTimeout(function(){
+        	cb();
+        }, 888)
 
         console.info(`[PEX CATALOG SYNC] Bound successfully to swarm: ${swarm.infoHash}`);
     }
