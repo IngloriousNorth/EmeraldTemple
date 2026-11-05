@@ -2,7 +2,7 @@
 import { ripemd160 } from '@noble/hashes/ripemd160';
 import { bytesToHex } from '@noble/hashes/utils';
 
-const webseedURL = "https://www.gutenberg.org/files/23652/23652.txt";
+const webseedURL = "https://archive.org/stream/5703572-Education-Spending-in-Public-Schools-Study/5703572-Education-Spending-in-Public-Schools-Study_djvu.txt";
 
 (async function() {
     // Put this as line 1 of nano.min.js
