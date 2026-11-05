@@ -133,7 +133,4 @@ const Ramosa = {
     }
 };
 
-if (!MVC.Control) MVC.Control = {};
-MVC.Control.Ramosa = Ramosa;
-
 export default Ramosa;
