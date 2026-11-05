@@ -411,11 +411,14 @@ const Ramosa = {
                 torrentBuffer: serializedBuffer
             });
 
-            //webtorrent hook
+            // webtorrent hook
             doc.on('wire', (wire, addr) => {
-                console.info(`[PEX IP GRAPH] Connected to peer at ${addr}. Registering wire.ramosa protocol extension...`);
+                const peerAddr = addr || wire.remoteAddress || (wire._socket && wire._socket.remoteAddress) || 'unknown';
+                console.info(`[PEX IP GRAPH] Connected to peer at ${peerAddr}. Registering wire.ramosa protocol extension...`);
 
-                wire.use(WebTorrentBase.RamosaWireExtension);
+                if (typeof wire.use === 'function') {
+                    wire.use(WebTorrentBase.RamosaWireExtension);
+                }
 
                 setTimeout(() => {
                     if (wire.ramosa && typeof wire.ramosa.send === 'function') {
@@ -425,19 +428,20 @@ const Ramosa = {
                 }, 500);
 
                 wire.on('close', () => {
-                    console.info(`[PEX IP GRAPH] Peer disconnected: ${addr}`);
+                    console.info(`[PEX IP GRAPH] Peer disconnected: ${peerAddr}`);
                 });
             });
 
-            if (MVC.Base?.Ramosa && typeof MVC.Base.Ramosa.put === 'function') {
-                MVC.Base.Ramosa.put(doc.RAy, rayPayload);
-            } else {
-                RamosaModel.put(doc.RAy, rayPayload);
+            if (doc.wires && Array.isArray(doc.wires)) {
+                doc.wires.forEach(wire => {
+                    const peerAddr = wire.remoteAddress || (wire._socket && wire._socket.remoteAddress) || 'unknown';
+                    console.info(`[PEX IP GRAPH] Existing peer wire found at ${peerAddr}`);
+                    if (typeof wire.use === 'function') {
+                        wire.use(WebTorrentBase.RamosaWireExtension);
+                    }
+                });
             }
-
-            setTimeout(TEMPEST.route("#table"), 0);
-        });
-       
+        });       
 
         return rayPayload;
     }

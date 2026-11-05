@@ -1,9 +1,7 @@
-import WebTorrentControl from '../Control/WebTorrent.js';
 // src/Base/WebTorrent.js
 import MVC from '../MAINFRAME/MAINFRAME.js';
 
 const WebTorrentBase = {
-    //so annoying, Gemini
     SWARM : null,
 
     initialize() {
@@ -15,27 +13,46 @@ const WebTorrentBase = {
                 window.client = this.client;
             }
         }
-        this.SWARM = client.torrents[0];
+        
+        // Use client.torrents.find to reliably match the active Gate.enc.js swarm
+        this.SWARM = (window.client && window.client.torrents) 
+            ? window.client.torrents.find(t => t.name === 'Gate.enc.js' || t === window.client.torrents[0]) 
+            : null;
+
         this.bindPEX();
         return this.client;
     },
 
     bindPEX: function(){
-        const swarm = this.SWARM || (client && client.torrents && client.torrents[0]);
+        const swarm = this.SWARM || (window.client && window.client.torrents && window.client.torrents.find(t => t.name === 'Gate.enc.js' || t === window.client.torrents[0]));
         if (!swarm) {
             setTimeout(() => this.bindPEX(), 1000);
             return;
         }
 
-        swarm.on('wire', (wire, addr) => {
-            console.info(`[PEX IP GRAPH] Connected to peer at ${addr}. Registering wire.ramosa protocol extension...`);
+        if (swarm._pexWired) return;
+        swarm._pexWired = true;
 
-            wire.use(this.RamosaWireExtension);
+        this.SWARM = swarm; // Keep reference updated
+
+        const handleWire = (wire, addr) => {
+            const peerAddr = addr || wire.remoteAddress || (wire._socket && wire._socket.remoteAddress) || 'unknown';
+            console.info(`[PEX IP GRAPH] Connected to peer at ${peerAddr}. Registering wire.ramosa protocol extension...`);
+
+            if (typeof wire.use === 'function') {
+                wire.use(this.RamosaWireExtension);
+            }
 
             wire.on('close', () => {
-                console.info(`[PEX IP GRAPH] Peer disconnected: ${addr}`);
+                console.info(`[PEX IP GRAPH] Peer disconnected: ${peerAddr}`);
             });
-        });
+        };
+
+        swarm.on('wire', handleWire);
+
+        if (swarm.wires && Array.isArray(swarm.wires)) {
+            swarm.wires.forEach(wire => handleWire(wire));
+        }
 
         console.info(`[PEX CATALOG SYNC] Bound successfully to swarm: ${swarm.infoHash}`);
     },
