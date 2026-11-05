@@ -20,7 +20,10 @@ const IndexControl = {
                     {
                         page: "table",
                         fn: function() {
-                            MVC.Control.Table.unfold("table");
+
+                            WebTorrentBase.initialize(()=>{
+                                MVC.Control.Table.unfold("table");
+                            });
                         }
                     },
                     {
@@ -66,7 +69,6 @@ const IndexControl = {
                 if (window.TEMPEST && typeof TEMPEST.initialize === 'function') {
                     TEMPEST.initialize(tempestConfig, async () => {
                         MVC.Hook.Ramosa.unfurl();
-                        WebTorrentBase.initialize();
                     });
                 }
             });

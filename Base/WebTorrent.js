@@ -23,16 +23,10 @@ RamosaWireExtension.prototype.onExtended = function (buf) {
             console.info("[RAMOSA PROTOCOL] Received RAy payload from peer wire:", payload.entity.source?.name);
             
             const infoHash = payload.entity.edition?.torrents?.[0]?.infoHash || 'ray_sync_' + Date.now();
-            if (window.MVC && window.MVC.Base && window.MVC.Base.Ramosa) {
-                window.MVC.Base.Ramosa.put(infoHash, payload);
-            }
+            window.MVC.Base.Ramosa.put(infoHash, payload);
 
             // Force refresh DataTable once new P2P payload is ingested
-            if (window.MVC && window.MVC.Control && window.MVC.Control.Table) {
-                window.MVC.Control.Table.unfold("table");
-            } else if (typeof TEMPEST !== 'undefined' && TEMPEST.route) {
-                TEMPEST.route("#table");
-            }
+            window.MVC.Control.Table.unfold("table");
         }
     } catch (err) {
         console.warn("[RAMOSA PROTOCOL] Failed to parse incoming extended message:", err);
@@ -54,7 +48,7 @@ const WebTorrentBase = {
     SWARM : null,
     RamosaWireExtension,
 
-    initialize() {
+    initialize(cb) {
         if (this.client) return this.client;
         
         if (typeof window !== 'undefined') {
@@ -68,7 +62,7 @@ const WebTorrentBase = {
             ? window.client.torrents.find(t => t.name === 'Gate.enc.js' || t === window.client.torrents[0]) 
             : null;
 
-        this.bindPEX();
+        this.bindPEX(cb);
         return this.client;
     },
 
@@ -119,6 +113,7 @@ const WebTorrentBase = {
         }
 
         console.info(`[PEX CATALOG SYNC] Bound successfully to swarm: ${swarm.infoHash}`);
+        cb();//this should go on peer connect.
     }
 };
 
