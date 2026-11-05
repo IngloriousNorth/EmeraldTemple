@@ -2,6 +2,7 @@
 import MVC from '../MAINFRAME/MAINFRAME.js';
 import RamosaModel from '../Base/Ramosa.js';
 import WebTorrentControl from './WebTorrent.js';
+import WebTorrentBase from '../Base/WebTorrent.js';
 
 const Ramosa = {
     pipelineInstance: null,
@@ -406,7 +407,6 @@ const Ramosa = {
                 res: `Pre-1931 Archive Scan (${parsed.detectedCategory})`,
                 RAy: doc.RAy,
                 size: pdfFile.size,
-                release: `${rayPayload.Sphere.institution.name}-${rayPayload.Sphere.source.date}-${rayPayload.Sphere.source.name.replace(/\s+/g, '-')}`,
                 webseeds: webseedList,
                 torrentBuffer: serializedBuffer
             });
