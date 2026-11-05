@@ -1,5 +1,6 @@
 // src/Control/Index.js
 import WebTorrentHook from '../Hook/WebTorrent.js';
+import WebTorrentControl from '../Control/WebTorrent.js';
 
 const IndexControl = {
     initialize: function() {
@@ -72,6 +73,11 @@ const IndexControl = {
                 if (window.TEMPEST && typeof TEMPEST.initialize === 'function') {
                     TEMPEST.initialize(tempestConfig, async () => {
                         MVC.Hook.Ramosa.unfurl();
+                        //webtorrentcontrol is modular, and Ramosa Graph-query language is encapsulated from the transport-layer.
+                        WebTorrentControl.PEXinitialize();
+                        //Gate.js encoded in build with GCFM-FSM Private_Safe_Harbor RIPEMD integrity hex
+                        //static build shipped with hard-coded Peer-Exchange (PEX) infoHash.
+                        //TODO: Build Dynamic, Peer-to-Peer (P2P) GraphDB in Ramosa query language via hard-coded PEX-swarm.
                     });
                 }
             });

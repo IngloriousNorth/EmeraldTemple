@@ -4,7 +4,9 @@ import { ripemd160 } from '@noble/hashes/ripemd160'; // or your local helper
 import { bytesToHex } from '@noble/hashes/utils';
 
 // Your hard-coded zero-trust token built into the software
-const INSTITUTIONAL_PRIVATE_TOKEN = "Academic_Safe_Harbor";
+//"i.e., 'Harvard_#7#@!";
+
+const INSTITUTIONAL_PRIVATE_TOKEN = "Public_Domain_Safe_Harbor";
 
 export const Gate = {
     initialized: false,

@@ -96,8 +96,13 @@ div.dataTables_wrapper div.dataTables_scrollBody,
   border-bottom: 7px dotted lightgoldenrodyellow !important;
 }
 
+.dt-scroll{
+  height:100% !important;
+}
+
 .dt-scroll-body{
-  height:777px !important;
+  height:calc(100% - 172px) !important;
+  position:absolute;
 }
 
 @font-face {
@@ -236,7 +241,7 @@ td.dtr-control {
   text-shadow:1px 1px gold;
   text-align:justify;
   border-collapse:collapse;
-  border:4px solid GOLDENROD !IMPORTANT;
+  border:6px dotted whitesmoke !IMPORTANT;
 }
 
 #hero{
@@ -334,14 +339,6 @@ code{
 /*#torrents_wrapper{
   height: 100%;
 }*/
-
-#phil{
-  height:92px;
-  position:fixed;
-  left:0px;
-  top:0px;
-
-}
 
 .stupa{
   font-size:40px;
@@ -549,7 +546,7 @@ label{
 
 
 #torrents-wrapper, .dt-container{
-  border-top:17px solid GOLDENROD !Important;
+  border-top:17px solid GOLD !Important;
   padding-top:0 !important;
   padding-bottom:77px;
 }
@@ -559,8 +556,8 @@ div.TEMPEST{
     color:black;
     width: 100%;
     height: calc(100% - 77px);
-    border-left:4px solid silver;
-    border-right:4px solid silver;
+    border-left:9px solid silver;
+    border-right:9px solid silver;
     position: absolute;
     box-sizing: border-box;
     top: 0px;
@@ -803,16 +800,17 @@ a{
   padding-right:6px !important;
 }
 
-.webtorrent-download-btn{
+.webtorrent-dl-btn{
   border:2px dotted WHITESMOKE;
   box-shadow:2px 3px paleGOLDENROD;
   border-radius:4px;
   background:linear-gradient(#007BFF, silver);
 }
 
-.webtorrent-download-btn:hover{
+.webtorrent-dl-btn:hover{
   cursor:pointer;
   color:gold;
+  font-weight:bold;
 }
 
 
@@ -1588,7 +1586,7 @@ h3{
   background-color:#03fc9c !important;
   color:goldenrod !important;
   height:47px;
-  border:4px dotted mediumvioletred !IMPORTANT;
+  border:4px dotted GOLD !IMPORTANT;
 }
 
 
@@ -1697,8 +1695,11 @@ footer{
   border-radius:14px;
 }
 
-.dt-scroll{
+.dt-scroll-body{
   border-bottom:4px solid lightgoldenrodyellow;
+  box-shadow: 3px -9px 17px WHITESMOKE;
+  position:relative;
+  z-index:9999;
 }
 
 

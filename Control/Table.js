@@ -1,4 +1,4 @@
-//EmeraldTemple Universal p2p GraphDB imports webtorrent functions
+// EmeraldTemple Universal p2p GraphDB imports webtorrent functions
 import WebTorrentControl from './WebTorrent.js'
 
 /**
@@ -28,13 +28,31 @@ function parseRAyData(rayArray) {
     const groupKey = source.uuid || cleanSourceName.toLowerCase().replace(/[^a-z0-9]/g, '_');
 
     const publisherName = institution.name || {};
-    const pubNameStr = typeof publisherName === 'object' ? (publisherName.name || '') : publisherName;
+    let pubNameStr = typeof publisherName === 'object' ? (publisherName.name || '') : publisherName;
+    
+    // Prevent generic/placeholder archives from appearing as the publisher string in APA citation
+    if (/Public Domain Archive|Digital Archive|Internet Archive|archive\.org/i.test(pubNameStr)) {
+      pubNameStr = '';
+    }
+
     const title = (edition.title || cleanSourceName).replace(/\*/g, '').trim();
     
     let apaCitation = edition.APA || `${authors.join(', ') || 'Unknown Author'} (${edition.date || source.date || 'n.d.'}). ${title}.`;
+    
     if (pubNameStr) {
-      apaCitation += ` <a href="#" class="publisher_name text-decoration-none">${pubNameStr}</a>.`;
+      if (/Project Gutenberg/i.test(pubNameStr)) {
+        apaCitation += ` <a href="#" class="publisher_name text-decoration-none" style="color: mediumvioletred;">${pubNameStr}</a>.`;
+      } else {
+        apaCitation += ` <a href="#" class="publisher_name text-decoration-none">${pubNameStr}</a>.`;
+      }
+    } else {
+      // If no valid publisher string was appended, check if Project Gutenberg is mentioned inside the APA or source, or append it if needed
+      // Let's make sure Project Gutenberg gets styled with mediumvioletred if it's part of the citation text
+      apaCitation = apaCitation.replace(/(Project Gutenberg)/gi, '<span style="color: mediumvioletred;">$1</span>');
     }
+
+    // Also catch Project Gutenberg anywhere else in the generated citation string to style it mediumvioletred
+    apaCitation = apaCitation.replace(/(Project Gutenberg)/gi, '<span style="color: mediumvioletred;">$1</span>');
 
     const formattedTorrents = docArray.map(doc => ({
       format: doc.format || 'PDF',
@@ -233,26 +251,28 @@ const TableControl = {
           if (!firstRow) return $('<tr/>');
           const src = firstRow.source;
           
-          const authorsList = (src.authors || [])
-            .map(a => `<a href="#" class="author_name text-decoration-none">${a}</a>`)
-            .join(', ') || '<a href="#" class="author_name text-decoration-none">Unknown Author</a>';
+          // Ensure authors list handles array properly
+          const authorsList = (src.authors && src.authors.length > 0)
+            ? src.authors.map(a => `<a href="#" class="author_name text-decoration-none">${a}</a>`).join(', ')
+            : '<a href="#" class="author_name text-decoration-none">Unknown Author</a>';
 
           const categories = (src.categories || [])
             .map(c => `<a href="#" class="class_name badge bg-secondary text-decoration-none px-2 py-1" style="font-size: 0.75em; font-weight: 500; letter-spacing: 0.3px;">${c}</a>`)
             .join(' ');
 
           const formattedDate = typeof adjDate === 'function' ? adjDate(src.date) : src.date;
+          const formattedSourceName = src.name.replace(/([a-zA-Z])([0-9])/g, '$1 $2');
 
           return $(`
             <tr class="group-header border-bottom" style="position: relative; overflow: hidden;">
               <td colspan="4" class="py-2 px-3" style="position: relative; z-index: 2;">
                 <div class="d-flex align-items-center gap-3 w-100">
                   <div class="flex-shrink-0 d-flex align-items-center justify-content-start" style="width: 222px;">
-                    <img src="${src.cover}" alt="${src.name}" style="max-height: auto; width: 222px; object-fit: contain;" class="rounded shadow-sm border border-white bg-white" />
+                    <img src="${src.cover}" alt="${formattedSourceName}" style="max-height: auto; width: 222px; object-fit: contain;" class="rounded shadow-sm border border-white bg-white" />
                   </div>
                   <div class="d-flex flex-column justify-content-center flex-grow-1 py-1 gap-1">
                     <div class="title_heading fw-bold fs-6 text-truncate" style="line-height: 1.3;">
-                      <a href="#" class="source_name text-dark text-decoration-none">${src.name}</a> 
+                      <a href="#" class="source_name text-dark text-decoration-none">${formattedSourceName}</a> 
                       <span class="fw-normal small text-muted">[${formattedDate}]</span> 
                       <span class="fw-normal text-muted">by <em>${authorsList}</em></span>
                     </div>
@@ -273,7 +293,6 @@ const TableControl = {
 
           console.info("[UI] Download clicked for Ramosa RAy ID:", RAy);
           
-          // Ensure MVC.Base.Ramosa is available before querying
           const ramosaBase = window.MVC?.Base?.Ramosa;
           const info = ramosaBase ? ramosaBase.get(RAy) : null;
 
