@@ -30,9 +30,7 @@ const WebTorrentBase = {
         swarm.on('wire', (wire, addr) => {
             console.info(`[PEX IP GRAPH] Connected to peer at ${addr}. Registering wire.ramosa protocol extension...`);
 
-            if (typeof wire.use === 'function') {
-                wire.use(this.RamosaWireExtension);
-            }
+            wire.use(this.RamosaWireExtension);
 
             wire.on('close', () => {
                 console.info(`[PEX IP GRAPH] Peer disconnected: ${addr}`);
@@ -40,35 +38,6 @@ const WebTorrentBase = {
         });
 
         console.info(`[PEX CATALOG SYNC] Bound successfully to swarm: ${swarm.infoHash}`);
-    },
-
-    syncClientTorrentsToIndexedDB() {
-        const client = this.init();
-        if (!client || !client.torrents) return;
-
-        client.torrents.forEach(torrent => {
-            if (torrent.comment) {
-                try {
-                    const payload = JSON.parse(torrent.comment);
-                    if (payload && (payload.entity || payload.Sphere)) {
-                        const entityData = payload.entity || payload.Sphere;
-                        const infoHash = torrent.infoHash;
-                        
-                        if (MVC.Base?.Ramosa && typeof MVC.Base.Ramosa.put === 'function') {
-                            MVC.Base.Ramosa.put(infoHash, payload);
-                        }
-
-                        console.info(`[INDEXEDDB] Synced torrent comment metadata: ${entityData.source?.name || infoHash}`);
-                    }
-                } catch (e) {
-                    // Not a Ramosa JSON comment payload
-                }
-            }
-        });
-
-        if (typeof TEMPEST !== 'undefined' && typeof TEMPEST.refresh === 'function') {
-            TEMPEST.refresh();
-        }
     },
 
     RamosaWireExtension(wire) {
@@ -84,15 +53,11 @@ const WebTorrentBase = {
                         console.info("[RAMOSA PROTOCOL] Received RAy payload from peer wire:", payload.entity.source?.name);
                         
                         // Ingest directly into local IndexedDB / Base.Ramosa registry
-                        if (window.MVC?.Base?.Ramosa && typeof window.MVC.Base.Ramosa.put === 'function') {
-                            const infoHash = payload.entity.edition?.torrents?.[0]?.infoHash || 'ray_sync_' + Date.now();
-                            window.MVC.Base.Ramosa.put(infoHash, payload);
-                        }
+                        const infoHash = payload.entity.edition?.torrents?.[0]?.infoHash || 'ray_sync_' + Date.now();
+                        window.MVC.Base.Ramosa.put(infoHash, payload);
 
                         // Refresh UI / DataTables if active
-                        if (typeof TEMPEST !== 'undefined' && typeof TEMPEST.refresh === 'function') {
-                            TEMPEST.refresh();
-                        }
+                        TEMPEST.route("#table");
                     }
                 } catch (err) {
                     console.warn("[RAMOSA PROTOCOL] Failed to parse incoming extended message:", err);

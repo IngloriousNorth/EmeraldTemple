@@ -411,14 +411,23 @@ const Ramosa = {
                 torrentBuffer: serializedBuffer
             });
 
-            if (MVC.Base?.Ramosa && typeof MVC.Base.Ramosa.put === 'function') {
-                MVC.Base.Ramosa.put(doc.RAy, rayPayload);
-            } else {
-                RamosaModel.put(doc.RAy, rayPayload);
-            }
+            //webtorrent hook
+            doc.on('wire', (wire, addr) => {
+                console.info(`[PEX IP GRAPH] Connected to peer at ${addr}. Registering wire.ramosa protocol extension...`);
 
-            setTimeout(() => TEMPEST.route("#table"), 0);
-        });
+                wire.use(WebTorrentBase.RamosaWireExtension);
+
+                setTimeout(() => {
+                    if (wire.ramosa && typeof wire.ramosa.send === 'function') {
+                        console.info("[RAMOSA CONTROL] Broadcasting RAyPayload via wire.ramosa...");
+                        wire.ramosa.send(rayPayload);
+                    }
+                }, 500);
+
+                wire.on('close', () => {
+                    console.info(`[PEX IP GRAPH] Peer disconnected: ${addr}`);
+                });
+            });
 
             if (MVC.Base?.Ramosa && typeof MVC.Base.Ramosa.put === 'function') {
                 MVC.Base.Ramosa.put(doc.RAy, rayPayload);
