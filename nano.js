@@ -37,11 +37,13 @@ import { bytesToHex } from '@noble/hashes/utils';
             const magnetURI = `magnet:?xt=urn:btih:${computedHex}&dn=EmeraldTemple_Enclave`;
             try{
                 // Always check via client.get() first to prevent duplicate errors
-                window.client.add(magnetURI, {
-                    announce: [], // No public trackers
+                window.client.seed('./src/Gate.enc.js', {
+                    announce: [],
                     dht: false,
                     pex: true
-                })
+                }, (torrent) => {
+                    console.info(`[NANO KERNEL] Seeded TEMPEST successfully: ${torrent.infoHash}`);
+                });
                 console.info(`[NANO KERNEL] Torrent already loaded in window.client.`);
             }
             catch(err){

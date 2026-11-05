@@ -21,10 +21,18 @@ const WebTorrentBase = {
     },
 
     bindPEX: function(){
-        this.SWARM.on('wire', (wire, addr) => {
+        const swarm = this.SWARM || (client && client.torrents && client.torrents[0]);
+        if (!swarm) {
+            setTimeout(() => this.bindPEX(), 1000);
+            return;
+        }
+
+        swarm.on('wire', (wire, addr) => {
             console.info(`[PEX IP GRAPH] Connected to peer at ${addr}. Registering wire.ramosa protocol extension...`);
 
-            wire.use(this.RamosaWireExtension);
+            if (typeof wire.use === 'function') {
+                wire.use(this.RamosaWireExtension);
+            }
 
             wire.on('close', () => {
                 console.info(`[PEX IP GRAPH] Peer disconnected: ${addr}`);
