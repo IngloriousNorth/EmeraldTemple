@@ -12,7 +12,6 @@ const IndexControl = {
         window.__TEMPEST_INDEX_INITIALIZED__ = true;
 
         async function boot() {
-            // 3. Build TEMPEST Config Object
             const tempestConfig = {
                 defaultPage: "table",
                 fade: true,
@@ -20,9 +19,7 @@ const IndexControl = {
                 helm: [
                     {
                         page: "table",
-                        /* MAIN FUNCTION, of EmeraldTemple */
                         fn: function() {
-                            //torrent-neutral table
                             MVC.Control.Table.unfold("table");
                         }
                     },
@@ -31,27 +28,22 @@ const IndexControl = {
                         fn: function() {
                             window.async.parallel([
                                 function(cb) { 
-                                    if (MVC.Hook && MVC.Hook.Graph) MVC.Hook.Graph.initialize(); 
+                                    if (window.MVC?.Hook?.Graph) window.MVC.Hook.Graph.initialize(); 
                                     cb(null); 
                                 },
-                                function(cb) { 
-                                   
-                                }
+                                function(cb) { cb(null); }
                             ]);
                         }
                     },
                     {
                         page: "Category",
                         fn: function() {  
-                            if (MVC.Control && MVC.Control.Category && typeof MVC.Control.Category.List === 'function') {
-                                MVC.Control.Category.List();
-                            }
+                            MVC.Control.Category.List();
                         }
                     }
                 ]
             };
 
-            // Automatically detect GitHub Pages subpath vs local root
             const isGitHubPages = window.location.hostname.includes('github.io');
             const repoPath = isGitHubPages 
                 ? (window.location.pathname.split('/')[1] ? `/${window.location.pathname.split('/')[1]}` : '') 
@@ -74,11 +66,7 @@ const IndexControl = {
                 if (window.TEMPEST && typeof TEMPEST.initialize === 'function') {
                     TEMPEST.initialize(tempestConfig, async () => {
                         MVC.Hook.Ramosa.unfurl();
-                        //webtorrentcontrol is modular, and Ramosa Graph-query language is encapsulated from the transport-layer.
                         WebTorrentBase.initialize();
-                        //Gate.js encoded in build with GCFM-FSM Private_Safe_Harbor RIPEMD integrity hex
-                        //static build shipped with hard-coded Peer-Exchange (PEX) infoHash.
-                        //TODO: Build Dynamic, Peer-to-Peer (P2P) GraphDB in Ramosa query language via hard-coded PEX-swarm.
                     });
                 }
             });

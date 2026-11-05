@@ -1,12 +1,10 @@
 // src/Base/WebTorrent.js
 import MVC from '../MAINFRAME/MAINFRAME.js';
 
-// 1. Define the constructor function
 function RamosaWireExtension(wire) {
     this.wire = wire;
 }
 
-// 2. Safely define 'name' on the prototype using Object.defineProperty to bypass read-only restrictions
 Object.defineProperty(RamosaWireExtension.prototype, 'name', {
     value: 'ramosa',
     writable: false,
@@ -14,9 +12,8 @@ Object.defineProperty(RamosaWireExtension.prototype, 'name', {
     enumerable: true
 });
 
-// 3. Define protocol methods on the prototype
 RamosaWireExtension.prototype.onHandshake = function (handshake) {
-    // Handshake complete with peer over BitTorrent protocol
+    console.info("[RAMOSA PROTOCOL EXTENSION] Handshake completed successfully with peer.");
 };
 
 RamosaWireExtension.prototype.onExtended = function (buf) {
@@ -26,9 +23,16 @@ RamosaWireExtension.prototype.onExtended = function (buf) {
             console.info("[RAMOSA PROTOCOL] Received RAy payload from peer wire:", payload.entity.source?.name);
             
             const infoHash = payload.entity.edition?.torrents?.[0]?.infoHash || 'ray_sync_' + Date.now();
-            window.MVC.Base.Ramosa.put(infoHash, payload);
+            if (window.MVC && window.MVC.Base && window.MVC.Base.Ramosa) {
+                window.MVC.Base.Ramosa.put(infoHash, payload);
+            }
 
-            TEMPEST.route("#table");
+            // Force refresh DataTable once new P2P payload is ingested
+            if (window.MVC && window.MVC.Control && window.MVC.Control.Table) {
+                window.MVC.Control.Table.unfold("table");
+            } else if (typeof TEMPEST !== 'undefined' && TEMPEST.route) {
+                TEMPEST.route("#table");
+            }
         }
     } catch (err) {
         console.warn("[RAMOSA PROTOCOL] Failed to parse incoming extended message:", err);
@@ -87,6 +91,21 @@ const WebTorrentBase = {
             if (typeof wire.use === 'function') {
                 wire.use(this.RamosaWireExtension);
             }
+
+            // Confirm extension registration & notify system
+            const checkExtensionRegistered = () => {
+                if (wire.ramosa || (wire.extendedMapping && wire.extendedMapping.ramosa !== undefined)) {
+                    console.info(`[RAMOSA PROTOCOL SUCCESS] wire.ramosa successfully registered and active for peer: ${peerAddr}`);
+                    
+                    // Trigger table refresh/unfold after extension is fully loaded
+                    if (window.MVC && window.MVC.Control && window.MVC.Control.Table) {
+                        window.MVC.Control.Table.unfold("table");
+                    }
+                } else {
+                    setTimeout(checkExtensionRegistered, 250);
+                }
+            };
+            checkExtensionRegistered();
 
             wire.on('close', () => {
                 console.info(`[PEX IP GRAPH] Peer disconnected: ${peerAddr}`);
