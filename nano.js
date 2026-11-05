@@ -23,9 +23,9 @@ import { bytesToHex } from '@noble/hashes/utils';
 
         // 2. Perform RIPEMD-160 integrity verification on the whole ciphertext package
         const computedHashDigest = ripemd160(rawCiphertext);
-        const computedHashHex = bytesToHex(computedHashDigest);
+        const computedHex = bytesToHex(computedHashDigest);
 
-        if (computedHashHex !== packageData.ripemd160Hash) {
+        if (computedHex !== packageData.ripemd160Hash) {
             throw new Error(`[SECURITY ALERT] RIPEMD-160 mismatch! Expected ${packageData.ripemd160Hash}, got ${computedHashHex}`);
         }
         console.info('[nano.js KERNEL] RIPEMD-160 integrity verification passed securely.');
@@ -34,7 +34,7 @@ import { bytesToHex } from '@noble/hashes/utils';
         // 3. Grab window.client, attach the verified hash globally, and add the torrent if ready
 
         if (window.client) {
-            const magnetURI = `magnet:?xt=urn:btih:${computedHashHex}&dn=EmeraldTemple_Enclave`;
+            const magnetURI = `magnet:?xt=urn:btih:${computedHex}&dn=EmeraldTemple_Enclave`;
             try{
                 // Always check via client.get() first to prevent duplicate errors
                 window.client.add(magnetURI, {
