@@ -33,9 +33,9 @@ import { bytesToHex } from '@noble/hashes/utils';
         // 3. Grab client from window.client and bind the verified cryptographic hash
         // 3. Grab window.client, attach the verified hash globally, and add the torrent if ready
         let seedContent;
-        $.get('./src/Gate.enc.js', (data)=>{
+        $.get('./src/Gate.bundle.enc', (data)=>{
             seedContent = data;
-            const seedContentBuffer = Buffer.from(seedContent)
+            const seedContentBuffer = new Uint8Arr(seedContent);
             //Keep
 
             if (window.client) {
