@@ -187,9 +187,7 @@ const RamosaControl = {
 
         const rayPayload = this.parseSpheres(parsed.apaString, userClasses, sourceDate || parsed.metadata.year, parsed.metadata.title);
         
-        const cover_img = await this.extractCompressedCoverArt(pdfFile);
-        rayPayload.source.cover.img = cover_img;
-
+        rayPayload.Sphere.source.cover_img = await this.extractCompressedCoverArt(pdfFile);
 
         const resolvedWebSeed = webSeedUrl;
         rayPayload.Sphere.Doc.webSeed = resolvedWebSeed;
