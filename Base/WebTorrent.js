@@ -43,7 +43,7 @@ RamosaWireExtension.prototype.onExtended = function (buf) {
             window.MVC.Base.Ramosa.put(infoHash, decoded);
             console.info("[RAMOSA BASE] Successfully persisted peer Sphere into IndexedDB:", infoHash);
 
-            indow.MVC.Control.Table.unfold("table");
+            window.MVC.Control.Table.unfold("table");
             console.info("[TABLE CONTROLLER] Table unfolded and hydrated with peer Sphere.");
         }
     } catch (err) {
@@ -123,6 +123,15 @@ const WebTorrentBase = {
             // Register wire.ramosa protocol extension
             wire.use(this.RamosaWireExtension);
             console.info("[RAMOSA PROTOCOL SUCCESS] wire.ramosa protocol extension active.");
+
+            wire.ramosa.on("message", (RAyPayLoad)=>{
+                const decoded = JSON.parse(buf.toString());
+                console.info("[RAMOSA PROTOCOL] Received payload from peer wire.ramosa:", decoded.Sphere.source?.name);
+
+                const torrents = decoded.Sphere.edition.torrents || decoded.Sphere.Doc;
+                const infoHash = torrents && torrents[0] ? (torrents[0].RAy || torrents[0].infoHash) : 'ray_sync_' + Date.now();
+                MVC.Base.Ramosa.put(infoHash, decoded);
+            })
 
             wire.on('close', () => {
                 console.info("[PEX IP GRAPH] Peer disconnected.");

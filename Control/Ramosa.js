@@ -207,8 +207,9 @@ const RamosaControl = {
              //attachPayloadToWire(wire);
             WebTorrentBase.PEX.wires.forEach(wire => {
                 // If handshake already completed prior to binding, send immediately
-                wire.use(RamosaExtensionProtocol)
-                wire.ramosa.send(new TextEncoder().encode(JSON.stringify(rayPayLoad)));;
+                wire.use(WebTorrentBase.RamosaWireExtension);
+            
+                wire.ramosa.send(new TextEncoder().encode(JSON.stringify(rayPayload)));;
             });
 
             RamosaControl.put(doc.RAy, rayPayload);
