@@ -13,8 +13,23 @@ Object.defineProperty(RamosaWireExtension.prototype, 'name', {
     enumerable: true
 });
 
-RamosaWireExtension.prototype.onHandshake = function (handshake) {
+// UPLOADER SIDE: Broadcast local IndexedDB records the exact instant handshake completes
+RamosaWireExtension.prototype.onHandshake = async function (handshake) {
     console.info(`[RAMOSA PROTOCOL EXTENSION] Handshake completed successfully with peer at ${new Date().toISOString()}.`);
+    try {
+        const localRecords = await RamosaBase.loadAll();
+        if (Array.isArray(localRecords) && localRecords.length > 0) {
+            localRecords.forEach(record => {
+                if (typeof this.send === 'function') {
+                    this.send(record);
+                }
+            });
+        } else {
+            console.warn("[RAMOSA SYNC] No local records found in IndexedDB to send on handshake.");
+        }
+    } catch (err) {
+        console.warn("[RAMOSA SYNC] Failed to load/send local records on handshake:", err);
+    }
 };
 
 // IDLE CLIENT SIDE: Receive extension messages from peers
@@ -47,7 +62,7 @@ RamosaWireExtension.prototype.send = function (rayPayload) {
     if (this.wire.extendedMapping && this.wire.extendedMapping.ramosa !== undefined) {
         const jsonBuf = new TextEncoder().encode(JSON.stringify(rayPayload));
         this.wire.extended('ramosa', jsonBuf);
-        console.info(`[RAMOSA PROTOCOL] Broadcasted RAyPayload over wire.ramosa at ${new Date().toISOString()}.`);
+        console.info(`[WebTorrentBase:] Sent RAyPayload at ${new Date().toISOString()}.`);
     } else {
         console.warn("[RAMOSA PROTOCOL] Failed to send: wire.extendedMapping.ramosa is unassigned.");
     }
@@ -102,24 +117,6 @@ const WebTorrentBase = {
             wire.on('close', () => {
                 console.info("[PEX IP GRAPH] Peer disconnected.");
             });
-
-            // Proactive uploader transmission once handshake/mapping settles
-            const sendStoredPayloads = async () => {
-                try {
-                    const localRecords = await RamosaBase.loadAll();
-                        localRecords.forEach(RAyPayload => {
-                                wire.ramosa.send(RAyPayload);
-                                console.info(`[WebTorrentBase:] Sent RAyPayload at ${new Date().toISOString()}.`);
-                        });
-                } catch (err) {
-                    console.warn("[RAMOSA SYNC] Failed to send local records on wire connection:", err);
-                }
-
-                if (!wire.extendedMapping || wire.extendedMapping.ramosa === undefined) {
-                    setTimeout(sendStoredPayloads, 300);
-                }
-            };
-            setTimeout(sendStoredPayloads, 400);
         };
 
         swarm.on('wire', handleWire);
