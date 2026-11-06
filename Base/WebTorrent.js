@@ -2,52 +2,8 @@
 import MVC from '../MAINFRAME/MAINFRAME.js';
 import RamosaBase from './Ramosa.js';
 
-function RamosaWireExtension(wire) {
-    this.wire = wire;
-}
-
-Object.defineProperty(RamosaWireExtension.prototype, 'name', {
-    value: 'ramosa',
-    writable: false,
-    configurable: true,
-    enumerable: true
-});
-
-RamosaWireExtension.prototype.onHandshake = function (handshake) {
-    console.info("[RAMOSA PROTOCOL EXTENSION] Handshake completed successfully with peer.");
-};
-
-RamosaWireExtension.prototype.onExtended = function (buf) {
-    try {
-        const payload = JSON.parse(buf.toString());
-        if (payload && payload.Sphere) {
-            console.info("[RAMOSA PROTOCOL] Received RAy payload over wire.ramosa:", payload.Sphere.source?.name);
-            
-            const torrents = payload.Sphere.edition.torrents || payload.Sphere.Doc;
-            const infoHash = torrents && torrents[0] ? (torrents[0].RAy || torrents[0].infoHash) : 'ray_sync_' + Date.now();
-
-            // 1. Persist incoming payload directly into IndexedDB via Ramosa Base model
-            window.MVC.Base.Ramosa.put(infoHash, payload);
-            console.info("[RAMOSA BASE] Successfully persisted peer record into IndexedDB:", infoHash);
-
-            // 2. Unfold and hydrate the table view instantly
-            window.MVC.Control.Table.unfold("table");
-            console.info("[TABLE CONTROLLER] Table unfolded and hydrated with peer record.");
-        }
-    } catch (err) {
-        console.warn("[RAMOSA PROTOCOL] Failed to parse incoming extended message from peer:", err);
-    }
-};
-
-RamosaWireExtension.prototype.send = function (rayPayload) {
-    const jsonBuf = new TextEncoder().encode(JSON.stringify(rayPayload));
-    this.wire.extended('ramosa', jsonBuf);
-    console.info("[RAMOSA PROTOCOL] Broadcasted RAyPayload over wire.ramosa.");
-};
-
 const WebTorrentBase = {
     SWARM : null,
-    RamosaWireExtension,
 
     initialize(cb) {
         if (this.client) return this.client;
@@ -71,20 +27,32 @@ const WebTorrentBase = {
         if (torrent._ramosaWiresBound) return;
         torrent._ramosaWiresBound = true;
 
-        const handleWire = (wire) => {
-            wire.use(this.RamosaWireExtension);
-            console.info("[RAMOSA PROTOCOL SUCCESS] wire.ramosa protocol extension active.");
+        const handleWire = (wire, addr) => {
+            console.info(`[PEX IP GRAPH] Connected to peer at ${addr || 'unknown'}. Listening for messages...`);
 
-            setTimeout(async () => {
-                const ALL = await RamosaBase.getAll();
-                if (Array.isArray(ALL)) {
-                    ALL.forEach(Sphere => {
-                        if (wire.ramosa && typeof wire.ramosa.send === 'function') {
-                            wire.ramosa.send(Sphere);
-                        }
-                    });
+            // SIMPLE MESSAGE RECEIVER ON THE WIRE
+            wire.on('message', (data) => {
+                try {
+                    // Parse incoming message buffer
+                    const decoded = JSON.parse(data.toString());
+                    if (decoded && decoded.Sphere) {
+                        console.info("[RAMOSA PROTOCOL] Received payload from peer wire:", decoded.Sphere.source?.name);
+
+                        const torrents = decoded.Sphere.edition.torrents || decoded.Sphere.Doc;
+                        const infoHash = torrents && torrents[0] ? (torrents[0].RAy || torrents[0].infoHash) : torrent.infoHash;
+
+                        // 1. Save into IndexedDB via Ramosa Base
+                        window.MVC.Base.Ramosa.put(infoHash, decoded);
+                        console.info("[RAMOSA BASE] Successfully persisted peer record into IndexedDB:", infoHash);
+
+                        // 2. Unfold and hydrate table
+                        window.MVC.Control.Table.unfold("table");
+                        console.info("[TABLE CONTROLLER] Table unfolded and hydrated with peer record.");
+                    }
+                } catch (err) {
+                    // Ignore non-JSON or standard BitTorrent protocol control messages
                 }
-            }, 600);
+            });
 
             wire.on('close', () => {
                 console.info("[PEX IP GRAPH] Peer disconnected.");
