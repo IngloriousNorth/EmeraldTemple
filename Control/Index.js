@@ -1,5 +1,4 @@
 // src/Control/Index.js
-import WebTorrentHook from '../Hook/WebTorrent.js';
 import WebTorrentControl from '../Control/WebTorrent.js';
 import RamosaProtocol from '../Base/WebTorrent.js'
 
@@ -85,9 +84,5 @@ const IndexControl = {
         boot();    
     }
 };
-
-window.MVC = window.MVC || {};
-window.MVC.Control = window.MVC.Control || {};
-window.MVC.Control.Index = IndexControl;
 
 export default IndexControl;

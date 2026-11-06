@@ -69,7 +69,7 @@ const WebTorrentControl = {
 
             // 4. Trigger download of the .torrent file to browser
             // 4. Trigger download of the .torrent file to browser
-            const torrentBlob = new Blob([torrentBuffer], { type: 'application/x-bittorrent' });
+            const torrentBlob = new Blob([torrent.torrentBuffer], { type: 'application/x-bittorrent' });
             const blobUrl = URL.createObjectURL(torrentBlob);
             const rawTitle = torrent.name || 'archive';
             const fileName = rawTitle.endsWith('.torrent') ? rawTitle : `${rawTitle}.torrent`;

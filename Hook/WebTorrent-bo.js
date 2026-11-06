@@ -52,27 +52,6 @@ const WebtorrentHook = {
                 pex: true
             };
 
-            const rayPayload = {
-                rayVersion: "1.0",
-                categoryType: "TYPE_1_MODERN_SCAN",
-                Sphere: {
-                    source: {
-                        uuid: `src_${Math.random().toString(36).substring(2, 9)}`,
-                        name: institutionName || "Emerald Temple Archives",
-                        genus: "Document / Archive",
-                        date: new Date().toISOString().split('T')[0],
-                        cover: "https://via.placeholder.com/222x300?text=Torrent"
-                    },
-                    edition: {
-                        uuid: `ed_${Math.random().toString(36).substring(2, 9)}`,
-                        title: docTitle,
-                        date: new Date().toISOString().split('T')[0],
-                        created_at: Date.now(),
-                        webSeed: webseedUrl
-                    }
-                }
-            };
-
             console.info("[WEBTORRENT HOOK] Handing over file and payload to WebTorrentControl.seed()...");
 
             // Delegate directly to WebTorrentControl.seed()

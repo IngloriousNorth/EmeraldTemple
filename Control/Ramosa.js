@@ -182,10 +182,30 @@ const RamosaControl = {
     async process(pdfFile, fileText, webSeedUrl = null, sourceDate = null, userClasses = "Public Domain") {
         console.info("[RAMOSA CONTROL] Processing extracted PDF text...");
 
+        let rayPayload = {
+            rayVersion: "1.0",
+            categoryType: "TYPE_1_MODERN_SCAN",
+            Sphere: {
+                source: {
+                    uuid: `src_${Math.random().toString(36).substring(2, 9)}`,
+                    name: "Emerald Temple Archives",
+                    genus: "Document / Archive",
+                    date: new Date().toISOString().split('T')[0],
+                    cover_img: ""
+                },
+                edition: {
+                    uuid: `ed_${Math.random().toString(36).substring(2, 9)}`,
+                    title: "",
+                    date: new Date().toISOString().split('T')[0],
+                    created_at: Date.now(),
+                    webSeed: webSeedUrl
+                }
+            }
+        };
+
         const parsed = this.parseMetadata(fileText, userClasses, pdfFile.name, sourceDate);
 
-
-        const rayPayload = this.parseSpheres(parsed.apaString, userClasses, sourceDate || parsed.metadata.year, parsed.metadata.title);
+        rayPayload = this.parseSpheres(parsed.apaString, userClasses, sourceDate || parsed.metadata.year, parsed.metadata.title);
         
        const cover_img = await this.extractCompressedCoverArt(pdfFile);
 
@@ -209,6 +229,9 @@ const RamosaControl = {
             announce: [],
             pex: true
         };
+
+        //torrent is renamed to doc, for RamosaProtocol is neutral to the transport-layer of the client.
+        //bridge to DB is torrent.RAy, set in WebTorrentControl.seed()
         WebTorrentControl.seed(pdfFile, rayPayload, seedOptions, (doc) => {
             doc.RAy = doc.infoHash;
             console.info(`[RAMOSA CONTROL] Torrent active! RAy GraphDB ID (InfoHash): ${doc.RAy}`);
@@ -235,7 +258,7 @@ const RamosaControl = {
             // 2. Construct Universal Ramosa Protocol Payload Structure with torrentBuffer on Sphere.Doc
             rayPayload.Sphere.source = {
                 uuid: `src_${torrent.infoHash.substring(0, 8)}`,
-                name: torrent.name || "Archival Document",
+                name: doc.name || "Archival Document",
                 genus: "Document",
                 date: new Date().toISOString().split('T')[0],
                 cover_img: cover_img
@@ -243,7 +266,7 @@ const RamosaControl = {
 
             rayPayload.Sphere.edition = {
                 uuid: `ed_${Math.random().toString(36).substring(2, 9)}`,
-                title: torrent.name || "Archival Edition",
+                title: doc.name || "Archival Edition",
                 date: new Date().toISOString().split('T')[0],
                 created_at: Date.now(),
                 webSeed: seedOptions.urlList[0] || ""
