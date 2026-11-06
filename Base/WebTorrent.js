@@ -101,7 +101,7 @@ const WebTorrentBase = {
             const All = await MVC.Base.Ramosa.getAll();
             All.forEach(RAyPayload => {
                 wire.ramosa.send(new TextEncoder().encode(JSON.stringify(RAyPayload)));;
-
+                console.info("[WebTorrentBase:] Sent RAyPayload.");
             }) 
         });
         if (torrent.wires && Array.isArray(torrent.wires)) {
