@@ -94,87 +94,42 @@ const WebTorrentControl = {
 
     propagate: function(info) {
         try {
-            console.info("[MVC.Control.webtorrent] propagate() invoked with torrent info:", info);
+            console.info("[WebTorrentControl] propagate() invoked with torrent info:", info);
             
             if (!info) {
-                console.warn("[MVC.Control.webtorrent] propagate() aborted: info object is null or empty.");
+                console.warn("[WebTorrentControl] propagate() aborted: info object is null or empty.");
                 return;
             }
 
             const client = window.client || window.webtorrentClient;
             if (!client) {
-                console.error("[MVC.Control.webtorrent] WebTorrent client (window.client) not found during propagate()");
+                console.error("[WebTorrentControl] WebTorrent client (window.client) not found during propagate()");
                 return;
             }
 
-            let infoHash = info.infoHash || info.RAy || info.index;
-            let torrentSource = null;
-            let webseeds = [];
+            let torrent = info.Sphere.Doc
 
-            const extractDoc = (doc) => {
-                if (!doc) return;
-                if (doc.RAy || doc.infoHash) infoHash = infoHash || doc.RAy || doc.infoHash;
-                if (Array.isArray(doc.webseeds)) webseeds.push(...doc.webseeds);
-                if (doc.webseed) webseeds.push(doc.webseed);
-                
-                if (doc.torrentBuffer) {
-                    console.info("[MVC.Control.webtorrent] Successfully resolved stored binary .torrent buffer from IndexedDB!");
-                    torrentSource = new Uint8Array(doc.torrentBuffer);
-                }
-            };
+            let infoHash = torrent.RAy;/* . */
+            let torrentBuffer = torrent.torrentBuffer;
+            let webseeds = torrent.webseeds;
 
-            // Inspect Sphere.Doc
-            if (info.Sphere) {
-                if (Array.isArray(info.Sphere.Doc)) {
-                    info.Sphere.Doc.forEach(extractDoc);
-                } else if (info.Sphere.Doc) {
-                    extractDoc(info.Sphere.Doc);
-                }
-                if (info.Sphere.edition?.webSeed) {
-                    webseeds.push(info.Sphere.edition.webSeed);
-                }
-            }
+            console.info("[WebTorrentControl] Resolved target infoHash:", infoHash);
 
-            // Inspect root-level Doc
-            if (info.Doc) {
-                if (Array.isArray(info.Doc)) {
-                    info.Doc.forEach(extractDoc);
-                } else {
-                    extractDoc(info.Doc);
-                }
-            }
+            MVC.Hook.Hero.assertProgress(infoHash);
 
-            // Fallback to Magnet URI if binary buffer is missing
-            if (!torrentSource) {
-                if (!infoHash) {
-                    console.error("[MVC.Control.webtorrent] Could not resolve infoHash or torrentBuffer from record:", info);
-                    return;
-                }
-                torrentSource = `magnet:?xt=urn:btih:${infoHash}`;
-                console.info("[MVC.Control.webtorrent] Using Magnet URI fallback:", torrentSource);
-            }
+            console.info("[WebTorrentControl] Asserted HeroProgress().");
 
-            if (info.webseeds && Array.isArray(info.webseeds)) {
-                webseeds.push(...info.webseeds);
-            }
-
-            console.info("[MVC.Control.webtorrent] Resolved target infoHash:", infoHash);
-
-            if (window.MVC?.Hook?.Hero && typeof window.MVC.Hook.Hero.assertProgress === 'function') {
-                window.MVC.Hook.Hero.assertProgress(infoHash);
-            }
-
-            console.info("[MVC.Control.webtorrent] Adding torrent source directly with webseeds:", webseeds);
+            console.info("[WebTorrentControl] Adding torrent source directly with webseeds:", webseeds);
 
             const opts = {
                 urlList: webseeds,
                 dht: false,
                 tracker: false,
-                pex: true
+                pex: true,
+                announce : []
             };
 
-            client.add(torrentSource, opts, (torrent) => {
-                MVC.Hook.Hero.assertProgress(torrent.infoHash);
+            client.add(torrentBuffer, opts, (torrent) => {
 
                 setInterval(MVC.Hook.Hero.onProgress(torrent), 500)
                 
