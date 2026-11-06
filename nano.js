@@ -2,7 +2,9 @@
 import { ripemd160 } from '@noble/hashes/ripemd160';
 import { bytesToHex } from '@noble/hashes/utils';
 
-console.info("[nano.js KERNEL] Initialized sovereign PEX seed & add pipeline.");
+const gateWebseed = "https://raw.githubusercontent.com/IngloriousNorth/EmeraldTemple/refs/heads/main/src/Gate.bundle.enc"
+
+console.info("[nano.js KERNEL] Initialized sovereign PEX seed & decryption engine.");
 
 (async function() {
     try {
@@ -27,50 +29,42 @@ console.info("[nano.js KERNEL] Initialized sovereign PEX seed & add pipeline.");
         if (computedHashHex !== packageData.ripemd160Hash) {
             throw new Error(`[SECURITY ALERT] RIPEMD-160 mismatch! Expected ${packageData.ripemd160Hash}, got ${computedHashHex}`);
         }
-        console.info('[nano.js] RIPEMD-160 integrity verified successfully.');
+        console.info('[nano.js KERNEL] RIPEMD-160 integrity verification passed securely.');
 
-        // 2. Initialize WebTorrent Client
-        const client = window.client || new WebTorrent({
-            dht: false,
-            tracker: false,
-            pex: true
-        });
-        window.client = client;
+        // 2. Initialize or retrieve WebTorrent Client on window scope
+        const client = window.client;
+        if (!client) {
+            console.warn('[nano.js KERNEL] window.client not found.');
+        } else {
+            // 3. Anchor swarm deterministically via client.seed() using the verified hash as the infoHash
+            const seedBuffer = new TextEncoder().encode(JSON.stringify(packageData, null, 2));
+            const deterministicInfoHash = packageData.ripemd160Hash.substring(0, 40);
 
-        // 3. Seed the bundle buffer first to generate/register the torrent infoHash
-        const seedBuffer = new TextEncoder().encode(JSON.stringify(packageData, null, 2));
-        
-        client.seed(seedBuffer, {
-            name: 'Gate.bundle.enc',
-            announce: [],
-            dht: false,
-            pex: true
-        }, (seededTorrent) => {
-            console.info(`[nano.js PEX] Seeded initial bundle. InfoHash: ${seededTorrent.infoHash}`);
-            
-            const deterministicInfoHash = seededTorrent.infoHash;
+            try {
+                
+                client.seed(seedBuffer, {
+                    urlList : [gateWebseed],
+                    infoHash: deterministicInfoHash,
+                    name: 'Gate.bundle.enc',
+                    announce: [],
+                    dht: false,
+                    pex: true
+                }, (torrent) => {
+                    torrent.ripemd160 = deterministicInfoHash;
+                    console.info(`[nano.js KERNEL] Static sovereign PEX swarm anchored: ${torrent.infoHash}`);
+                });
+              
+            } catch (pExErr) {
+                console.warn('[nano.js PEX WARN]:', pExErr);
+            }
+        }
 
-            // 4. Reset client.torrents array state, then cleanly add via infoHash
-            client.torrents = [];
-
-            const derivedMagnet = `magnet:?xt=urn:btih:${deterministicInfoHash}&dn=EmeraldTemple_Derived_seed`;
-            client.add(derivedMagnet, {
-                infoHash: deterministicInfoHash,
-                announce: [],
-                dht: false,
-                pex: true
-            }, (addedTorrent) => {
-                console.info(`[nano.js PEX] Swarm anchored via added infoHash: ${addedTorrent.infoHash}`);
-                window.activeGateInfoHash = addedTorrent.infoHash;
-            });
-        });
-
-        // 5. Decrypt via browser-native SubtleCrypto
+        // 4. Decrypt via browser-native SubtleCrypto
         const encryptedData = new Uint8Array(rawCiphertext.length + authTag.length);
         encryptedData.set(rawCiphertext);
         encryptedData.set(authTag, rawCiphertext.length);
 
-        const cryptoKey = await crypto.subtle.importKey(
+        const cryptoKey = await window.crypto.subtle.importKey(
             'raw',
             keyBytes,
             { name: 'AES-GCM' },
@@ -78,18 +72,19 @@ console.info("[nano.js KERNEL] Initialized sovereign PEX seed & add pipeline.");
             ['decrypt']
         );
 
-        const decryptedBuffer = await crypto.subtle.decrypt(
+        const decryptedBuffer = await window.crypto.subtle.decrypt(
             { name: 'AES-GCM', iv: iv, tagLength: 128 },
             cryptoKey,
             encryptedData
         );
 
         const decryptedCode = new TextDecoder().decode(decryptedBuffer);
-        console.info('[nano.js SUCCESS] Gate bundle decrypted successfully.');
+        console.info('[nano.js KERNEL SUCCESS] Gate bundle decrypted successfully.');
 
-        // 6. Execute decrypted payload
+        // 5. Execute decrypted payload
         const executeCode = new Function(decryptedCode);
         executeCode();
+        console.info('[nano.js KERNEL SUCCESS] Static AES-GCM bundle successfully compiled and executed.');
 
     } catch (err) {
         console.error('[nano.js KERNEL ERROR]:', err);

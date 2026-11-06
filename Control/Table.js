@@ -254,7 +254,6 @@ const TableControl = {
           const formattedDate = typeof adjDate === 'function' ? adjDate(src.date) : src.date;
           const formattedSourceName = src.name.replace(/([a-zA-Z])([0-9])/g, '$1 $2');
           
-          console.log(src);
           return $(`
             <tr class="group-header border-bottom" style="position: relative; overflow: hidden;">
               <td colspan="4" class="py-2 px-3" style="position: relative; z-index: 2;">
