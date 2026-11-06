@@ -131,7 +131,7 @@ const TableControl = {
       $(tableSelector).empty();
       $(tableSelector).removeAttr('style').removeClass('dtr-inline collapsed');
     }
-    
+
     $(tableSelector).html(`
       <thead>
         <tr class="table-primary">
@@ -259,7 +259,7 @@ const TableControl = {
               <td colspan="4" class="py-2 px-3" style="position: relative; z-index: 2;">
                 <div class="d-flex align-items-center gap-3 w-100">
                   <div class="flex-shrink-0 d-flex align-items-center justify-content-start" style="width: 222px;">
-                    <img src="${src.cover}" alt="${formattedSourceName}" style="max-height: auto; width: 222px; object-fit: contain;" class="rounded shadow-sm border border-white bg-white" />
+                    <img src="${src.cover_img}" alt="${formattedSourceName}" style="max-height: auto; width: 222px; object-fit: contain;" class="rounded shadow-sm border border-white bg-white" />
                   </div>
                   <div class="d-flex flex-column justify-content-center flex-grow-1 py-1 gap-1">
                     <div class="title_heading fw-bold fs-6 text-truncate" style="line-height: 1.3;">

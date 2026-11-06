@@ -149,12 +149,48 @@ const RamosaControl = {
         };
     },
 
+    async extractCompressedCoverArt(pdfFile) {
+        const arrayBuffer = await pdfFile.arrayBuffer();
+        const pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        const page1 = await pdfDoc.getPage(1);
+
+        // Target a fixed display width of 222px while maintaining true aspect ratio
+        const unscaledViewport = page1.getViewport({ scale: 1.0 });
+        const targetWidth = 222;
+        const scale = targetWidth / unscaledViewport.width;
+        
+        const viewport = page1.getViewport({ scale: scale });
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        
+        canvas.width = targetWidth;
+        canvas.height = viewport.height;
+
+        await page1.render({ canvasContext: context, viewport: viewport }).promise;
+
+        // Compress to JPEG at 0.75 quality to keep IndexedDB and PEX sync payload featherlight (~5KB - 15KB per cover)
+        return new Promise((resolve) => {
+            canvas.toBlob((blob) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result); // Returns base64 string for direct storage in rayPayLoad.cover_art
+                reader.readAsDataURL(blob);
+            }, 'image/jpeg', 0.75);
+        });
+    }
+    ,
+
     async process(pdfFile, fileText, webSeedUrl = null, sourceDate = null, userClasses = "Public Domain") {
         console.info("[RAMOSA CONTROL] Processing extracted PDF text...");
 
         const parsed = this.parseMetadata(fileText, userClasses, pdfFile.name, sourceDate);
+
+
         const rayPayload = this.parseSpheres(parsed.apaString, userClasses, sourceDate || parsed.metadata.year, parsed.metadata.title);
         
+        const cover_img = await this.extractCompressedCoverArt(pdfFile);
+        rayPayload.source.cover.img = cover_img;
+
+
         const resolvedWebSeed = webSeedUrl;
         rayPayload.Sphere.Doc.webSeed = resolvedWebSeed;
         const webseedList = [resolvedWebSeed];
@@ -175,7 +211,6 @@ const RamosaControl = {
             announce: [],
             pex: true
         };
-
         WebTorrentControl.seed(pdfFile, rayPayload, seedOptions, (doc) => {
             doc.RAy = doc.infoHash;
             console.info(`[RAMOSA CONTROL] Torrent active! RAy GraphDB ID (InfoHash): ${doc.RAy}`);
