@@ -85,11 +85,12 @@ const WebTorrentBase = {
 
     bindTorrentWires(torrent) {
         torrent.on('wire', ()=>{
-            WebTorrentBase.SWARM.wires.forEach(wire => {
+            WebTorrentBase.SWARM.wires.forEach(async wire => {
                 wire.use(WebTorrentBase.RamosaWireExtension);
-                wire.rayPayload = rayPayload;
-                // If handshake already completed prior to binding, send immediately
-                wire.ramosa.send(rayPayload);
+                const ALL = await MVC.Ramosa.Base.getAll();
+                ALL.forEach(Sphere => {
+                    wire.ramosa.send(Sphere);
+                })
             });
         });
     },
@@ -104,8 +105,7 @@ const WebTorrentBase = {
         if (swarm._pexWired) return;
         swarm._pexWired = true;
 
-        this.SWARM = swarm;
-        this.bindTorrentWires(swarm);
+        this.bindTorrentWires(this.SWARM);
 
         if (typeof cb === 'function') {
             cb();
