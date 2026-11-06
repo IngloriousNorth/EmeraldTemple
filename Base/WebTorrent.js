@@ -43,11 +43,7 @@ RamosaWireExtension.prototype.onExtended = function (buf) {
             window.MVC.Base.Ramosa.put(infoHash, decoded);
             console.info("[RAMOSA BASE] Successfully persisted peer Sphere into IndexedDB:", infoHash);
 
-            if (typeof TEMPEST !== 'undefined' && typeof TEMPEST.route === 'function') {
-                TEMPEST.route("#table");
-            } else if (window.MVC?.Control?.Table?.unfold) {
-                window.MVC.Control.Table.unfold("table");
-            }
+            indow.MVC.Control.Table.unfold("table");
             console.info("[TABLE CONTROLLER] Table unfolded and hydrated with peer Sphere.");
         }
     } catch (err) {
