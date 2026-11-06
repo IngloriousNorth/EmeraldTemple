@@ -140,7 +140,6 @@ const WebTorrentBase = {
                         window.MVC.Base.Ramosa.put(infoHash, decoded);
                         console.info("[RAMOSA BASE] Successfully persisted peer Sphere into IndexedDB:", infoHash);
 
-                        window.MVC.Control.Table.unfold("table");
                         console.info("[TABLE CONTROLLER] Table unfolded and hydrated with peer Sphere.");
                     } catch (err) {
                         console.warn("[RAMOSA PROTOCOL] Failed to parse incoming extended message:", err);

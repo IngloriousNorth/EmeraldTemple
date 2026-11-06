@@ -111,60 +111,56 @@ const RamosaBase = {
     /**
      * Puts a record into IndexedDB and anchors it to memory state
      */
-    async put(RAy, rayPayload) {
-        if (!this.db) {
-            try {
-                this.db = await this.init();
-            } catch (err) {
-                console.error("[RAMOSA BASE ERROR] Cannot put record, DB init failed:", err);
-                return;
-            }
-        }
+    // Inside src/Base/Ramosa.js
 
-        const transaction = this.db.transaction([this.storeName], "readwrite");
-        const store = transaction.objectStore(this.storeName);
-        
+    put(infoHash, payload) {
+        if (!infoHash || !payload) return;
 
-        const record = Object.assign({}, rayPayload, { 
-            index: RAy
+        // Check if a master record for this source/edition already exists in memory
+        const existingKey = Object.keys(this.data).find(k => {
+            const existing = this.data[k];
+            return existing.entity?.source?.name === payload.entity?.source?.name &&
+                   existing.entity?.institution?.name === payload.entity?.institution?.name;
         });
 
-        if (record.Sphere && record.Sphere.Doc) {
-            if (Array.isArray(record.Sphere.Doc)) {
-                record.Sphere.Doc.forEach(d => {
-                    d.RAy = d.RAy || RAy;
-                    d.infoHash = d.infoHash || RAy;
-                });
-            } else {
-                record.Sphere.Doc.RAy = record.Sphere.Doc.RAy || RAy;
-                record.Sphere.Doc.infoHash = record.Sphere.Doc.infoHash || RAy;
+        if (existingKey && existingKey !== infoHash) {
+            // Merge new torrents into the existing master record's edition array instead of duplicating the whole record
+            const masterRecord = this.data[existingKey];
+            const newTorrents = payload.entity?.edition?.torrents || [];
+            
+            masterRecord.entity.edition.torrents = masterRecord.entity.edition.torrents || [];
+            
+            newTorrents.forEach(newT => {
+                if (!masterRecord.entity.edition.torrents.some(t => t.infoHash === newT.infoHash)) {
+                    masterRecord.entity.edition.torrents.push(newT);
+                }
+            });
+
+            // Persist the updated master record back to storage under its primary key
+            if (this.db) {
+                const tx = this.db.transaction([this.storeName], 'readwrite');
+                tx.objectStore(this.storeName).put(masterRecord, existingKey);
             }
+            console.info(`[RAMOSA BASE] Merged new torrent (${infoHash}) into existing master edition: ${existingKey}`);
+            return;
         }
 
-        const request = store.put(record);
+        // Otherwise, store as a new record normally
+        this.data[infoHash] = payload;
+        if (!this.RAy.some(item => item.entity?.edition?.torrents?.some(t => t.infoHash === infoHash))) {
+            this.RAy.push(payload);
+        }
 
-       request.onsuccess = () => {
-            console.info(`[RAMOSA BASE] Successfully stored record and binary buffer with index: ${RAy}`);
-            
-            const existingIdx = this.Base.findIndex(r => 
-                r.index === RAy || 
-                r.RAy === RAy || 
-                r.infoHash === RAy ||
-                r.Doc?.RAy === RAy ||
-                r.Doc?.infoHash === RAy
-            );
-
-            if (existingIdx >= 0) {
-                this.Base[existingIdx] = record;
-            } else {
-                this.Base.push(record);
+        if (this.db) {
+            try {
+                const transaction = this.db.transaction([this.storeName], 'readwrite');
+                const store = transaction.objectStore(this.storeName);
+                store.put(payload, infoHash);
+                console.info(`[RAMOSA BASE] Successfully stored entity "${payload.entity?.source?.name || 'Unknown'}" with InfoHash: ${infoHash}`);
+            } catch (err) {
+                console.error("[RAMOSA BASE] Error persisting to IndexedDB:", err);
             }
-
-        };
-
-        request.onerror = (event) => {
-            console.error("[RAMOSA BASE ERROR] Failed to put record:", event.target.error);
-        };
+        }
     }
 };
 
