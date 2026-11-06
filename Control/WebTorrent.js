@@ -96,18 +96,10 @@ const WebTorrentControl = {
         try {
             console.info("[WebTorrentControl] propagate() invoked with torrent info:", info);
             
-            if (!info) {
-                console.warn("[WebTorrentControl] propagate() aborted: info object is null or empty.");
-                return;
-            }
+            console.log(info);
 
-            const client = window.client || window.webtorrentClient;
-            if (!client) {
-                console.error("[WebTorrentControl] WebTorrent client (window.client) not found during propagate()");
-                return;
-            }
-
-            let torrent = info.Sphere.Doc
+            //Gemini seems to Have followed my edition_torrent format and made Docs[]
+            let torrent = info.Sphere.Doc;
 
             let infoHash = torrent.RAy;/* . */
             let torrentBuffer = torrent.torrentBuffer;

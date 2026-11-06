@@ -307,14 +307,14 @@ const RamosaControl = {
 
             if (!rayPayload.Sphere.Doc) rayPayload.Sphere.Doc = [];
 
-            rayPayload.Sphere.Doc.push({
+            rayPayload.Sphere.Doc = {
                 format: fileExtension.replace('.', '').toUpperCase(),
                 res: `Pre-1931 Archive Scan (${parsed.detectedCategory})`,
                 RAy: doc.RAy,
                 size: pdfFile.size,
                 webseeds: webseedList,
                 torrentBuffer: doc.torrentFile
-            });
+            };
 
             rayPayload.Sphere.source.cover_img = cover_img;
 
