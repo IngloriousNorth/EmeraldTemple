@@ -56,7 +56,7 @@ RamosaWireExtension.prototype.send = function (rayPayload) {
     }, 400);
 };
 
-const WebTorrentBase = {
+const RamosaProtocol = {
     PEX : null,
     RamosaWireExtension,
 
@@ -167,4 +167,4 @@ const WebTorrentBase = {
     }
 };
 
-export default WebTorrentBase;
+export default RamosaProtocol;

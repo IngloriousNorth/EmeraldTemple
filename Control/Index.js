@@ -1,7 +1,7 @@
 // src/Control/Index.js
 import WebTorrentHook from '../Hook/WebTorrent.js';
 import WebTorrentControl from '../Control/WebTorrent.js';
-import WebTorrentBase from '../Base/WebTorrent.js'
+import RamosaProtocol from '../Base/WebTorrent.js'
 
 const IndexControl = {
     initialize: function() {
@@ -23,7 +23,7 @@ const IndexControl = {
                             let ghost;
                             MVC.Control.Table.unfold("table");
 
-                            WebTorrentBase.initialize(()=>{
+                            RamosaProtocol.initialize(()=>{
                                 ghost = true;
                             });
                             setTimeout(function(){
