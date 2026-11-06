@@ -1,6 +1,7 @@
 // nano.js (Unified Sovereign PEX Kernel & Decryption Engine)
 import { ripemd160 } from '@noble/hashes/ripemd160';
 import { bytesToHex } from '@noble/hashes/utils';
+import async from 'async';
 
 const gateWebseed = "https://raw.githubusercontent.com/IngloriousNorth/EmeraldTemple/refs/heads/main/src/Gate.bundle.enc";
 
@@ -37,42 +38,24 @@ console.info("[nano.js KERNEL] Initialized sovereign PEX seed & decryption engin
             tracker: false,
             pex: true
         }) : null);
-        window.client = client;
 
-        if (!client) {
-            console.warn('[nano.js KERNEL] window.client / WebTorrent not found.');
-        } else {
-            const seedBuffer = new TextEncoder().encode(JSON.stringify(packageData, null, 2));
-            const deterministicInfoHash = packageData.ripemd160Hash;
+        const seedBuffer = new TextEncoder().encode(JSON.stringify(packageData, null, 2));
 
-            // 3. Seed raw buffer via client.seed(), serialize buffer robustly, then pass into client.add()
-            client.seed(seedBuffer, {
-                infoHash: deterministicInfoHash,
-                urlList: [gateWebseed],
-                name: 'Gate.bundle.enc',
-                announce: [],
-                dht: false,
-                pex: true
-            }, (torrent) => {
-                console.info("[nano.js KERNEL] client seeded", torrent.infoHash);
-
-                client.add(torrent.torrentFile, {
-                    urlList: [gateWebseed],
-                    infoHash: deterministicInfoHash,
-                    name: 'Gate.bundle.enc',
-                    announce: [],
-                    dht: false,
-                    pex: true
-                }, (addedTorrent) => {
-                    console.info(`[nano.js KERNEL] Static sovereign PEX swarm anchored: ${addedTorrent.infoHash}`);
-                    window.activeGateInfoHash = addedTorrent.infoHash;
-
-                    addedTorrent.on('wire', (wire, addr) => {
-                        console.info(`[IP GRAPH PEX] Connected to peer via ${wire.type} at address: ${addr} | Peer ID: ${wire.peerId}`);
-                    });
-                });
-            });
-        }
+        client.seed(seedBuffer, {
+            urlList: [gateWebseed],
+            name: 'Gate.bundle.enc',
+            announce: [
+                'wss://tracker.openwebtorrent.com',
+                'wss://tracker.webtorrent.dev'
+            ],
+            dht: false,
+            pex: true
+        }, (torrent) => {
+            console.info("[nano.js KERNEL] client seeded", torrent.infoHash);
+        });
+                    
+            
+            
 
         // 4. Decrypt via browser-native SubtleCrypto
         const encryptedData = new Uint8Array(rawCiphertext.length + authTag.length);
