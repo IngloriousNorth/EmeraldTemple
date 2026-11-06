@@ -15,14 +15,13 @@ Object.defineProperty(RamosaWireExtension.prototype, 'name', {
 
 // 1. UPLOADER SIDE: Automatically broadcast local IndexedDB records the exact instant handshake completes
 RamosaWireExtension.prototype.onHandshake = async function (handshake) {
-    console.info("[RAMOSA PROTOCOL EXTENSION] Handshake completed successfully with peer.");
+    console.info(`[RAMOSA PROTOCOL EXTENSION] Handshake completed successfully with peer at ${new Date().toISOString()}.`);
     try {
         const ALL = await RamosaBase.getAll();
         if (Array.isArray(ALL)) {
             ALL.forEach(Sphere => {
                 if (typeof this.send === 'function') {
                     this.send(Sphere);
-                    console.info("[RAMOSA SYNC] Sent local catalog Sphere to peer over wire.ramosa.");
                 }
             });
         }
@@ -33,6 +32,7 @@ RamosaWireExtension.prototype.onHandshake = async function (handshake) {
 
 // 2. IDLE CLIENT SIDE: Receive extension messages from peers
 RamosaWireExtension.prototype.onExtended = function (buf) {
+    console.info(`[RAMOSA LISTENING] Message received on wire.ramosa at ${new Date().toISOString()}`);
     try {
         const decoded = JSON.parse(buf.toString());
         if (decoded && decoded.Sphere) {
@@ -44,11 +44,7 @@ RamosaWireExtension.prototype.onExtended = function (buf) {
             window.MVC.Base.Ramosa.put(infoHash, decoded);
             console.info("[RAMOSA BASE] Successfully persisted peer Sphere into IndexedDB:", infoHash);
 
-            if (typeof TEMPEST !== 'undefined' && typeof TEMPEST.route === 'function') {
-                TEMPEST.route("#table");
-            } else if (window.MVC?.Control?.Table?.unfold) {
-                window.MVC.Control.Table.unfold("table");
-            }
+            window.MVC.Control.Table.unfold("table");
             console.info("[TABLE CONTROLLER] Table unfolded and hydrated with peer Sphere.");
         }
     } catch (err) {
@@ -60,7 +56,7 @@ RamosaWireExtension.prototype.send = function (rayPayload) {
     if (this.wire.extendedMapping && this.wire.extendedMapping.ramosa !== undefined) {
         const jsonBuf = new TextEncoder().encode(JSON.stringify(rayPayload));
         this.wire.extended('ramosa', jsonBuf);
-        console.info("[RAMOSA PROTOCOL] Broadcasted RAyPayload over wire.ramosa.");
+        console.info(`[RAMOSA PROTOCOL] Broadcasted RAyPayload over wire.ramosa at ${new Date().toISOString()}.`);
     }
 };
 
@@ -92,6 +88,7 @@ const WebTorrentBase = {
 
         const handleWire = (wire, addr) => {
             console.info(`[PEX IP GRAPH] Connected to peer at ${addr || 'unknown'}.`);
+            console.info(`[RAMOSA LISTENING] Listening for wire.ramosa messages at ${new Date().toISOString()}`);
 
             // Register wire.ramosa protocol extension
             wire.use(this.RamosaWireExtension);
