@@ -65,7 +65,8 @@ const RamosaBase = {
             }
             return found || null;
         }
-        return records;
+        //RAy is a unique index;
+        return records[0];
     },
 
     getAll() {
@@ -116,7 +117,8 @@ const RamosaBase = {
     },
 
     /**
-     * Puts a record into IndexedDB and anchors it to memory state
+     * Puts a record into IndexedDB and anchors it to memory state.
+     * Enforces unique RAy (isomorphic to duplicate infoHash check in WebTorrent.js).
      */
     async put(RAy, rayPayload) {
         try {
@@ -140,27 +142,89 @@ const RamosaBase = {
                 }
             }
 
+            // Deduplicate Sphere.Doc array by RAy/infoHash if it exists
+            if (record.Sphere && Array.isArray(record.Sphere.Doc)) {
+                const seen = new Set();
+                record.Sphere.Doc = record.Sphere.Doc.filter(doc => {
+                    const key = doc.RAy || doc.infoHash;
+                    if (!key) return true;
+                    if (seen.has(key)) return false;
+                    seen.add(key);
+                    return true;
+                });
+            }
+
+            // Enforce unique RAy / duplicate check (isomorphic to duplicate infoHash check)
+            const existingIdx = this.Base.findIndex(r => 
+                r.index === RAy || 
+                r.RAy === RAy || 
+                r.infoHash === RAy ||
+                r.Doc?.RAy === RAy ||
+                r.Doc?.infoHash === RAy ||
+                (Array.isArray(r.Sphere?.Doc) && r.Sphere.Doc.some(d => d.RAy === RAy || d.infoHash === RAy)) ||
+                (r.Sphere?.edition?.torrents && r.Sphere.edition.torrents.some(t => t.infoHash === RAy))
+            );
+
+            if (existingIdx >= 0) {
+                console.warn(`[RAMOSA BASE] Duplicate RAy/infoHash detected (${RAy}). Updating existing record in-place (isomorphic to WebTorrent infoHash guard).`);
+                
+                // Merge or update cleanly instead of creating a duplicate row/entry
+                const existingRecord = this.Base[existingIdx];
+                
+                // If there are torrent arrays or doc arrays, merge them to preserve multi-torrent editions without duplicating
+                if (existingRecord.Sphere && record.Sphere) {
+                    if (Array.isArray(existingRecord.Sphere.Doc) && Array.isArray(record.Sphere.Doc)) {
+                        record.Sphere.Doc.forEach(newDoc => {
+                            const match = existingRecord.Sphere.Doc.find(d => (d.RAy === newDoc.RAy || d.infoHash === newDoc.infoHash));
+                            if (!match) {
+                                existingRecord.Sphere.Doc.push(newDoc);
+                            }
+                        });
+                    }
+                    if (existingRecord.Sphere.edition?.torrents && record.Sphere.edition?.torrents) {
+                        record.Sphere.edition.torrents.forEach(newT => {
+                            if (!existingRecord.Sphere.edition.torrents.some(t => t.infoHash === newT.infoHash)) {
+                                existingRecord.Sphere.edition.torrents.push(newT);
+                            }
+                        });
+                    }
+                }
+                
+                // Overwrite with merged/updated record properties while keeping index intact
+                const mergedRecord = Object.assign({}, existingRecord, record, { index: existingRecord.index || RAy });
+                this.Base[existingIdx] = mergedRecord;
+                
+                const request = store.put(mergedRecord);
+                request.onsuccess = () => {
+                    console.info(`[RAMOSA BASE] Successfully updated existing record for unique RAy: ${RAy}`);
+                    if (window.MVC?.Control?.Table) {
+                        if (typeof window.MVC.Control.Table.refresh === 'function') {
+                            window.MVC.Control.Table.refresh();
+                        }
+                        if (typeof window.MVC.Control.Table.unfold === 'function') {
+                            window.MVC.Control.Table.unfold("#table");
+                        }
+                    }
+                };
+                request.onerror = (event) => {
+                    console.error("[RAMOSA BASE ERROR] Failed to update duplicate RAy record:", event.target.error);
+                };
+                return;
+            }
+
             const request = store.put(record);
 
             request.onsuccess = () => {
-                console.info(`[RAMOSA BASE] Successfully stored record and binary buffer with index: ${RAy}`);
+                console.info(`[RAMOSA BASE] Successfully stored new unique record with index/RAy: ${RAy}`);
+                this.Base.push(record);
                 
-                const existingIdx = this.Base.findIndex(r => 
-                    r.index === RAy || 
-                    r.RAy === RAy || 
-                    r.infoHash === RAy ||
-                    r.Doc?.RAy === RAy ||
-                    r.Doc?.infoHash === RAy
-                );
-
-                if (existingIdx >= 0) {
-                    this.Base[existingIdx] = record;
-                } else {
-                    this.Base.push(record);
-                }
-                
-                if (window.MVC?.Control?.Table?.unfold) {
-                    MVC.Control.Table.unfold("#table");
+                if (window.MVC?.Control?.Table) {
+                    if (typeof window.MVC.Control.Table.refresh === 'function') {
+                        window.MVC.Control.Table.refresh();
+                    }
+                    if (typeof window.MVC.Control.Table.unfold === 'function') {
+                        window.MVC.Control.Table.unfold("#table");
+                    }
                 }
             };
 
@@ -169,9 +233,9 @@ const RamosaBase = {
             };
         } catch (err) {
             console.error("[RAMOSA BASE ERROR] Cannot put record due to database state:", err);
-            // If connection was closing, clear it out so next attempt reopens cleanly
             this.db = null;
         }
+    
     }
 };
 

@@ -81,18 +81,73 @@ const RamosaControl = {
         const isValidTitle = (t) => t && !/(?:Digitized by|Internet Archive|Google Books|Original from|University Library|Project Gutenberg|funding from|Microsoft Corporation|http|www\.|\b20\d{2}\b)/i.test(t) && t.length > 2;
         if (!isValidTitle(title)) title = "Historical Work";
 
-        if (this.fflags.TYPE_4_HOLY_SEE && (/Holy See|Vatican|Pontifical|Apostolic|Encyclical|Cardinal|Archbishop|Bishop|Faith of Our Fathers|Gibbons|P\.? J\.? Kenedy|Printers to the Holy See/i.test(cleanText) || /vatican\.va/i.test(cleanText))) {
+        if (this.fflags.TYPE_4_HOLY_SEE && (/Holy See|Vatican|Pontifical|Apostolic|Encyclical|Cardinal|Archbishop|Bishop|Faith of Our Fathers|Gibbons|P\.? J\.? Kenedy|Printers to the Holy See|Leo XIII|Pius/i.test(cleanText) || /vatican\.va/i.test(cleanText))) {
             detectedCategory = "TYPE_4_HOLY_SEE";
             year = sourceDate || cleanText.match(/\b(1[8-9]\d{2}|20\d{2})\b/)?.[1] || "Pre-1931";
-            if (/James Gibbons/i.test(cleanText)) author = "James Gibbons";
-            else if (/Leo XIII/i.test(cleanText)) author = "Leo XIII, Pope";
+
+            // Author extraction for Holy See (checking for "by" or specific figures)
+            const holySeeByMatch = cleanText.match(/(?:(?:By|AUTHOR)\s+|by\s+)([A-Z][a-zA-Z\s\.,-]+?)(?=\s+(?:D\.D\.|LL\.D\.|M\.A\.|VOL|PUBLISHED|LONDON|NEW\s+YORK|EDINBURGH|\d{4}|$))/i);
+            if (holySeeByMatch && holySeeByMatch[1]) {
+                author = holySeeByMatch[1].trim();
+            } else if (/James Gibbons/i.test(cleanText)) {
+                author = "James Gibbons";
+            } else if (/Leo XIII/i.test(cleanText)) {
+                author = "Leo XIII, Pope";
+            } else if (/Pius XI/i.test(cleanText)) {
+                author = "Pius XI, Pope";
+            } else if (/Pius X/i.test(cleanText)) {
+                author = "Pius X, Pope";
+            }
+
+            // Publisher extraction: what comes after common publishing cities (London, New York, Edinburgh, etc.)
+            const pubMatch = cleanText.match(/(?:(?:London|New\s+York|Edinburgh|Dublin|Oxford|Cambridge|Boston|Glasgow)[:,\s]+)([A-Z][a-zA-Z\s&,.-]{3,40}(?:Co\.|Publishers|Sons|Brothers|Company|Limited|Ltd|Press)?)\b/i);
+            if (pubMatch && pubMatch[1]) {
+                const candidate = pubMatch[1].trim();
+                if (candidate && !/Internet Archive|Digitized|Microsoft|Google|http|www|Public Domain/i.test(candidate)) {
+                    publisher = candidate;
+                }
+            }
+            if (!publisher) {
+                publisher = "Vatican Polyglot Press";
+            }
         } else if (this.fflags.TYPE_0_GUTENBERG && (/Project Gutenberg/i.test(cleanText) || /eBook of/i.test(cleanText))) {
             detectedCategory = "TYPE_0_GUTENBERG";
             publisher = "Project Gutenberg";
             year = cleanText.match(/(?:Release Date|EBook #\d+)[^\d]*(\d{4})/i)?.[1] || cleanText.match(/\b(1[8-9]\d{2}|20\d{2})\b/)?.[1] || year;
+
+            const gutAuthorMatch = cleanText.match(/Author:\s*([A-Z][a-zA-Z\s,.-]+?)(?=\s+(?:Release Date|EBook|Language:|The Project|Credits|Copyright|Translator|Contributor|Title:|$))/i);
+            if (gutAuthorMatch) {
+                author = gutAuthorMatch[1].trim();
+            }
         } else {
             detectedCategory = "TYPE_2_VICTORIAN_19TH";
             year = cleanText.match(/\b(1[6-9]\d{2})\b/)?.[1] || year;
+
+            // Victorian / 19th Century: Title right before "by" and author comes after
+            const titleByAuthorMatch = cleanText.match(/([A-Z][A-Za-z0-9\s,.:;-]{3,80})\s+\bby\b\s+([A-Z][a-zA-Z\s\.,-]+?)(?=\s+(?:D\.D\.|LL\.D\.|M\.A\.|VOL|PUBLISHED|LONDON|NEW\s+YORK|EDINBURGH|\d{4}|$))/i);
+            
+            if (titleByAuthorMatch) {
+                title = titleByAuthorMatch[1].trim();
+                const candidateAuthor = titleByAuthorMatch[2].trim();
+                if (!/Internet Archive|Digitized|Microsoft|Google|http|www/i.test(candidateAuthor)) {
+                    author = candidateAuthor;
+                }
+            } else {
+                const authorMatch = cleanText.match(/(?:(?:By|AUTHOR)\s+|By\s+the\s+Author\s+of\s+)([A-Z][a-zA-Z\s\.,-]+?)(?=\s+(?:D\.D\.|LL\.D\.|M\.A\.|VOL|PUBLISHED|LONDON|NEW\s+YORK|EDINBURGH|\d{4}|$))/i);
+                if (authorMatch && !/Internet Archive|Digitized|Microsoft|Google/i.test(authorMatch[1])) {
+                    author = authorMatch[1].trim();
+                }
+            }
+
+            // Victorian Publisher Imprint Detection: what comes after common publishing cities (London, New York, Edinburgh, etc.)
+            const pubMatch = cleanText.match(/(?:(?:London|New\s+York|Edinburgh|Dublin|Oxford|Cambridge|Boston|Glasgow)[:,\s]+)([A-Z][a-zA-Z\s&,.-]{3,40}(?:Co\.|Publishers|Sons|Brothers|Company|Limited|Ltd|Press)?)\b/i) ||
+                             cleanText.match(/([A-Z][a-zA-Z\s&,.-]{3,40}\s+(?:Co\.,?|Publishers|Sons|Brothers|Company|Limited|Ltd|Press))\s+(?:in\s+)?(?:London|New\s+York|Edinburgh|Dublin|Oxford|Cambridge|Boston|Glasgow)\b/i);
+            if (pubMatch) {
+                const candidate = (pubMatch[1] || pubMatch[0]).trim();
+                if (candidate && !/Internet Archive|Digitized|Microsoft|Google|http|www|Public Domain/i.test(candidate)) {
+                    publisher = candidate;
+                }
+            }
         }
 
         const generated = this.generateAPAAndDN(author, year, title, translator, publisher);
@@ -104,7 +159,7 @@ const RamosaControl = {
         };
     },
 
-    //Empedocles
+    // Empedocles
     parseSpheres(apaString, commaSeparatedClasses, sourceDate = null, forcedTitle = null) {
         const regex = /^(?<authors>(?:[A-Z][a-zA-ZÀ-ÿ-']+(?:,\s[A-Z]\.\s?(?:[A-Z].)?)?,?\s*(?:&|and)?\s*)+)\s*\((?<year>\d{4}[a-z]?)\)\.\s+(?<title>[^.]+?)\./;
         const match = apaString.match(regex);
@@ -156,14 +211,12 @@ const RamosaControl = {
         let targetPageNum = 1;
         let page1 = null;
 
-        // Scan up to the first 5 pages to skip blank title leaves or archive disclaimers
         const maxScanPages = Math.min(pdfDoc.numPages, 5);
         for (let i = 1; i <= maxScanPages; i++) {
             const page = await pdfDoc.getPage(i);
             const textContent = await page.getTextContent();
             const textString = textContent.items.map(item => item.str).join(" ").trim();
 
-            // A valid content page has more than just a few boilerplate characters or whitespace
             if (textString.length > 30 && !/google|digitized|preserved|library/i.test(textString.substring(0, 100))) {
                 targetPageNum = i;
                 page1 = page;
@@ -171,12 +224,10 @@ const RamosaControl = {
             }
         }
 
-        // Fallback to page 1 if all checked pages looked like disclaimer sheets
         if (!page1) {
             page1 = await pdfDoc.getPage(1);
         }
 
-        // Target a fixed display width of 222px while maintaining true aspect ratio
         const unscaledViewport = page1.getViewport({ scale: 1.0 });
         const targetWidth = 222;
         const scale = targetWidth / unscaledViewport.width;
@@ -190,16 +241,14 @@ const RamosaControl = {
 
         await page1.render({ canvasContext: context, viewport: viewport }).promise;
 
-        // Compress to JPEG at 0.75 quality to keep IndexedDB and PEX sync payload featherlight (~5KB - 15KB per cover)
         return new Promise((resolve) => {
             canvas.toBlob((blob) => {
                 const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result); // Returns base64 string for direct storage in rayPayload.cover_art
+                reader.onloadend = () => resolve(reader.result);
                 reader.readAsDataURL(blob);
             }, 'image/jpeg', 0.75);
         });
-    }
-    ,
+    },
 
     async process(pdfFile, fileText, webSeedUrl = null, sourceDate = null, userClasses = "Public Domain") {
         console.info("[RAMOSA CONTROL] Processing extracted PDF text...");
@@ -229,7 +278,7 @@ const RamosaControl = {
 
         rayPayload = this.parseSpheres(parsed.apaString, userClasses, sourceDate || parsed.metadata.year, parsed.metadata.title);
         
-       const cover_img = await this.extractCompressedCoverArt(pdfFile);
+        const cover_img = await this.extractCompressedCoverArt(pdfFile);
 
         const resolvedWebSeed = webSeedUrl;
         rayPayload.Sphere.Doc.webSeed = resolvedWebSeed;
@@ -252,11 +301,9 @@ const RamosaControl = {
             pex: true
         };
 
-        //torrent is renamed to doc, for RamosaProtocol is neutral to the transport-layer of the client.
-        //bridge to DB is torrent.RAy, set in WebTorrentControl.seed()
         WebTorrentControl.seed(pdfFile, rayPayload, seedOptions, (doc) => {
             doc.RAy = doc.infoHash;
-            console.info(`[RAMOSA CONTROL] Torrent active! RAy GraphDB ID (InfoHash): ${doc.RAy}`)
+            console.info(`[RAMOSA CONTROL] Torrent active! RAy GraphDB ID (InfoHash): ${doc.RAy}`);
 
             if (!rayPayload.Sphere.Doc) rayPayload.Sphere.Doc = [];
 
@@ -269,22 +316,18 @@ const RamosaControl = {
                 torrentBuffer: doc.torrentFile
             });
 
-            // 2. Construct Universal Ramosa Protocol Payload Structure with torrentBuffer on Sphere.Doc
             rayPayload.Sphere.source.cover_img = cover_img;
 
             WebTorrentBase.PEX.wires.forEach(wire => {
-                // Ensure the wire uses the extension
                 wire.use(WebTorrentBase.RamosaWireExtension);
                 
-                // Now wire.ramosa is safely defined and accessible
                 if (wire.ramosa && typeof wire.ramosa.send === 'function') {
                     wire.ramosa.send(rayPayload);
                 }
             });
 
             MVC.Base.Ramosa.put(doc.RAy, rayPayload);
-            //setTimeout(MVC.Control.Table.unfold("#table"), 222);
-        });       
+        });        
 
         return rayPayload;
     }
