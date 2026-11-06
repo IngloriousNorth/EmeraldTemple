@@ -158,9 +158,9 @@ const WebTorrentBase = {
         };
 
         swarm.on('wire', handleWire);
-        if (swarm.wires && Array.isArray(swarm.wires)) {
+        /*if (swarm.wires && Array.isArray(swarm.wires)) {
             swarm.wires.forEach(wire => handleWire(wire));
-        }
+        }*/
 
         if (typeof cb === 'function') {
             cb();
