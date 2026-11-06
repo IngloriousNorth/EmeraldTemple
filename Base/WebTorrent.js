@@ -13,21 +13,14 @@ Object.defineProperty(RamosaWireExtension.prototype, 'name', {
     enumerable: true
 });
 
-RamosaWireExtension.prototype.onHandshake = async function (handshake) {
+/*RamosaWireExtension.prototype.onHandshake = async function (handshake) {
     console.info(`[RAMOSA PROTOCOL EXTENSION] Handshake completed with peer at ${new Date().toISOString()}.`);
     try {
-        const localRecords = await RamosaBase.loadAll();
-        if (Array.isArray(localRecords) && localRecords.length > 0) {
-            localRecords.forEach(record => {
-                if (typeof this.send === 'function') {
-                    this.send(record);
-                }
-            });
-        }
+        
     } catch (err) {
         console.warn("[RAMOSA SYNC] Failed to load/send local records on handshake:", err);
     }
-};
+};*/
 
 RamosaWireExtension.prototype.send = function (rayPayload) {
     const jsonBuf = new TextEncoder().encode(JSON.stringify(rayPayload));
