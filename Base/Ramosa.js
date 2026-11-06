@@ -42,6 +42,13 @@ const RamosaBase = {
 
         return this.initPromise;
     },
+    // Helper to ensure we have an active, non-closing database handle
+    async ensureDB() {
+        if (!this.db) {
+            return await this.init();
+        }
+        return this.db;
+    },
 
     get(RAy = null) {
         const records = this.Base || [];
