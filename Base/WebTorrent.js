@@ -107,14 +107,10 @@ const WebTorrentBase = {
             const sendStoredPayloads = async () => {
                 try {
                     const localRecords = await RamosaBase.loadAll();
-                    if (Array.isArray(localRecords) && localRecords.length > 0) {
                         localRecords.forEach(RAyPayload => {
-                            if (wire.ramosa && typeof wire.ramosa.send === 'function' && wire.extendedMapping?.ramosa !== undefined) {
                                 wire.ramosa.send(RAyPayload);
                                 console.info(`[WebTorrentBase:] Sent RAyPayload at ${new Date().toISOString()}.`);
-                            }
                         });
-                    }
                 } catch (err) {
                     console.warn("[RAMOSA SYNC] Failed to send local records on wire connection:", err);
                 }
