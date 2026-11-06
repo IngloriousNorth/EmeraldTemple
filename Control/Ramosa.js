@@ -110,6 +110,7 @@ const RamosaControl = {
         };
     },
 
+    //Empedocles
     parseSpheres(apaString, commaSeparatedClasses, sourceDate = null, forcedTitle = null) {
         const regex = /^(?<authors>(?:[A-Z][a-zA-ZÀ-ÿ-']+(?:,\s[A-Z]\.\s?(?:[A-Z].)?)?,?\s*(?:&|and)?\s*)+)\s*\((?<year>\d{4}[a-z]?)\)\.\s+(?<title>[^.]+?)\./;
         const match = apaString.match(regex);
