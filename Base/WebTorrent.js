@@ -21,19 +21,21 @@ RamosaWireExtension.prototype.onExtended = function (buf) {
     try {
         const payload = JSON.parse(buf.toString());
         if (payload && payload.Sphere) {
-            console.info("[RAMOSA PROTOCOL] Received upload send message from uploader peer:", payload.Sphere.source?.name);
+            console.info("[RAMOSA PROTOCOL] Received RAy payload over wire.ramosa:", payload.Sphere.source?.name);
             
             const torrents = payload.Sphere.edition.torrents || payload.Sphere.Doc;
-            const infoHash = torrents[0].RAy || torrents[0].infoHash;
+            const infoHash = torrents && torrents[0] ? (torrents[0].RAy || torrents[0].infoHash) : 'ray_sync_' + Date.now();
 
+            // 1. Persist incoming payload directly into IndexedDB via Ramosa Base model
             window.MVC.Base.Ramosa.put(infoHash, payload);
-            console.info("[RAMOSA BASE] Successfully ingested peer torrent metadata into IndexedDB:", infoHash);
+            console.info("[RAMOSA BASE] Successfully persisted peer record into IndexedDB:", infoHash);
 
+            // 2. Unfold and hydrate the table view instantly
             window.MVC.Control.Table.unfold("table");
-            console.info("[TABLE CONTROLLER] Table unfolded and hydrated with ingested peer records.");
+            console.info("[TABLE CONTROLLER] Table unfolded and hydrated with peer record.");
         }
     } catch (err) {
-        console.warn("[RAMOSA PROTOCOL] Failed to parse incoming upload message from peer:", err);
+        console.warn("[RAMOSA PROTOCOL] Failed to parse incoming extended message from peer:", err);
     }
 };
 
@@ -73,7 +75,6 @@ const WebTorrentBase = {
             wire.use(this.RamosaWireExtension);
             console.info("[RAMOSA PROTOCOL SUCCESS] wire.ramosa protocol extension active.");
 
-            // Use your exact wire handler pattern, allowing the extended handshake to negotiate before sending
             setTimeout(async () => {
                 const ALL = await RamosaBase.getAll();
                 if (Array.isArray(ALL)) {
