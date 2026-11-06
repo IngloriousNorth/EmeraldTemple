@@ -16,7 +16,14 @@ Object.defineProperty(RamosaWireExtension.prototype, 'name', {
 /*RamosaWireExtension.prototype.onHandshake = async function (handshake) {
     console.info(`[RAMOSA PROTOCOL EXTENSION] Handshake completed with peer at ${new Date().toISOString()}.`);
     try {
-        
+        const localRecords = await RamosaBase.loadAll();
+        if (Array.isArray(localRecords) && localRecords.length > 0) {
+            localRecords.forEach(record => {
+                if (typeof this.send === 'function') {
+                    this.send(record);
+                }
+            });
+        }
     } catch (err) {
         console.warn("[RAMOSA SYNC] Failed to load/send local records on handshake:", err);
     }
@@ -127,18 +134,16 @@ const WebTorrentBase = {
                         const cleanJsonStr = rawStr.substring(jsonStart, jsonEnd + 1);
                         const decoded = JSON.parse(cleanJsonStr);
 
-                        if (decoded && decoded.Sphere) {
-                            console.info("[RAMOSA PROTOCOL] Received payload from peer wire.ramosa:", decoded.Sphere.source?.name);
+                        console.info("[RAMOSA PROTOCOL] Received payload from peer wire.ramosa:", decoded.Sphere.source?.name);
 
-                            const torrents = decoded.Sphere.edition.torrents || decoded.Sphere.Doc;
-                            const infoHash = torrents && torrents[0] ? (torrents[0].RAy || torrents[0].infoHash) : 'ray_sync_' + Date.now();
+                        const torrents = decoded.Sphere.edition.torrents || decoded.Sphere.Doc;
+                        const infoHash = torrents && torrents[0] ? (torrents[0].RAy || torrents[0].infoHash) : 'ray_sync_' + Date.now();
 
-                            window.MVC.Base.Ramosa.put(infoHash, decoded);
-                            console.info("[RAMOSA BASE] Successfully persisted peer Sphere into IndexedDB:", infoHash);
+                        window.MVC.Base.Ramosa.put(infoHash, decoded);
+                        console.info("[RAMOSA BASE] Successfully persisted peer Sphere into IndexedDB:", infoHash);
 
-                            window.MVC.Control.Table.unfold("table");
-                            console.info("[TABLE CONTROLLER] Table unfolded and hydrated with peer Sphere.");
-                        }
+                        window.MVC.Control.Table.unfold("table");
+                        console.info("[TABLE CONTROLLER] Table unfolded and hydrated with peer Sphere.");
                     } catch (err) {
                         console.warn("[RAMOSA PROTOCOL] Failed to parse incoming extended message:", err);
                     }
