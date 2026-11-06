@@ -121,7 +121,7 @@ const RamosaBase = {
             }
         }
 
-        if(get(RAy))
+        if(this.get(RAy))
             return;
 
         const transaction = this.db.transaction([this.storeName], "readwrite");
