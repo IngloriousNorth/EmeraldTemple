@@ -1,3 +1,8 @@
+/**
+ * Ramosa Protocol Base (IndexedDB Storage & GraphDB Identifier Manager)
+ * Enforces strict transport-layer-neutral Open Protocol architecture.
+ */
+
 const RamosaBase = {
     dbName: 'RamosaProtocol',
     storeName: 'records',
@@ -17,28 +22,11 @@ const RamosaBase = {
             request.onerror = (event) => {
                 console.error("[RAMOSA BASE ERROR] IndexedDB error:", event.target.error);
                 this.initPromise = null;
-                this.db = null;
                 reject(event.target.error);
             };
 
             request.onsuccess = (event) => {
                 this.db = event.target.result;
-                this.initPromise = null;
-
-                // Listen for unexpected connection drops or closes
-                this.db.onclose = () => {
-                    console.warn("[RAMOSA BASE] IndexedDB connection closed unexpectedly.");
-                    this.db = null;
-                    this.isLoaded = false;
-                };
-
-                this.db.onversionchange = () => {
-                    console.warn("[RAMOSA BASE] IndexedDB version change requested by another tab. Closing connection.");
-                    this.db.close();
-                    this.db = null;
-                    this.isLoaded = false;
-                };
-
                 console.info("[RAMOSA BASE] IndexedDB storage initialized successfully.");
                 resolve(this.db);
             };
@@ -55,19 +43,35 @@ const RamosaBase = {
         return this.initPromise;
     },
 
-    // Helper to ensure we have an active, non-closing database handle
-    async ensureDB() {
-        if (!this.db) {
-            return await this.init();
+    get(RAy = null) {
+        const records = this.Base || [];
+        if (RAy) {
+            const found = records.find(r => 
+                r.index === RAy ||
+                r.Doc?.RAy === RAy ||
+                (Array.isArray(r.Sphere?.Doc) && r.Sphere.Doc.some(d => d.RAy === RAy)) ||
+                (r.Sphere?.edition?.torrents && r.Sphere.edition.torrents.some(t => t.infoHash === RAy))
+            );
+            if (!found && !this.isLoaded) {
+                console.warn("[RAMOSA BASE] get() called before Base was fully hydrated. Triggering background loadAll...");
+                this.loadAll();
+            }
+            return found || null;
         }
-        return this.db;
+        return records;
+    },
+
+    getAll() {
+        return this.Base || [];
     },
 
     async loadAll() {
         if (this.isLoaded) return this.Base;
 
         try {
-            await this.ensureDB();
+            if (!this.db) {
+                this.db = await this.init();
+            }
             return await this._executeLoadAll();
         } catch (err) {
             console.error("[RAMOSA BASE ERROR] loadAll failed:", err);
@@ -76,31 +80,37 @@ const RamosaBase = {
     },
 
     _executeLoadAll() {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const db = await this.ensureDB();
-                const transaction = db.transaction([this.storeName], "readonly");
-                const store = transaction.objectStore(this.storeName);
-                const request = store.getAll();
-
-                request.onsuccess = (event) => {
-                    const records = event.target.result || [];
-                    this.Base = records;
-                    this.isLoaded = true;
-                    console.info(`[RAMOSA BASE] Loaded and hydrated ${records.length} records from local IndexedDB.`);
-                    resolve(records);
-                };
-
-                request.onerror = (event) => {
-                    console.error("[RAMOSA BASE ERROR] Failed to load records from IndexedDB:", event.target.error);
-                    reject(event.target.error);
-                };
-            } catch (err) {
-                reject(err);
+        return new Promise((resolve, reject) => {
+            if (this.isLoaded) {
+                return resolve(this.Base);
             }
+
+            if (!this.db) {
+                return reject(new Error("IndexedDB instance (this.db) is null during transaction."));
+            }
+
+            const transaction = this.db.transaction([this.storeName], "readonly");
+            const store = transaction.objectStore(this.storeName);
+            const request = store.getAll();
+
+            request.onsuccess = (event) => {
+                const records = event.target.result || [];
+                this.Base = records;
+                this.isLoaded = true;
+                console.info(`[RAMOSA BASE] Loaded and hydrated ${records.length} records from local IndexedDB.`);
+                resolve(records);
+            };
+
+            request.onerror = (event) => {
+                console.error("[RAMOSA BASE ERROR] Failed to load records from IndexedDB:", event.target.error);
+                reject(event.target.error);
+            };
         });
     },
 
+    /**
+     * Puts a record into IndexedDB and anchors it to memory state
+     */
     async put(RAy, rayPayload) {
         try {
             const db = await this.ensureDB();
