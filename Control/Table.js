@@ -60,9 +60,9 @@ function parseRAyData(rayArray) {
         name: cleanSourceName,
         date: source.date || 'n.d.',
         type: source.genus || source.type || 'Historical Book',
-        cover: source.cover || 'https://via.placeholder.com/222x300?text=No+Cover',
+        cover_img: source.cover_img || 'https://via.placeholder.com/222x300?text=No+Cover',
         authors: authors.length ? authors : ['Unknown Author'],
-        categories: categories.length ? categories : ['Public Domain']
+        classes: categories.length ? categories : ['Public Domain']
       },
       edition: {
         uuid: edition.uuid || 'ed_' + Math.random().toString(36).substring(2, 9),

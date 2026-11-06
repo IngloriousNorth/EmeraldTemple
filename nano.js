@@ -16,6 +16,7 @@
                 name: 'Gate.bundle.enc',
                 dht: false,
                 tracker: false,
+                announce : [],
                 pex: true
             }, (torrent) => {
                 console.info(`[nano.js KERNEL] Static sovereign PEX swarm anchored: ${torrent.infoHash}`);

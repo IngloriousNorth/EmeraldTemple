@@ -123,14 +123,14 @@ const RamosaControl = {
 
         return {
             rayVersion: "1.0",
-            categoryType: "Archive",
+            categoryType: "Open Archive",
             Sphere: {
                 source: {
                     uuid: `src_${Math.random().toString(36).substring(2, 9)}`,
                     name: title,
                     genus: "Historical Book",
                     date: year,
-                    cover: "https://via.placeholder.com/222x300?text=Archive"
+                    cover_img: ""
                 },
                 persons: [{ name: author, links: [{ rel: "wrote_source", targetName: title }] }],
                 classes: classList.map(cName => ({ name: cName, links: [{ rel: "contains_source", targetName: title }] })),
@@ -152,7 +152,29 @@ const RamosaControl = {
     async extractCompressedCoverArt(pdfFile) {
         const arrayBuffer = await pdfFile.arrayBuffer();
         const pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-        const page1 = await pdfDoc.getPage(1);
+        
+        let targetPageNum = 1;
+        let page1 = null;
+
+        // Scan up to the first 5 pages to skip blank title leaves or archive disclaimers
+        const maxScanPages = Math.min(pdfDoc.numPages, 5);
+        for (let i = 1; i <= maxScanPages; i++) {
+            const page = await pdfDoc.getPage(i);
+            const textContent = await page.getTextContent();
+            const textString = textContent.items.map(item => item.str).join(" ").trim();
+
+            // A valid content page has more than just a few boilerplate characters or whitespace
+            if (textString.length > 30 && !/google|digitized|preserved|library/i.test(textString.substring(0, 100))) {
+                targetPageNum = i;
+                page1 = page;
+                break;
+            }
+        }
+
+        // Fallback to page 1 if all checked pages looked like disclaimer sheets
+        if (!page1) {
+            page1 = await pdfDoc.getPage(1);
+        }
 
         // Target a fixed display width of 222px while maintaining true aspect ratio
         const unscaledViewport = page1.getViewport({ scale: 1.0 });
@@ -172,7 +194,7 @@ const RamosaControl = {
         return new Promise((resolve) => {
             canvas.toBlob((blob) => {
                 const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result); // Returns base64 string for direct storage in rayPayLoad.cover_art
+                reader.onloadend = () => resolve(reader.result); // Returns base64 string for direct storage in rayPayload.cover_art
                 reader.readAsDataURL(blob);
             }, 'image/jpeg', 0.75);
         });
@@ -256,21 +278,7 @@ const RamosaControl = {
             });
 
             // 2. Construct Universal Ramosa Protocol Payload Structure with torrentBuffer on Sphere.Doc
-            rayPayload.Sphere.source = {
-                uuid: `src_${torrent.infoHash.substring(0, 8)}`,
-                name: doc.name || "Archival Document",
-                genus: "Document",
-                date: new Date().toISOString().split('T')[0],
-                cover_img: cover_img
-            };
-
-            rayPayload.Sphere.edition = {
-                uuid: `ed_${Math.random().toString(36).substring(2, 9)}`,
-                title: doc.name || "Archival Edition",
-                date: new Date().toISOString().split('T')[0],
-                created_at: Date.now(),
-                webSeed: seedOptions.urlList[0] || ""
-            };       
+            rayPayload.Sphere.source.cover_img = cover_img;
 
             WebTorrentBase.PEX.wires.forEach(wire => {
                 // Ensure the wire uses the extension
