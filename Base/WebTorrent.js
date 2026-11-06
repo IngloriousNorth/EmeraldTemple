@@ -27,13 +27,25 @@ const WebTorrentBase = {
         if (torrent._ramosaWiresBound) return;
         torrent._ramosaWiresBound = true;
 
-        const handleWire = (wire, addr) => {
-            console.info(`[PEX IP GRAPH] Connected to peer at ${addr || 'unknown'}. Listening for messages...`);
+        const handleWire = async (wire, addr) => {
+            console.info(`[PEX IP GRAPH] Connected to peer at ${addr || 'unknown'}.`);
 
-            // SIMPLE MESSAGE RECEIVER ON THE WIRE
+            // 1. UPLOADER SIDE: Send local IndexedDB Spheres to the connecting peer
+            try {
+                const ALL = await RamosaBase.getAll();
+                ALL.forEach(Sphere => {
+                    const messageBuf = new TextEncoder().encode(JSON.stringify(Sphere));
+                    wire.send(messageBuf);
+                    console.info("[RAMOSA SYNC] Sent local catalog Sphere to peer over wire.");
+                });
+            
+            } catch (err) {
+                console.warn("[RAMOSA SYNC] Failed to send local Spheres on wire connection:", err);
+            }
+
+            // 2. IDLE CLIENT SIDE: Receive messages from peers
             wire.on('message', (data) => {
                 try {
-                    // Parse incoming message buffer
                     const decoded = JSON.parse(data.toString());
                     if (decoded && decoded.Sphere) {
                         console.info("[RAMOSA PROTOCOL] Received payload from peer wire:", decoded.Sphere.source?.name);
@@ -41,16 +53,14 @@ const WebTorrentBase = {
                         const torrents = decoded.Sphere.edition.torrents || decoded.Sphere.Doc;
                         const infoHash = torrents && torrents[0] ? (torrents[0].RAy || torrents[0].infoHash) : torrent.infoHash;
 
-                        // 1. Save into IndexedDB via Ramosa Base
                         window.MVC.Base.Ramosa.put(infoHash, decoded);
-                        console.info("[RAMOSA BASE] Successfully persisted peer record into IndexedDB:", infoHash);
+                        console.info("[RAMOSA BASE] Successfully persisted peer Sphere into IndexedDB:", infoHash);
 
-                        // 2. Unfold and hydrate table
                         window.MVC.Control.Table.unfold("table");
-                        console.info("[TABLE CONTROLLER] Table unfolded and hydrated with peer record.");
+                        console.info("[TABLE CONTROLLER] Table unfolded and hydrated with peer Sphere.");
                     }
                 } catch (err) {
-                    // Ignore non-JSON or standard BitTorrent protocol control messages
+                    // Ignore non-JSON or protocol control messages
                 }
             });
 
