@@ -37,30 +37,12 @@ RamosaWireExtension.prototype.onExtended = function (buf) {
     }
 };
 
-RamosaWireExtension.prototype.onHandshake = async function (handshake) {
-    console.info("[RAMOSA PROTOCOL EXTENSION] Handshake completed successfully with peer.");
-    
-    // Broadcast local IndexedDB records safely now that handshake is confirmed
-    try {
-        const ALL = await RamosaBase.getAll();
-        if (Array.isArray(ALL)) {
-            ALL.forEach(Sphere => {
-                this.send(Sphere);
-            });
-        }
-    } catch (e) {
-        // Fallback to wire payload if set
-        if (this.wire.rayPayload) {
-            this.send(this.wire.rayPayload);
-        }
-    }
-};
-
 RamosaWireExtension.prototype.send = function (rayPayload) {
     const jsonBuf = new TextEncoder().encode(JSON.stringify(rayPayload));
     this.wire.extended('ramosa', jsonBuf);
     console.info("[RAMOSA PROTOCOL] Broadcasted RAyPayload over wire.ramosa.");
 };
+
 const WebTorrentBase = {
     SWARM : null,
     RamosaWireExtension,
@@ -84,15 +66,34 @@ const WebTorrentBase = {
     },
 
     bindTorrentWires(torrent) {
-        torrent.on('wire', ()=>{
-            WebTorrentBase.SWARM.wires.forEach(async wire => {
-                wire.use(WebTorrentBase.RamosaWireExtension);
-                const ALL = await MVC.Ramosa.Base.getAll();
-                ALL.forEach(Sphere => {
-                    wire.ramosa.send(Sphere);
-                })
+        if (torrent._ramosaWiresBound) return;
+        torrent._ramosaWiresBound = true;
+
+        const handleWire = (wire) => {
+            wire.use(this.RamosaWireExtension);
+            console.info("[RAMOSA PROTOCOL SUCCESS] wire.ramosa protocol extension active.");
+
+            // Use your exact wire handler pattern, allowing the extended handshake to negotiate before sending
+            setTimeout(async () => {
+                const ALL = await RamosaBase.getAll();
+                if (Array.isArray(ALL)) {
+                    ALL.forEach(Sphere => {
+                        if (wire.ramosa && typeof wire.ramosa.send === 'function') {
+                            wire.ramosa.send(Sphere);
+                        }
+                    });
+                }
+            }, 600);
+
+            wire.on('close', () => {
+                console.info("[PEX IP GRAPH] Peer disconnected.");
             });
-        });
+        };
+
+        torrent.on('wire', handleWire);
+        if (torrent.wires && Array.isArray(torrent.wires)) {
+            torrent.wires.forEach(wire => handleWire(wire));
+        }
     },
 
     bindPEX: function(cb){
@@ -105,7 +106,8 @@ const WebTorrentBase = {
         if (swarm._pexWired) return;
         swarm._pexWired = true;
 
-        this.bindTorrentWires(this.SWARM);
+        this.SWARM = swarm;
+        this.bindTorrentWires(swarm);
 
         if (typeof cb === 'function') {
             cb();
