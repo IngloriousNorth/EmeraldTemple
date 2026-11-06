@@ -256,15 +256,7 @@ const RamosaControl = {
         //bridge to DB is torrent.RAy, set in WebTorrentControl.seed()
         WebTorrentControl.seed(pdfFile, rayPayload, seedOptions, (doc) => {
             doc.RAy = doc.infoHash;
-            console.info(`[RAMOSA CONTROL] Torrent active! RAy GraphDB ID (InfoHash): ${doc.RAy}`);
-
-            let serializedBuffer = [];
-            const rawBuffer = doc.torrentBuffer || doc.torrentFile;
-            if (rawBuffer && typeof rawBuffer[Symbol.iterator] === 'function') {
-                serializedBuffer = Array.from(rawBuffer);
-            } else if (rawBuffer instanceof Uint8Array || rawBuffer instanceof ArrayBuffer) {
-                serializedBuffer = Array.from(new Uint8Array(rawBuffer));
-            }
+            console.info(`[RAMOSA CONTROL] Torrent active! RAy GraphDB ID (InfoHash): ${doc.RAy}`)
 
             if (!rayPayload.Sphere.Doc) rayPayload.Sphere.Doc = [];
 
@@ -274,7 +266,7 @@ const RamosaControl = {
                 RAy: doc.RAy,
                 size: pdfFile.size,
                 webseeds: webseedList,
-                torrentBuffer: serializedBuffer
+                torrentBuffer: doc.torrentFile
             });
 
             // 2. Construct Universal Ramosa Protocol Payload Structure with torrentBuffer on Sphere.Doc
