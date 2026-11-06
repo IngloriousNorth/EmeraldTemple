@@ -285,7 +285,7 @@ const TableControl = {
           console.info("[UI] Download clicked for Ramosa RAy ID:", RAy);
           
           const ramosaBase = window.MVC?.Base?.Ramosa;
-          const info = ramosaBase ? ramosaBase.get(RAy) : null;
+          const info = ramosaBase ? ramosaBase.get(RAy).Sphere.Doc : null;
 
           if (info) {
               console.info("[RAMOSA] Found record via Base, launching pipeline...", info);
