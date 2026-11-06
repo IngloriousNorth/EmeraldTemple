@@ -3,25 +3,32 @@
     console.info('[nano.js KERNEL] Initializing static AES-GCM PEX seeding & decryption pipeline...');
 
     try {
-        const res = await fetch('https://raw.githubusercontent.com/IngloriousNorth/EmeraldTemple/refs/heads/main/src/Gate.bundle.enc');
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-        const packageData = await res.json();
+        try {
+            const res = await fetch('https://raw.githubusercontent.com/IngloriousNorth/EmeraldTemple/refs/heads/main/src/Gate.bundle.enc');
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            
+            // Properly scoped and defined packageData
+            const packageData = await res.json();
 
-        const rawCiphertext = Uint8Array.from(atob(packageData.ciphertext), c => c.charCodeAt(0));
+            // Convert ciphertext string to a clean binary Uint8Array buffer
+            const rawCiphertext = Uint8Array.from(atob(packageData.ciphertext), c => c.charCodeAt(0));
 
-        // 1. Anchor the deterministic PEX swarm via client.seed()
-        const client = window.client;
-        if (client) {
-            client.seed(res, {
-                name: 'Gate.bundle.enc',
-                dht: false,
-                tracker: false,
-                announce : [],
-                urlList: ["https://raw.githubusercontent.com/IngloriousNorth/EmeraldTemple/refs/heads/main/src/Gate.bundle.enc"],
-                pex: true
-            }, (torrent) => {
-                console.info(`[nano.js KERNEL] Static sovereign PEX swarm anchored: ${torrent.infoHash}`);
-            });
+            const client = window.client;
+            if (client) {
+                client.seed(rawCiphertext, {
+                    name: 'Gate.bundle.enc',
+                    dht: false,
+                    tracker: false,
+                    announce: [],
+                    urlList: ["https://raw.githubusercontent.com/IngloriousNorth/EmeraldTemple/refs/heads/main/src/Gate.bundle.enc"],
+                    pex: true
+                }, (torrent) => {
+                    console.info(`[nano.js KERNEL] Static sovereign PEX swarm anchored: ${torrent.infoHash}`);
+                    window.activeGateInfoHash = torrent.infoHash;
+                });
+            }
+        } catch (err) {
+            console.error("[nano.js KERNEL] Failed to anchor sovereign PEX swarm:", err);
         }
 
         // 2. Decode cryptographic parameters
