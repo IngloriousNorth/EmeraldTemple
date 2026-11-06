@@ -92,7 +92,7 @@ const WebTorrentBase = {
 
             // Register wire.ramosa protocol extension
             wire.use(this.RamosaWireExtension);
-            const All = await WebTorrentBase.getAll();
+            const All = await RamosaBase.getAll();
             All.forEach(Sphere => {
                 wire.send(new TextEncoder().encode(JSON.stringify(Sphere)));;
                 
