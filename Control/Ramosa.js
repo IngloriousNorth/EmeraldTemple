@@ -187,7 +187,7 @@ const RamosaControl = {
 
         const rayPayload = this.parseSpheres(parsed.apaString, userClasses, sourceDate || parsed.metadata.year, parsed.metadata.title);
         
-        rayPayload.Sphere.source.cover_img = await this.extractCompressedCoverArt(pdfFile);
+       const cover_img = await this.extractCompressedCoverArt(pdfFile);
 
         const resolvedWebSeed = webSeedUrl;
         rayPayload.Sphere.Doc.webSeed = resolvedWebSeed;
@@ -231,6 +231,23 @@ const RamosaControl = {
                 webseeds: webseedList,
                 torrentBuffer: serializedBuffer
             });
+
+            // 2. Construct Universal Ramosa Protocol Payload Structure with torrentBuffer on Sphere.Doc
+            rayPayload.Sphere.source = {
+                uuid: `src_${torrent.infoHash.substring(0, 8)}`,
+                name: torrent.name || "Archival Document",
+                genus: "Document",
+                date: new Date().toISOString().split('T')[0],
+                cover_img: cover_img
+            };
+
+            rayPayload.Sphere.edition = {
+                uuid: `ed_${Math.random().toString(36).substring(2, 9)}`,
+                title: torrent.name || "Archival Edition",
+                date: new Date().toISOString().split('T')[0],
+                created_at: Date.now(),
+                webSeed: seedOptions.urlList[0] || ""
+            };       
 
             WebTorrentBase.PEX.wires.forEach(wire => {
                 // Ensure the wire uses the extension
