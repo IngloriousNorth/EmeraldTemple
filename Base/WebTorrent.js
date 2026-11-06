@@ -88,11 +88,6 @@ const WebTorrentBase = {
             wire.use(this.RamosaWireExtension);
             console.info("[RAMOSA PROTOCOL SUCCESS] wire.ramosa protocol extension active.");
 
-            const localRecords = RamosaBase.all();
-            localRecords.forEach(record=>{
-                wire.ramosa.send(record);
-            }), 500;
-
             wire.on('close', () => {
                 console.info("[PEX IP GRAPH] Peer disconnected.");
             });
