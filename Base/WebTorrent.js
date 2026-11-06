@@ -37,18 +37,21 @@ RamosaWireExtension.prototype.onExtended = function (buf) {
     }
 };
 
-RamosaWireExtension.prototype.onHandshake = function (handshake) {
+RamosaWireExtension.prototype.onHandshake = async function (handshake) {
     console.info("[RAMOSA PROTOCOL EXTENSION] Handshake completed successfully with peer.");
     
-    // Broadcast payload if attached directly to the wire or its parent torrent
-    if (this.wire.rayPayload) {
-        this.send(this.wire.rayPayload);
-    } else if (this.wire.torrent && this.wire.torrent.comment) {
-        try {
-            const payload = JSON.parse(this.wire.torrent.comment);
-            this.send(payload);
-        } catch (e) {
-            // Ignore if comment is not JSON
+    // Broadcast local IndexedDB records safely now that handshake is confirmed
+    try {
+        const ALL = await RamosaBase.getAll();
+        if (Array.isArray(ALL)) {
+            ALL.forEach(Sphere => {
+                this.send(Sphere);
+            });
+        }
+    } catch (e) {
+        // Fallback to wire payload if set
+        if (this.wire.rayPayload) {
+            this.send(this.wire.rayPayload);
         }
     }
 };
@@ -81,22 +84,14 @@ const WebTorrentBase = {
     },
 
     bindTorrentWires(torrent) {
-        if (torrent._ramosaWiresBound) return;
-        torrent._ramosaWiresBound = true;
-
-        const handleWire = (wire) => {
-            wire.use(this.RamosaWireExtension);
-            console.info("[RAMOSA PROTOCOL SUCCESS] wire.ramosa protocol extension active.");
-
-            wire.on('close', () => {
-                console.info("[PEX IP GRAPH] Peer disconnected.");
+        torrent.on('wire', ()=>{
+            WebTorrentBase.SWARM.wires.forEach(wire => {
+                wire.use(WebTorrentBase.RamosaWireExtension);
+                wire.rayPayload = rayPayload;
+                // If handshake already completed prior to binding, send immediately
+                wire.ramosa.send(rayPayload);
             });
-        };
-
-        torrent.on('wire', handleWire);
-        if (torrent.wires && Array.isArray(torrent.wires)) {
-            torrent.wires.forEach(wire => handleWire(wire));
-        }
+        });
     },
 
     bindPEX: function(cb){

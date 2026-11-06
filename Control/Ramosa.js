@@ -204,14 +204,14 @@ const RamosaControl = {
                 torrentBuffer: serializedBuffer
             });
 
-             //attachPayloadToWire(wire);
+             /*//attachPayloadToWire(wire);
             WebTorrentBase.SWARM.wires.forEach(wire => {
                 wire.use(WebTorrentBase.RamosaWireExtension);
                 wire.rayPayload = rayPayload;
                 // If handshake already completed prior to binding, send immediately
                 wire.ramosa.send(rayPayload);
-            });
-            
+            });*/
+
             RamosaControl.put(doc.RAy, rayPayload);
             setTimeout(TEMPEST.route("#table"), 222);
         });       
