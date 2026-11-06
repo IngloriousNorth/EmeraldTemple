@@ -134,11 +134,12 @@ const WebTorrentBase = {
                         const cleanJsonStr = rawStr.substring(jsonStart, jsonEnd + 1);
                         const decoded = JSON.parse(cleanJsonStr);
 
+                        console.log(decoded);
                         const torrents = decoded.Sphere.Doc;
                         const infoHash = torrents && torrents[0] ? (torrents[0].RAy || torrents[0].infoHash) : 'ray_sync_' + Date.now();
 
                         window.MVC.Base.Ramosa.put(infoHash, decoded);
-                        setTimeout(MVC.Control.Table.unfold("#table"), 222);
+                        //setTimeout(MVC.Control.Table.unfold("#table"), 222);
                         console.info("[RAMOSA BASE] Successfully persisted peer Sphere into IndexedDB:", infoHash);
 
                         console.info("[TABLE CONTROLLER] Table unfolded and hydrated with peer Sphere.");

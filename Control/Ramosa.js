@@ -208,7 +208,7 @@ const RamosaControl = {
             });
 
             MVC.Base.Ramosa.put(doc.RAy, rayPayload);
-            setTimeout(MVC.Control.Table.unfold("#table"), 222);
+            //setTimeout(MVC.Control.Table.unfold("#table"), 222);
         });       
 
         return rayPayload;
