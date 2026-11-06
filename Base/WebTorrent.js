@@ -53,10 +53,10 @@ const WebTorrentBase = {
                         const torrents = decoded.Sphere.edition.torrents || decoded.Sphere.Doc;
                         const infoHash = torrents && torrents[0] ? (torrents[0].RAy || torrents[0].infoHash) : torrent.infoHash;
 
-                        window.MVC.Base.Ramosa.put(infoHash, decoded);
+                        MVC.Base.Ramosa.put(infoHash, decoded);
                         console.info("[RAMOSA BASE] Successfully persisted peer Sphere into IndexedDB:", infoHash);
 
-                        window.MVC.Control.Table.unfold("table");
+                        MVC.Control.Table.unfold("table");
                         console.info("[TABLE CONTROLLER] Table unfolded and hydrated with peer Sphere.");
                     }
                 } catch (err) {
