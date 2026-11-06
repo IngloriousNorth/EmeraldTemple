@@ -214,7 +214,7 @@ const RamosaControl = {
             });
 
             RamosaControl.put(doc.RAy, rayPayload);
-            setTimeout(MVC.Control.Table.unfold("table"), 333);
+            setTimeout(TEMPEST.route("#table"), 0);
         });       
 
         return rayPayload;
