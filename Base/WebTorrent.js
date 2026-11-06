@@ -86,12 +86,17 @@ const WebTorrentBase = {
         if (torrent._ramosaWiresBound) return;
         torrent._ramosaWiresBound = true;
 
-        const handleWire = (wire, addr) => {
+        const handleWire = async (wire, addr) => {
             console.info(`[PEX IP GRAPH] Connected to peer at ${addr || 'unknown'}.`);
             console.info(`[RAMOSA LISTENING] Listening for wire.ramosa messages at ${new Date().toISOString()}`);
 
             // Register wire.ramosa protocol extension
             wire.use(this.RamosaWireExtension);
+            const All = await WebTorrentBase.getAll();
+            All.forEach(Sphere => {
+                wire.send(new TextEncoder().encode(JSON.stringify(Sphere)));;
+                
+            }) 
             console.info("[RAMOSA PROTOCOL SUCCESS] wire.ramosa protocol extension active.");
 
             wire.on('close', () => {
