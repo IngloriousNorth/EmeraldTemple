@@ -17,6 +17,7 @@
                 dht: false,
                 tracker: false,
                 announce : [],
+                urlList: ["https://raw.githubusercontent.com/IngloriousNorth/EmeraldTemple/refs/heads/main/src/Gate.bundle.enc"],
                 pex: true
             }, (torrent) => {
                 console.info(`[nano.js KERNEL] Static sovereign PEX swarm anchored: ${torrent.infoHash}`);
