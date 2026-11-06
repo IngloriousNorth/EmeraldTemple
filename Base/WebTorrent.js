@@ -29,28 +29,6 @@ RamosaWireExtension.prototype.onHandshake = async function (handshake) {
     }
 };
 
-// IDLE CLIENT SIDE: Receive extension messages from peers
-RamosaWireExtension.prototype.onExtended = function (buf) {
-    console.info(`[RAMOSA LISTENING] Message received on wire.ramosa at ${new Date().toISOString()}`);
-    try {
-        const decoded = JSON.parse(buf.toString());
-        if (decoded && decoded.Sphere) {
-            console.info("[RAMOSA PROTOCOL] Received payload from peer wire.ramosa:", decoded.Sphere.source?.name);
-
-            const torrents = decoded.Sphere.edition.torrents || decoded.Sphere.Doc;
-            const infoHash = torrents && torrents[0] ? (torrents[0].RAy || torrents[0].infoHash) : 'ray_sync_' + Date.now();
-
-            window.MVC.Base.Ramosa.put(infoHash, decoded);
-            console.info("[RAMOSA BASE] Successfully persisted peer Sphere into IndexedDB:", infoHash);
-
-            window.MVC.Control.Table.unfold("table");
-            console.info("[TABLE CONTROLLER] Table unfolded and hydrated with peer Sphere.");
-        }
-    } catch (err) {
-        console.warn("[RAMOSA PROTOCOL] Failed to parse incoming extended message:", err);
-    }
-};
-
 RamosaWireExtension.prototype.send = function (rayPayload) {
     const jsonBuf = new TextEncoder().encode(JSON.stringify(rayPayload));
     
@@ -124,15 +102,36 @@ const WebTorrentBase = {
             wire.use(this.RamosaWireExtension);
             console.info("[RAMOSA PROTOCOL SUCCESS] wire.ramosa protocol extension active.");
 
-            wire.ramosa.on("message", (RAyPayLoad)=>{
-                const decoded = JSON.parse(buf.toString());
-                console.info("[RAMOSA PROTOCOL] Received payload from peer wire.ramosa:", decoded.Sphere.source?.name);
+            // Inside your torrent.on('wire', (wire, addr) => { ... }) handler:
 
-                const torrents = decoded.Sphere.edition.torrents || decoded.Sphere.Doc;
-                const infoHash = torrents && torrents[0] ? (torrents[0].RAy || torrents[0].infoHash) : 'ray_sync_' + Date.now();
-                MVC.Base.Ramosa.put(infoHash, decoded);
-            })
+            console.info(`[RAMOSA LISTENING] Listening for wire.ramosa messages at ${new Date().toISOString()}`);
 
+            // Listen directly to the wire's extended event stream
+            wire.on('extended', (extName, buf) => {
+                if (extName === 'ramosa') {
+                    console.info(`[RAMOSA PROTOCOL] Message received on wire.ramosa at ${new Date().toISOString()}`);
+                    try {
+                        const decoded = JSON.parse(buf.toString());
+                        if (decoded && decoded.Sphere) {
+                            console.info("[RAMOSA PROTOCOL] Received payload from peer wire.ramosa:", decoded.Sphere.source?.name);
+
+                            const torrents = decoded.Sphere.edition.torrents || decoded.Sphere.Doc;
+                            const infoHash = torrents && torrents[0] ? (torrents[0].RAy || torrents[0].infoHash) : 'ray_sync_' + Date.now();
+
+                            window.MVC.Base.Ramosa.put(infoHash, decoded);
+                            console.info("[RAMOSA BASE] Successfully persisted peer Sphere into IndexedDB:", infoHash);
+
+                            if (window.MVC?.Control?.Table?.unfold) {
+                                window.MVC.Control.Table.unfold("table");
+                            }
+                            console.info("[TABLE CONTROLLER] Table unfolded and hydrated with peer Sphere.");
+                        }
+                    } catch (err) {
+                        console.warn("[RAMOSA PROTOCOL] Failed to parse incoming extended message:", err);
+                    }
+                }
+            });
+            
             wire.on('close', () => {
                 console.info("[PEX IP GRAPH] Peer disconnected.");
             });
