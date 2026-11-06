@@ -22,6 +22,14 @@ const IndexControl = {
                         fn: function() {
                             let ghost;
                             MVC.Control.Table.unfold("table");
+
+                            WebTorrentBase.initialize(()=>{
+                                ghost = true;
+                            });
+                            setTimeout(function(){
+                                if(!ghost)
+                                    MVC.Control.Table.unfold("table");
+                            }, 4444);
                         }
                     },
                     {
