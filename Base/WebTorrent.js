@@ -2,8 +2,52 @@
 import MVC from '../MAINFRAME/MAINFRAME.js';
 import RamosaBase from './Ramosa.js';
 
+function RamosaWireExtension(wire) {
+    this.wire = wire;
+}
+
+Object.defineProperty(RamosaWireExtension.prototype, 'name', {
+    value: 'ramosa',
+    writable: false,
+    configurable: true,
+    enumerable: true
+});
+
+RamosaWireExtension.prototype.onHandshake = function (handshake) {
+    console.info("[RAMOSA PROTOCOL EXTENSION] Handshake completed successfully with peer.");
+};
+
+RamosaWireExtension.prototype.onExtended = function (buf) {
+    try {
+        const decoded = JSON.parse(buf.toString());
+        if (decoded && decoded.Sphere) {
+            console.info("[RAMOSA PROTOCOL] Received payload from peer wire.ramosa:", decoded.Sphere.source?.name);
+
+            const torrents = decoded.Sphere.edition.torrents || decoded.Sphere.Doc;
+            const infoHash = torrents && torrents[0] ? (torrents[0].RAy || torrents[0].infoHash) : 'ray_sync_' + Date.now();
+
+            MVC.Base.Ramosa.put(infoHash, decoded);
+            console.info("[RAMOSA BASE] Successfully persisted peer Sphere into IndexedDB:", infoHash);
+
+            MVC.Control.Table.unfold("table");
+            console.info("[TABLE CONTROLLER] Table unfolded and hydrated with peer Sphere.");
+        }
+    } catch (err) {
+        // Ignore non-JSON or protocol control messages
+    }
+};
+
+RamosaWireExtension.prototype.send = function (rayPayload) {
+    if (this.wire.extendedMapping && this.wire.extendedMapping.ramosa !== undefined) {
+        const jsonBuf = new TextEncoder().encode(JSON.stringify(rayPayload));
+        this.wire.extended('ramosa', jsonBuf);
+        console.info("[RAMOSA PROTOCOL] Broadcasted RAyPayload over wire.ramosa.");
+    }
+};
+
 const WebTorrentBase = {
     SWARM : null,
+    RamosaWireExtension,
 
     initialize(cb) {
         if (this.client) return this.client;
@@ -30,39 +74,24 @@ const WebTorrentBase = {
         const handleWire = async (wire, addr) => {
             console.info(`[PEX IP GRAPH] Connected to peer at ${addr || 'unknown'}.`);
 
-            // 1. UPLOADER SIDE: Send local IndexedDB Spheres to the connecting peer
-            try {
-                const ALL = await RamosaBase.getAll();
-                ALL.forEach(Sphere => {
-                    const messageBuf = new TextEncoder().encode(JSON.stringify(Sphere));
-                    wire.send(messageBuf);
-                    console.info("[RAMOSA SYNC] Sent local catalog Sphere to peer over wire.");
-                });
-            
-            } catch (err) {
-                console.warn("[RAMOSA SYNC] Failed to send local Spheres on wire connection:", err);
-            }
+            // Register wire.ramosa protocol extension
+            wire.use(this.RamosaWireExtension);
+            console.info("[RAMOSA PROTOCOL SUCCESS] wire.ramosa protocol extension active.");
 
-            // 2. IDLE CLIENT SIDE: Receive messages from peers
-            wire.on('message', (data) => {
+            // 1. UPLOADER SIDE: Send local IndexedDB Spheres to the connecting peer via wire.ramosa
+            setTimeout(async () => {
                 try {
-                    const decoded = JSON.parse(data.toString());
-                    if (decoded && decoded.Sphere) {
-                        console.info("[RAMOSA PROTOCOL] Received payload from peer wire:", decoded.Sphere.source?.name);
-
-                        const torrents = decoded.Sphere.edition.torrents || decoded.Sphere.Doc;
-                        const infoHash = torrents && torrents[0] ? (torrents[0].RAy || torrents[0].infoHash) : torrent.infoHash;
-
-                        MVC.Base.Ramosa.put(infoHash, decoded);
-                        console.info("[RAMOSA BASE] Successfully persisted peer Sphere into IndexedDB:", infoHash);
-
-                        MVC.Control.Table.unfold("table");
-                        console.info("[TABLE CONTROLLER] Table unfolded and hydrated with peer Sphere.");
-                    }
+                    const ALL = await RamosaBase.getAll();
+                    ALL.forEach(Sphere => {
+                        if (wire.ramosa && typeof wire.ramosa.send === 'function') {
+                            wire.ramosa.send(Sphere);
+                            console.info("[RAMOSA SYNC] Sent local catalog Sphere to peer over wire.ramosa.");
+                        }
+                    });
                 } catch (err) {
-                    // Ignore non-JSON or protocol control messages
+                    console.warn("[RAMOSA SYNC] Failed to send local Spheres on wire connection:", err);
                 }
-            });
+            }, 600);
 
             wire.on('close', () => {
                 console.info("[PEX IP GRAPH] Peer disconnected.");
