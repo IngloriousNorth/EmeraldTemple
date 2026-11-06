@@ -3,7 +3,7 @@
     console.info('[nano.js KERNEL] Initializing static AES-GCM PEX seeding & decryption pipeline...');
 
     try {
-        const res = await fetch('./src/Gate.bundle.enc');
+        const res = await fetch('https://raw.githubusercontent.com/IngloriousNorth/EmeraldTemple/refs/heads/main/src/Gate.bundle.enc');
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         const packageData = await res.json();
 
@@ -12,7 +12,7 @@
         // 1. Anchor the deterministic PEX swarm via client.seed()
         const client = window.client;
         if (client) {
-            client.seed(rawCiphertext, {
+            client.seed(res, {
                 name: 'Gate.bundle.enc',
                 dht: false,
                 tracker: false,
