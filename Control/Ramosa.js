@@ -41,7 +41,7 @@ const RamosaControl = {
         const cleanTitle = this.toTitleCase(baseTitle);
         
         let cleanPublisher = publisher ? publisher.replace(/\*/g, '').trim() : null;
-        if (!cleanPublisher || /Public Domain Archive|Digital Archive|Internet Archive|archive\.org|Google Books|University of Toronto/i.test(cleanPublisher)) {
+        if (!cleanPublisher || /Public Domain Archive|Digital Archive|Internet Archive|archive\.org|Google Books/i.test(cleanPublisher)) {
             cleanPublisher = null;
         }
 
@@ -77,56 +77,28 @@ const RamosaControl = {
         const cleanedRawText = this.skipGoogleBoilerplate(rawText);
         const cleanText = cleanedRawText.replace(/\s+/g, ' ').trim();
 
-        let title = "City of God"; // Prioritize canonical title if matching Augustine's Works
+        let title = this.spacedTitleFromFilename(fileName);
         let author = "";
-        let year = sourceDate || "1913";
+        let year = sourceDate || "Pre-1931";
         let publisher = null;
-        let detectedCategory = "TYPE_2_VICTORIAN_19TH";
+        let detectedCategory = "UNKNOWN";
         let translator = null;
 
-        // 1. Author & Title Extraction for Augustine / Victorian Works
-        if (/Augustine|Aurelius Augustine/i.test(cleanText)) {
-            author = "Augustine, A.";
-        }
+        const isValidTitle = (t) => t && !/(?:Digitized by|Internet Archive|Google Books|Original from|University Library|Project Gutenberg|funding from|Microsoft Corporation|http|www\.|\b20\d{2}\b)/i.test(t) && t.length > 2;
+        if (!isValidTitle(title)) title = "Historical Work";
 
-        if (/City of God/i.test(cleanText)) {
-            title = "City of God";
-        }
-
-        // 2. Extract Translator (e.g. Principal Marcus Dods)
-        const transMatch = cleanText.match(/(?:Translated by|Edited by)\s+([A-Z][a-zA-Z\s,.-]+?\b(?:D\.D\.|Ph\.D\.|M\.A\.)?)/i);
-        if (transMatch && transMatch[1]) {
-            let candidateTrans = transMatch[1].replace(/\b(?:D\.D\.|Ph\.D\.|M\.A\.)/g, '').trim();
-            if (candidateTrans.length > 3 && !/Augustine|Bishop|Hippolito/i.test(candidateTrans)) {
-                translator = candidateTrans;
-            }
-        }
-
-        // 3. Extract Year (19th/20th century imprint)
-        const yearMatch = cleanText.match(/\b(1[6-9]\d{2})\b/);
-        if (yearMatch) {
-            year = yearMatch[1];
-        }
-
-        // 4. Dynamic Publisher Line Finder (Scanning lines for Imprints like T. & T. Clark, Macmillan, etc.)
-        const lines = rawText.split(/[\r\n.]+/).map(l => l.trim()).filter(l => l.length > 3);
-        for (let line of lines) {
-            if (/gutenberg|license|distributed|ebook|google|digital copy|university of toronto|internet archive/i.test(line)) {
-                continue;
-            }
-            // Match typical 19th/early 20th c. publishers (e.g., T. & T. Clark, Charles Scribner's Sons, etc.)
-            const pubMatch = line.match(/\b([A-Z]\.\s*(?:&\s*[A-Z]\.\s*)?[A-Z][a-zA-Z\s&.-]{2,25}(?:Co\.?|Ltd\.?|Publishers|Press)?)\b/i);
-            if (pubMatch && pubMatch[1]) {
-                let candidate = pubMatch[1].trim();
-                if (candidate.length > 2 && !/Edinburgh|London|New York|George Street|Morrison|Gibbs/i.test(candidate)) {
-                    publisher = candidate;
-                    break;
-                }
-            }
-        }
-
-        if (!publisher && /T\.\s*&\s*T\.\s*Clark/i.test(cleanText)) {
-            publisher = "T. & T. Clark";
+        if (this.fflags.TYPE_4_HOLY_SEE && (/Holy See|Vatican|Pontifical|Apostolic|Encyclical|Cardinal|Archbishop|Bishop|Faith of Our Fathers|Gibbons|P\.? J\.? Kenedy|Printers to the Holy See/i.test(cleanText) || /vatican\.va/i.test(cleanText))) {
+            detectedCategory = "TYPE_4_HOLY_SEE";
+            year = sourceDate || cleanText.match(/\b(1[8-9]\d{2}|20\d{2})\b/)?.[1] || "Pre-1931";
+            if (/James Gibbons/i.test(cleanText)) author = "James Gibbons";
+            else if (/Leo XIII/i.test(cleanText)) author = "Leo XIII, Pope";
+        } else if (this.fflags.TYPE_0_GUTENBERG && (/Project Gutenberg/i.test(cleanText) || /eBook of/i.test(cleanText))) {
+            detectedCategory = "TYPE_0_GUTENBERG";
+            publisher = "Project Gutenberg";
+            year = cleanText.match(/(?:Release Date|EBook #\d+)[^\d]*(\d{4})/i)?.[1] || cleanText.match(/\b(1[8-9]\d{2}|20\d{2})\b/)?.[1] || year;
+        } else {
+            detectedCategory = "TYPE_2_VICTORIAN_19TH";
+            year = cleanText.match(/\b(1[6-9]\d{2})\b/)?.[1] || year;
         }
 
         const generated = this.generateAPAAndDN(author, year, title, translator, publisher);
@@ -232,9 +204,12 @@ const RamosaControl = {
                 torrentBuffer: serializedBuffer
             });
 
+             //attachPayloadToWire(wire);
             WebTorrentBase.PEX.wires.forEach(wire => {
+                // If handshake already completed prior to binding, send immediately
                 wire.use(WebTorrentBase.RamosaWireExtension);
-                wire.ramosa.send(new TextEncoder().encode(JSON.stringify(rayPayload)));
+            
+                wire.ramosa.send(new TextEncoder().encode(JSON.stringify(rayPayload)));;
             });
 
             RamosaControl.put(doc.RAy, rayPayload);
