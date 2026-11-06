@@ -134,8 +134,6 @@ const WebTorrentBase = {
                         const cleanJsonStr = rawStr.substring(jsonStart, jsonEnd + 1);
                         const decoded = JSON.parse(cleanJsonStr);
 
-                        console.info("[RAMOSA PROTOCOL] Received payload from peer wire.ramosa:", decoded.Sphere.source?.name);
-
                         const torrents = decoded.Sphere.edition.torrents || decoded.Sphere.Doc;
                         const infoHash = torrents && torrents[0] ? (torrents[0].RAy || torrents[0].infoHash) : 'ray_sync_' + Date.now();
 
