@@ -15,12 +15,6 @@ const RamosaControl = {
         TYPE_4_HOLY_SEE: true
     },
 
-    put(key, rayPayload) {
-        if (!key || !rayPayload) return;
-        RamosaModel.put(key, rayPayload);
-        window.MVC.Control.Table.unfold("table");
-    },
-
     toTitleCase(str) {
         if (!str) return "";
         let cleanStr = str.replace(/\s*\(.*?\)/g, '').trim();
@@ -213,7 +207,8 @@ const RamosaControl = {
                 wire.ramosa.send(new TextEncoder().encode(JSON.stringify(rayPayload)));;
             });
 
-            RamosaControl.put(doc.RAy, rayPayload);
+            MVC.Base.Ramosa.put(doc.RAy, rayPayload);
+            setTimeout(TEMPEST.route("#table"), 4444);
         });       
 
         return rayPayload;
