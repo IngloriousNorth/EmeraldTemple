@@ -199,12 +199,14 @@ const RamosaControl = {
                 torrentBuffer: serializedBuffer
             });
 
-             //attachPayloadToWire(wire);
             WebTorrentBase.PEX.wires.forEach(wire => {
-                // If handshake already completed prior to binding, send immediately
+                // Ensure the wire uses the extension
                 wire.use(WebTorrentBase.RamosaWireExtension);
-            
-                wire.ramosa.send(new TextEncoder().encode(JSON.stringify(rayPayload)));;
+                
+                // Now wire.ramosa is safely defined and accessible
+                if (wire.ramosa && typeof wire.ramosa.send === 'function') {
+                    wire.ramosa.send(rayPayload);
+                }
             });
 
             MVC.Base.Ramosa.put(doc.RAy, rayPayload);

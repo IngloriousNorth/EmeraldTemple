@@ -4,6 +4,9 @@ import RamosaBase from './Ramosa.js';
 
 function RamosaWireExtension(wire) {
     this.wire = wire;
+    
+    // CRITICAL: Attach this extension instance to the wire object so wire.ramosa works!
+    wire.ramosa = this;
 }
 
 Object.defineProperty(RamosaWireExtension.prototype, 'name', {
@@ -13,33 +16,20 @@ Object.defineProperty(RamosaWireExtension.prototype, 'name', {
     enumerable: true
 });
 
-/*RamosaWireExtension.prototype.onHandshake = async function (handshake) {
-    console.info(`[RAMOSA PROTOCOL EXTENSION] Handshake completed with peer at ${new Date().toISOString()}.`);
-    try {
-        const localRecords = await RamosaBase.loadAll();
-        if (Array.isArray(localRecords) && localRecords.length > 0) {
-            localRecords.forEach(record => {
-                if (typeof this.send === 'function') {
-                    this.send(record);
-                }
-            });
-        }
-    } catch (err) {
-        console.warn("[RAMOSA SYNC] Failed to load/send local records on handshake:", err);
-    }
-};*/
-
 RamosaWireExtension.prototype.send = function (rayPayload) {
-    const jsonBuf = new TextEncoder().encode(JSON.stringify(rayPayload));
+    // If payload is already a Uint8Array, use it; otherwise encode it
+    const jsonBuf = rayPayload instanceof Uint8Array 
+        ? rayPayload 
+        : new TextEncoder().encode(JSON.stringify(rayPayload));
     
-    // Fallback or direct transmission over wire extension
     if (typeof this.wire.extended === 'function') {
         try {
+            // WebTorrent extended messaging takes (extensionName, buffer)
             this.wire.extended('ramosa', jsonBuf);
             console.info(`[WebTorrentBase:] Sent RAyPayload at ${new Date().toISOString()}.`);
             return;
         } catch (e) {
-            // Mapping might still be initializing, retry shortly
+            console.warn("[RAMOSA PROTOCOL] Initial send failed, retrying...", e);
         }
     }
 
@@ -51,7 +41,7 @@ RamosaWireExtension.prototype.send = function (rayPayload) {
                 console.info(`[WebTorrentBase:] Sent RAyPayload (on retry) at ${new Date().toISOString()}.`);
             }
         } catch (err) {
-            console.warn("[RAMOSA PROTOCOL] Failed to send RAyPayload:", err);
+            console.warn("[RAMOSA PROTOCOL] Failed to send RAyPayload on retry:", err);
         }
     }, 400);
 };
