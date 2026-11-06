@@ -106,12 +106,36 @@ const WebTorrentBase = {
 
             console.info(`[RAMOSA LISTENING] Listening for wire.ramosa messages at ${new Date().toISOString()}`);
 
-            // Listen directly to the wire's extended event stream
             wire.on('extended', (extName, buf) => {
                 if (extName === 'ramosa') {
                     console.info(`[RAMOSA PROTOCOL] Message received on wire.ramosa at ${new Date().toISOString()}`);
                     try {
-                        const decoded = JSON.parse(buf.toString());
+                        // Convert buffer or character-code array into a clean string
+                        let rawStr = '';
+                        if (Buffer.isBuffer(buf)) {
+                            rawStr = buf.toString('utf8');
+                        } else if (buf instanceof Uint8Array || Array.isArray(buf)) {
+                            rawStr = String.fromCharCode.apply(null, buf);
+                        } else {
+                            // If it's a comma-separated string of numbers or standard string
+                            const parts = buf.toString().split(',');
+                            if (parts.length > 5 && parts.every(p => !isNaN(p))) {
+                                rawStr = String.fromCharCode.apply(null, parts.map(Number));
+                            } else {
+                                rawStr = buf.toString();
+                            }
+                        }
+
+                        const jsonStart = rawStr.indexOf('{');
+                        const jsonEnd = rawStr.lastIndexOf('}');
+                        
+                        if (jsonStart === -1 || jsonEnd === -1) {
+                            throw new Error("No valid JSON object bounds found in buffer");
+                        }
+
+                        const cleanJsonStr = rawStr.substring(jsonStart, jsonEnd + 1);
+                        const decoded = JSON.parse(cleanJsonStr);
+
                         if (decoded && decoded.Sphere) {
                             console.info("[RAMOSA PROTOCOL] Received payload from peer wire.ramosa:", decoded.Sphere.source?.name);
 
@@ -130,7 +154,7 @@ const WebTorrentBase = {
                         console.warn("[RAMOSA PROTOCOL] Failed to parse incoming extended message:", err);
                     }
                 }
-            });
+                });
             
             wire.on('close', () => {
                 console.info("[PEX IP GRAPH] Peer disconnected.");
