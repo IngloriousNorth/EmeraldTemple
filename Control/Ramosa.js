@@ -204,26 +204,16 @@ const RamosaControl = {
                 torrentBuffer: serializedBuffer
             });
 
-            // Bind payload to all current and future wires for this specific torrent instance
-            const attachPayloadToWire = (wire) => {
+             //attachPayloadToWire(wire);
+            WebTorrentBase.SWARM.wires.forEach(wire => {
                 wire.use(WebTorrentBase.RamosaWireExtension);
                 wire.rayPayload = rayPayload;
                 // If handshake already completed prior to binding, send immediately
-                if (wire.extendedMapping && wire.extendedMapping.ramosa !== undefined) {
-                    wire.ramosa.send(rayPayload);
-                }
-            };
-
-            doc.on('wire', (wire) => {
-                attachPayloadToWire(wire);
+                wire.ramosa.send(rayPayload);
             });
-
-            if (doc.wires && Array.isArray(doc.wires)) {
-                doc.wires.forEach(wire => attachPayloadToWire(wire));
-            }
-
+            
             RamosaControl.put(doc.RAy, rayPayload);
-            setTimeout(TEMPEST.route("#table"), 0);
+            setTimeout(TEMPEST.route("#table"), 222);
         });       
 
         return rayPayload;

@@ -88,21 +88,10 @@ const WebTorrentBase = {
             wire.use(this.RamosaWireExtension);
             console.info("[RAMOSA PROTOCOL SUCCESS] wire.ramosa protocol extension active.");
 
-            // PROACTIVELY BROADCAST LOCAL UPLOAD RECORDS UPON WIRE CONNECTION
-            const sendStoredPayloads = () => {
-                if (wire.extendedMapping && wire.extendedMapping.ramosa !== undefined) {
-                    const localRecords = RamosaBase.all ? RamosaBase.all() : [];
-                    if (Array.isArray(localRecords) && localRecords.length > 0) {
-                        localRecords.forEach(record => {
-                            wire.ramosa.send(record);
-                        });
-                        console.info("[RAMOSA PROTOCOL] Proactively broadcasted local records over wire.ramosa to connecting peer.");
-                    }
-                } else {
-                    setTimeout(sendStoredPayloads, 300);
-                }
-            };
-            setTimeout(sendStoredPayloads, 500);
+            const localRecords = RamosaBase.all();
+            localRecords.forEach(record=>{
+                wire.ramosa.send(record);
+            }), 500;
 
             wire.on('close', () => {
                 console.info("[PEX IP GRAPH] Peer disconnected.");
