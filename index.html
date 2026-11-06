@@ -24,6 +24,7 @@
     <!-- attaches client to window !-->
     <script type='module'>
             import WebTorrent from './lib/webtorrent.min.js';
+            window.WebTorrent = WebTorrent;
             const client = new WebTorrent();
             window.client = client;
             const isGitHubPages = window.location.hostname.endsWith('.github.io');

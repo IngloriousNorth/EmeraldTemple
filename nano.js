@@ -1,43 +1,75 @@
-(async function() {
-    console.info('[nano.js KERNEL] Initializing static AES-GCM PEX seeding & decryption pipeline...');
+// nano.js (Unified Sovereign PEX Kernel & Decryption Engine)
+import { ripemd160 } from '@noble/hashes/ripemd160';
+import { bytesToHex } from '@noble/hashes/utils';
 
+console.info("[nano.js KERNEL] Initialized sovereign PEX seed & add pipeline.");
+
+(async function() {
     try {
+        console.info('[nano.js] Fetching Gate.bundle.enc...');
         const res = await fetch('./src/Gate.bundle.enc');
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-        
-        // 1. Properly scope packageData
         const packageData = await res.json();
 
-        // 2. Fetch the raw file bytes or convert ciphertext properly for WebTorrent
-        // To match instant.io's infoHash of Gate.bundle.enc, we seed the exact JSON file buffer or the ciphertext bytes consistently.
-        const fileBuffer = new TextEncoder().encode(JSON.stringify(packageData, null, 2));
-
-        const client = window.client;
-        if (client) {
-            client.seed(fileBuffer, {
-                name: 'Gate.bundle.enc',
-                dht: false,
-                tracker: false,
-                announce: [],
-                pex: true
-            }, (torrent) => {
-                console.info(`[nano.js KERNEL] Static sovereign PEX swarm anchored: ${torrent.infoHash}`);
-                window.activeGateInfoHash = torrent.infoHash;
-            });
+        if (packageData.cipherProtocol !== 'GFQM' && packageData.cipherProtocol !== 'AES-GCM') {
+            throw new Error('Unsupported cipher protocol');
         }
 
-        // 3. Decode cryptographic parameters safely
-        const rawCiphertext = Uint8Array.from(atob(packageData.ciphertext), c => c.charCodeAt(0));
         const iv = Uint8Array.from(matchHex(packageData.iv));
         const keyBytes = Uint8Array.from(matchHex(packageData.secretKeyMock));
-        const authTag = Uint8Array.from(matchHex(packageData.authTag)); // Fixed: hex string -> Uint8Array
+        const authTag = Uint8Array.from(matchHex(packageData.authTag));
+        const rawCiphertext = Uint8Array.from(atob(packageData.ciphertext), c => c.charCodeAt(0));
 
-        // 4. Prepare AES-GCM payload buffer (ciphertext + authTag)
+        // 1. Verify RIPEMD-160 integrity hash using raw ciphertext
+        const computedHashDigest = ripemd160(rawCiphertext);
+        const computedHashHex = bytesToHex(computedHashDigest);
+
+        if (computedHashHex !== packageData.ripemd160Hash) {
+            throw new Error(`[SECURITY ALERT] RIPEMD-160 mismatch! Expected ${packageData.ripemd160Hash}, got ${computedHashHex}`);
+        }
+        console.info('[nano.js] RIPEMD-160 integrity verified successfully.');
+
+        // 2. Initialize WebTorrent Client
+        const client = window.client || new WebTorrent({
+            dht: false,
+            tracker: false,
+            pex: true
+        });
+        window.client = client;
+
+        // 3. Seed the bundle buffer first to generate/register the torrent infoHash
+        const seedBuffer = new TextEncoder().encode(JSON.stringify(packageData, null, 2));
+        
+        client.seed(seedBuffer, {
+            name: 'Gate.bundle.enc',
+            announce: [],
+            dht: false,
+            pex: true
+        }, (seededTorrent) => {
+            console.info(`[nano.js PEX] Seeded initial bundle. InfoHash: ${seededTorrent.infoHash}`);
+            
+            const deterministicInfoHash = seededTorrent.infoHash;
+
+            // 4. Reset client.torrents array state, then cleanly add via infoHash
+            client.torrents = [];
+
+            const derivedMagnet = `magnet:?xt=urn:btih:${deterministicInfoHash}&dn=EmeraldTemple_Derived_seed`;
+            client.add(derivedMagnet, {
+                infoHash: deterministicInfoHash,
+                announce: [],
+                dht: false,
+                pex: true
+            }, (addedTorrent) => {
+                console.info(`[nano.js PEX] Swarm anchored via added infoHash: ${addedTorrent.infoHash}`);
+                window.activeGateInfoHash = addedTorrent.infoHash;
+            });
+        });
+
+        // 5. Decrypt via browser-native SubtleCrypto
         const encryptedData = new Uint8Array(rawCiphertext.length + authTag.length);
         encryptedData.set(rawCiphertext);
         encryptedData.set(authTag, rawCiphertext.length);
 
-        // 5. Decrypt via SubtleCrypto
         const cryptoKey = await crypto.subtle.importKey(
             'raw',
             keyBytes,
@@ -53,11 +85,11 @@
         );
 
         const decryptedCode = new TextDecoder().decode(decryptedBuffer);
+        console.info('[nano.js SUCCESS] Gate bundle decrypted successfully.');
 
-        // 6. Execute decrypted bundle natively
+        // 6. Execute decrypted payload
         const executeCode = new Function(decryptedCode);
         executeCode();
-        console.info('[nano.js KERNEL SUCCESS] Static AES-GCM bundle successfully compiled and executed.');
 
     } catch (err) {
         console.error('[nano.js KERNEL ERROR]:', err);
