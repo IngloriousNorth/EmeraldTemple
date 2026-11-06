@@ -131,7 +131,7 @@ const TableControl = {
       $(tableSelector).empty();
       $(tableSelector).removeAttr('style').removeClass('dtr-inline collapsed');
     }
-
+    
     $(tableSelector).html(`
       <thead>
         <tr class="table-primary">
