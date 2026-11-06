@@ -13,9 +13,8 @@ Object.defineProperty(RamosaWireExtension.prototype, 'name', {
     enumerable: true
 });
 
-// UPLOADER SIDE: Broadcast local IndexedDB records the exact instant handshake completes
 RamosaWireExtension.prototype.onHandshake = async function (handshake) {
-    console.info(`[RAMOSA PROTOCOL EXTENSION] Handshake completed successfully with peer at ${new Date().toISOString()}.`);
+    console.info(`[RAMOSA PROTOCOL EXTENSION] Handshake completed with peer at ${new Date().toISOString()}.`);
     try {
         const localRecords = await RamosaBase.loadAll();
         if (Array.isArray(localRecords) && localRecords.length > 0) {
@@ -24,8 +23,6 @@ RamosaWireExtension.prototype.onHandshake = async function (handshake) {
                     this.send(record);
                 }
             });
-        } else {
-            console.warn("[RAMOSA SYNC] No local records found in IndexedDB to send on handshake.");
         }
     } catch (err) {
         console.warn("[RAMOSA SYNC] Failed to load/send local records on handshake:", err);
@@ -59,13 +56,30 @@ RamosaWireExtension.prototype.onExtended = function (buf) {
 };
 
 RamosaWireExtension.prototype.send = function (rayPayload) {
-    if (this.wire.extendedMapping && this.wire.extendedMapping.ramosa !== undefined) {
-        const jsonBuf = new TextEncoder().encode(JSON.stringify(rayPayload));
-        this.wire.extended('ramosa', jsonBuf);
-        console.info(`[WebTorrentBase:] Sent RAyPayload at ${new Date().toISOString()}.`);
-    } else {
-        console.warn("[RAMOSA PROTOCOL] Failed to send: wire.extendedMapping.ramosa is unassigned.");
+    const jsonBuf = new TextEncoder().encode(JSON.stringify(rayPayload));
+    
+    // Fallback or direct transmission over wire extension
+    if (typeof this.wire.extended === 'function') {
+        try {
+            this.wire.extended('ramosa', jsonBuf);
+            console.info(`[WebTorrentBase:] Sent RAyPayload at ${new Date().toISOString()}.`);
+            return;
+        } catch (e) {
+            // Mapping might still be initializing, retry shortly
+        }
     }
+
+    // Retry once mapping is fully established
+    setTimeout(() => {
+        try {
+            if (typeof this.wire.extended === 'function') {
+                this.wire.extended('ramosa', jsonBuf);
+                console.info(`[WebTorrentBase:] Sent RAyPayload (on retry) at ${new Date().toISOString()}.`);
+            }
+        } catch (err) {
+            console.warn("[RAMOSA PROTOCOL] Failed to send RAyPayload:", err);
+        }
+    }, 400);
 };
 
 const WebTorrentBase = {
