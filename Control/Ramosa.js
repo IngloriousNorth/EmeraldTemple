@@ -155,8 +155,8 @@ const RamosaControl = {
         const parsed = this.parseMetadata(fileText, userClasses, pdfFile.name, sourceDate);
         const rayPayload = this.parseSpheres(parsed.apaString, userClasses, sourceDate || parsed.metadata.year, parsed.metadata.title);
         
-        const resolvedWebSeed = webSeedUrl || `https://archive.org/download/ray_archive/${encodeURIComponent(pdfFile.name)}`;
-        rayPayload.Sphere.edition.webSeed = resolvedWebSeed;
+        const resolvedWebSeed = webSeedUrl;
+        rayPayload.Sphere.Doc.webSeed = resolvedWebSeed;
         const webseedList = [resolvedWebSeed];
 
         let fileExtension = '.pdf';
