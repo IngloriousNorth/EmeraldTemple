@@ -159,6 +159,7 @@ const RamosaBase = {
             } else {
                 this.Base.push(record);
             }
+            TEMPEST.route("#table");
 
         };
 
