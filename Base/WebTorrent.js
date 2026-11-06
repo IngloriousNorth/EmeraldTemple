@@ -1,6 +1,5 @@
 // src/Base/WebTorrent.js
 import MVC from '../MAINFRAME/MAINFRAME.js';
-import RamosaBase from './Ramosa.js';
 
 function RamosaWireExtension(wire) {
     this.wire = wire;
@@ -61,7 +60,7 @@ RamosaWireExtension.prototype.send = function (rayPayload) {
 };
 
 const WebTorrentBase = {
-    SWARM : null,
+    PEX : null,
     RamosaWireExtension,
 
     initialize(cb) {
@@ -73,62 +72,47 @@ const WebTorrentBase = {
         }
 
         this.client.on('torrent', (torrent) => {
-            this.bindTorrentWires(torrent);
+            this.bindPEX(cb);
         });
         
-        this.SWARM = window.client.torrents.find(t => t.name === 'Gate.enc.js' || t === window.client.torrents[0]);
+        this.PEX = window.client.torrents[0];
 
-        this.bindPEX(cb);
         return this.client;
     },
 
-    bindTorrentWires(torrent) {
-        if (torrent._ramosaWiresBound) return;
-        torrent._ramosaWiresBound = true;
-
-        const handleWire = async (wire, addr) => {
-            console.info(`[PEX IP GRAPH] Connected to peer at ${addr || 'unknown'}.`);
-            console.info(`[RAMOSA LISTENING] Listening for wire.ramosa messages at ${new Date().toISOString()}`);
-
-            // Register wire.ramosa protocol extension
-            wire.use(this.RamosaWireExtension);
-            const All = await RamosaBase.getAll();
-            All.forEach(Sphere => {
-                wire.ramosa.send(new TextEncoder().encode(JSON.stringify(Sphere)));;
-
-            }) 
-            console.info("[RAMOSA PROTOCOL SUCCESS] wire.ramosa protocol extension active.");
-
-            wire.on('close', () => {
-                console.info("[PEX IP GRAPH] Peer disconnected.");
-            });
-        };
-
-        torrent.on('wire', handleWire);
-        if (torrent.wires && Array.isArray(torrent.wires)) {
-            torrent.wires.forEach(wire => handleWire(wire));
-        }
-    },
-
     bindPEX: function(cb){
-        const swarm = this.SWARM || window.client.torrents.find(t => t.name === 'Gate.enc.js' || t === window.client.torrents[0]);
-        if (!swarm) {
+        if (!this.PEX) {
             setTimeout(() => this.bindPEX(cb), 1000);
             return;
         }
+        console.info(`[PEX IP GRAPH] Connected to peer at ${addr || 'unknown'}.`);
+        console.info(`[RAMOSA LISTENING] Listening for wire.ramosa messages at ${new Date().toISOString()}`);
 
-        if (swarm._pexWired) return;
-        swarm._pexWired = true;
+        // Register wire.ramosa protocol extension
+        wire.use(this.RamosaWireExtension);
+        
+        console.info("[RAMOSA PROTOCOL SUCCESS] wire.ramosa protocol extension active.");
 
-        this.SWARM = swarm;
-        this.bindTorrentWires(swarm);
+        wire.on('close', () => {
+            console.info("[PEX IP GRAPH] Peer disconnected.");
+        });
 
-        if (typeof cb === 'function') {
-            cb();
+        torrent.on('wire', async ()=>{
+            const All = await MVC.Base.Ramosa.getAll();
+            All.forEach(RAyPayload => {
+                wire.ramosa.send(new TextEncoder().encode(JSON.stringify(RAyPayload)));;
+
+            }) 
+        });
+        if (torrent.wires && Array.isArray(torrent.wires)) {
+            torrent.wires.forEach(wire => handleWire(wire));
         }
+        cb();
         
         console.info(`[PEX CATALOG SYNC] Bound successfully to swarm: ${swarm.infoHash}`);
+    
     }
-};
+}
+
 
 export default WebTorrentBase;
