@@ -16,7 +16,7 @@ function parseRAyData(rayArray) {
     const categories = (sphere.classes || []).map(c => c.name).filter(Boolean);
     const institution = sphere.institution || {};
     const edition = sphere.edition || {};
-    const docArray = sphere.Doc || [];
+    const doc = sphere.Doc || {};
 
     const cleanSourceName = (source.name || 'Historical Work').replace(/\s*\([^)]*\)/g, '').trim();
     const groupKey = source.uuid || cleanSourceName.toLowerCase().replace(/[^a-z0-9]/g, '_');
@@ -45,14 +45,14 @@ function parseRAyData(rayArray) {
 
     apaCitation = apaCitation.replace(/(Project Gutenberg)/gi, '<span style="color: mediumvioletred;">$1</span>');
 
-    const formattedTorrents = docArray.map(doc => ({
+    const formattedTorrents = [{
       format: doc.format || 'PDF',
       size: doc.size || 0,
       snatches: doc.snatches || 0,
       infoHash: doc.RAy || doc.infoHash,
       webseeds: doc.webseeds || doc.urlList || [doc.webseed].filter(Boolean),
       created_at: doc.created_at || edition.created_at || Date.now()
-    }));
+    }];
 
     rows.push({
       source: {
@@ -68,7 +68,7 @@ function parseRAyData(rayArray) {
         uuid: edition.uuid || 'ed_' + Math.random().toString(36).substring(2, 9),
         title: title,
         date: edition.date || source.date || 'n.d.',
-        snatches: edition.snatches || formattedTorrents.reduce((acc, t) => acc + (t.snatches || 0), 0),
+        snatches: edition.snatches || doc.snatches || 0,
         created_at: edition.created_at || Date.now(),
         publisher: pubNameStr,
         apaCitation: apaCitation
@@ -79,7 +79,6 @@ function parseRAyData(rayArray) {
 
   return rows;
 }
-
 
 function renderChildTorrentsTable(torrents) {
   if (!torrents || torrents.length === 0) {

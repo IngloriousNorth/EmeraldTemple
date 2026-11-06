@@ -101,7 +101,7 @@ const WebTorrentControl = {
             //Gemini seems to Have followed my edition_torrent format and made Docs[]
             let torrent = info.Sphere.Doc;
 
-            let infoHash = torrent.RAy;/* . */
+            let infoHash = torrent.RAy;
             let torrentBuffer = torrent.torrentBuffer;
             let webseeds = torrent.webseeds;
 
