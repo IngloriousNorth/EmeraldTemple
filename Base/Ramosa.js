@@ -111,7 +111,7 @@ const RamosaBase = {
     /**
      * Puts a record into IndexedDB and anchors it to memory state
      */
-    async put(indexKey, rayPayload) {
+    async put(RAy, rayPayload) {
         if (!this.db) {
             try {
                 this.db = await this.init();
@@ -121,36 +121,40 @@ const RamosaBase = {
             }
         }
 
+        if(get(RAy))
+            return;
+
         const transaction = this.db.transaction([this.storeName], "readwrite");
         const store = transaction.objectStore(this.storeName);
         
+
         const record = Object.assign({}, rayPayload, { 
-            index: indexKey
+            index: RAy
         });
 
         if (record.Sphere && record.Sphere.Doc) {
             if (Array.isArray(record.Sphere.Doc)) {
                 record.Sphere.Doc.forEach(d => {
-                    d.RAy = d.RAy || indexKey;
-                    d.infoHash = d.infoHash || indexKey;
+                    d.RAy = d.RAy || RAy;
+                    d.infoHash = d.infoHash || RAy;
                 });
             } else {
-                record.Sphere.Doc.RAy = record.Sphere.Doc.RAy || indexKey;
-                record.Sphere.Doc.infoHash = record.Sphere.Doc.infoHash || indexKey;
+                record.Sphere.Doc.RAy = record.Sphere.Doc.RAy || RAy;
+                record.Sphere.Doc.infoHash = record.Sphere.Doc.infoHash || RAy;
             }
         }
 
         const request = store.put(record);
 
        request.onsuccess = () => {
-            console.info(`[RAMOSA BASE] Successfully stored record and binary buffer with index: ${indexKey}`);
+            console.info(`[RAMOSA BASE] Successfully stored record and binary buffer with index: ${RAy}`);
             
             const existingIdx = this.Base.findIndex(r => 
-                r.index === indexKey || 
-                r.RAy === indexKey || 
-                r.infoHash === indexKey ||
-                r.Doc?.RAy === indexKey ||
-                r.Doc?.infoHash === indexKey
+                r.index === RAy || 
+                r.RAy === RAy || 
+                r.infoHash === RAy ||
+                r.Doc?.RAy === RAy ||
+                r.Doc?.infoHash === RAy
             );
 
             if (existingIdx >= 0) {

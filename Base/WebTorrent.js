@@ -94,6 +94,7 @@ const WebTorrentBase = {
         swarm._pexWired = true;
         this.PEX = swarm;
 
+        //TODO: duplicate wire
         const handleWire = (wire, addr) => {
             console.info(`[PEX IP GRAPH] Connected to peer at ${addr || 'unknown'}.`);
             console.info(`[RAMOSA LISTENING] Listening for wire.ramosa messages at ${new Date().toISOString()}`);
@@ -106,53 +107,51 @@ const WebTorrentBase = {
 
             console.info(`[RAMOSA LISTENING] Listening for wire.ramosa messages at ${new Date().toISOString()}`);
 
-wire.on('extended', (extName, buf) => {
-    if (extName === 'ramosa') {
-        console.info(`[RAMOSA PROTOCOL] Message received on wire.ramosa at ${new Date().toISOString()}`);
-        try {
-            // Browser-native buffer-to-string conversion using TextDecoder
-            let rawStr = '';
-            if (buf instanceof Uint8Array || buf instanceof ArrayBuffer) {
-                rawStr = new TextDecoder().decode(buf);
-            } else if (Array.isArray(buf)) {
-                rawStr = new TextDecoder().decode(new Uint8Array(buf));
-            } else if (typeof buf === 'string') {
-                rawStr = buf;
-            } else {
-                // Fallback for array-like objects or uint arrays
-                rawStr = new TextDecoder().decode(new Uint8Array(Object.values(buf)));
-            }
+            wire.on('extended', (extName, buf) => {
+                if (extName === 'ramosa') {
+                    console.info(`[RAMOSA PROTOCOL] Message received on wire.ramosa at ${new Date().toISOString()}`);
+                    try {
+                        // Browser-native buffer-to-string conversion using TextDecoder
+                        let rawStr = '';
+                        if (buf instanceof Uint8Array || buf instanceof ArrayBuffer) {
+                            rawStr = new TextDecoder().decode(buf);
+                        } else if (Array.isArray(buf)) {
+                            rawStr = new TextDecoder().decode(new Uint8Array(buf));
+                        } else if (typeof buf === 'string') {
+                            rawStr = buf;
+                        } else {
+                            // Fallback for array-like objects or uint arrays
+                            rawStr = new TextDecoder().decode(new Uint8Array(Object.values(buf)));
+                        }
 
-            const jsonStart = rawStr.indexOf('{');
-            const jsonEnd = rawStr.lastIndexOf('}');
-            
-            if (jsonStart === -1 || jsonEnd === -1) {
-                throw new Error("No valid JSON object bounds found in buffer");
-            }
+                        const jsonStart = rawStr.indexOf('{');
+                        const jsonEnd = rawStr.lastIndexOf('}');
+                        
+                        if (jsonStart === -1 || jsonEnd === -1) {
+                            throw new Error("No valid JSON object bounds found in buffer");
+                        }
 
-            const cleanJsonStr = rawStr.substring(jsonStart, jsonEnd + 1);
-            const decoded = JSON.parse(cleanJsonStr);
+                        const cleanJsonStr = rawStr.substring(jsonStart, jsonEnd + 1);
+                        const decoded = JSON.parse(cleanJsonStr);
 
-            if (decoded && decoded.Sphere) {
-                console.info("[RAMOSA PROTOCOL] Received payload from peer wire.ramosa:", decoded.Sphere.source?.name);
+                        if (decoded && decoded.Sphere) {
+                            console.info("[RAMOSA PROTOCOL] Received payload from peer wire.ramosa:", decoded.Sphere.source?.name);
 
-                const torrents = decoded.Sphere.edition.torrents || decoded.Sphere.Doc;
-                const infoHash = torrents && torrents[0] ? (torrents[0].RAy || torrents[0].infoHash) : 'ray_sync_' + Date.now();
+                            const torrents = decoded.Sphere.edition.torrents || decoded.Sphere.Doc;
+                            const infoHash = torrents && torrents[0] ? (torrents[0].RAy || torrents[0].infoHash) : 'ray_sync_' + Date.now();
 
-                window.MVC.Base.Ramosa.put(infoHash, decoded);
-                console.info("[RAMOSA BASE] Successfully persisted peer Sphere into IndexedDB:", infoHash);
+                            window.MVC.Base.Ramosa.put(infoHash, decoded);
+                            console.info("[RAMOSA BASE] Successfully persisted peer Sphere into IndexedDB:", infoHash);
 
-                if (window.MVC?.Control?.Table?.unfold) {
-                    window.MVC.Control.Table.unfold("table");
+                            window.MVC.Control.Table.unfold("table");
+                            console.info("[TABLE CONTROLLER] Table unfolded and hydrated with peer Sphere.");
+                        }
+                    } catch (err) {
+                        console.warn("[RAMOSA PROTOCOL] Failed to parse incoming extended message:", err);
+                    }
                 }
-                console.info("[TABLE CONTROLLER] Table unfolded and hydrated with peer Sphere.");
-            }
-        } catch (err) {
-            console.warn("[RAMOSA PROTOCOL] Failed to parse incoming extended message:", err);
-        }
-    }
-});
-            
+            });
+
             wire.on('close', () => {
                 console.info("[PEX IP GRAPH] Peer disconnected.");
             });
