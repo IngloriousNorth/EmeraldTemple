@@ -32,11 +32,14 @@ const WebTorrentControl = {
         }
     },
 
-    seed(fileOrSource, RayPayLoad, seedOptions, cb) {        
-        if (!seedOptions || !seedOptions.urlList || seedOptions.urlList.length === 0) {
-            console.info("[MVC.Control.webtorrent] Torrent creation canceled: empty urlList.");
-            return;
-        }
+    seed(fileOrSource, rayPayload, cb) {        
+        const seedOptions = {
+            dht: false,
+            announce : [],
+            pex: true,
+            name: apaCitation,
+            comment: JSON.stringify(rayPayload)
+        };
 
         const that = this;
 

@@ -109,19 +109,13 @@ const RamosaControl = {
             return;
         }
 
-        const seedOptions = {
-            dht: false,
-            tracker: false,
-            pex: true,
-            name: apaCitation,
-            comment: JSON.stringify(rayPayload)
-        };
+        
 
         if (webSeedUrl) {
             seedOptions.urlList = [webSeedUrl];
         }
 
-        client.seed(pdfFile, seedOptions, (torrent) => {
+        WebTorrentControl.seed(pdfFile, rayPayload, (torrent) => {
             console.info(`[RAMOSA CONTROL] Seeded successfully! InfoHash: ${torrent.infoHash}`);
 
             const releaseName = `${rayPayload.entity.institution.name}-${rayPayload.entity.source.date}-${rayPayload.entity.source.name.replace(/\s+/g, '-')}`;

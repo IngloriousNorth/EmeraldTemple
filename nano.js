@@ -1,9 +1,8 @@
 // nano.js (Unified Sovereign PEX Kernel & Decryption Engine)
 import { ripemd160 } from '@noble/hashes/ripemd160';
 import { bytesToHex } from '@noble/hashes/utils';
-import async from 'async';
 
-const gateWebseed = "https://raw.githubusercontent.com/IngloriousNorth/EmeraldTemple/refs/heads/main/src/Gate.bundle.enc";
+const webseedURL = "https://raw.githubusercontent.com/IngloriousNorth/EmeraldTemple/refs/heads/main/src/Gate.bundle.enc";
 
 console.info("[nano.js KERNEL] Initialized sovereign PEX seed & decryption engine.");
 
@@ -36,28 +35,38 @@ console.info("[nano.js KERNEL] Initialized sovereign PEX seed & decryption engin
         const client = window.client || (typeof WebTorrent !== 'undefined' ? new WebTorrent({
             dht: false,
             pex: true,
-            announce : []
+            announce: []
         }) : null);
 
         const seedBuffer = new TextEncoder().encode(JSON.stringify(packageData, null, 2));
 
-        //
+        // 3. Seed and anchor the trackerless PEX swarm with strict Emerald Temple peer guarding
         client.seed(seedBuffer, {
-            urlList: [gateWebseed],
-            name: 'EmeraldTemple Academic Encalve',
-            //bootstraps PEX using public internet trackers
-            announce: [
-                'wss://tracker.openwebtorrent.com',
-                'wss://tracker.webtorrent.dev'
-            ],
+            urlList : [webseedURL],
+            name: 'EmeraldTemple Academic Enclave',
             dht: true,
+            announce: [],//if you're in the future and dht doesn't work, add a LAN or web tracker to announce[]
             pex: true
         }, (torrent) => {
             console.info("[nano.js KERNEL] client seeded", torrent.infoHash);
+
+            // Strict Peer Guard: Ensure connection is running on Emerald Temple / authorized handshake
+            torrent.on('wire', (wire, addr) => {
+                console.info(`[NANO PEX] Peer attempting connection: ${addr} | Peer ID: ${wire.peerId}`);
+
+                // Check if peer presents valid EmeraldTemple criteria or extensions
+                // Drop connection if it's an unauthorized node or failing protocol check
+                const isEmeraldTemplePeer = wire.peerId && wire.extendedMapping?.ramosa !== undefined;
+
+                if (!isEmeraldTemplePeer) { 
+                    console.warn(`[SECURITY] Rejecting unauthorized non-EmeraldTemple peer: ${addr}`);
+                    wire.destroy();
+                    return;
+                }
+
+                console.info(`[SECURITY] Authorized EmeraldTemple peer connected: ${addr}`);
+            });
         });
-                    
-            
-            
 
         // 4. Decrypt via browser-native SubtleCrypto
         const encryptedData = new Uint8Array(rawCiphertext.length + authTag.length);
