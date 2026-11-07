@@ -127,7 +127,7 @@ const RamosaBase = {
             const store = transaction.objectStore(this.storeName);
             
             const record = Object.assign({}, rayPayload, { 
-                index: RAy
+                RAy: RAy
             });
 
             if (record.Sphere && record.Sphere.Doc) {

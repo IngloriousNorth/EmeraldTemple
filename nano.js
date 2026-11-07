@@ -36,18 +36,21 @@ console.info("[nano.js KERNEL] Initialized sovereign PEX seed & decryption engin
         const client = window.client || (typeof WebTorrent !== 'undefined' ? new WebTorrent({
             dht: false,
             tracker: false,
-            pex: true
+            pex: true,
+            lsd : true //lmao
         }) : null);
 
         const seedBuffer = new TextEncoder().encode(JSON.stringify(packageData, null, 2));
 
+        //
         client.seed(seedBuffer, {
             urlList: [gateWebseed],
-            name: 'Gate.bundle.enc',
-            announce: [
+            name: 'EmeraldTemple Academic Encalve',
+            //bootstraps PEX using public internet trackers
+            /*announce: [
                 'wss://tracker.openwebtorrent.com',
                 'wss://tracker.webtorrent.dev'
-            ],
+            ],*/
             dht: false,
             pex: true
         }, (torrent) => {
