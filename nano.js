@@ -1,7 +1,6 @@
 // nano.js (Unified Sovereign PEX Kernel & Decryption Engine)
 import { ripemd160 } from '@noble/hashes/ripemd160';
 import { bytesToHex } from '@noble/hashes/utils';
-import async from 'async';
 
 const gateWebseed = "https://raw.githubusercontent.com/IngloriousNorth/EmeraldTemple/refs/heads/main/src/Gate.bundle.enc";
 
@@ -14,7 +13,7 @@ console.info("[nano.js KERNEL] Initialized sovereign PEX seed & decryption engin
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         const packageData = await res.json();
 
-        if (packageData.cipherProtocol !== 'GFQM' && packageData.cipherProtocol !== 'AES-GCM') {
+        if (packageData.cipherProtocol !== 'AES-GCM') {
             throw new Error('Unsupported cipher protocol');
         }
 
@@ -33,29 +32,30 @@ console.info("[nano.js KERNEL] Initialized sovereign PEX seed & decryption engin
         console.info('[nano.js KERNEL] RIPEMD-160 integrity verification passed securely.');
 
         // 2. Initialize or retrieve WebTorrent Client on window scope
-        const client = window.client || (typeof WebTorrent !== 'undefined' ? new WebTorrent({
+        const client = window.client;
+        if (!client) {
+            throw new Error('[nano.js KERNEL ERROR] window.client is not initialized.');
+        }
+
+        // 3. Anchor swarm via magnet URI using the verified deterministic RIPEMD-160 infoHash
+        const magnetURI = `magnet:?xt=urn:btih:${computedHashHex}&dn=Gate.bundle.enc`;
+
+        client.add(magnetURI, {
+            name: 'EmeraldTemple Academic Enclave',
             dht: false,
-            pex: true,
-            announce : []
-        }) : null);
-
-        const seedBuffer = new TextEncoder().encode(JSON.stringify(packageData, null, 2));
-
-        //
-        client.seed(seedBuffer, {
-            urlList: [gateWebseed],
-            name: 'EmeraldTemple Academic Encalve',
-            //bootstraps PEX using public internet trackers
-            announce: [
-            ],
-            dht: true,
+            announce : ["wss://tracker.openwebtorrent.com", "wss://tracker.webtorrent.dev"],
             pex: true
         }, (torrent) => {
-            console.info("[nano.js KERNEL] client seeded", torrent.infoHash);
+            torrent.ripemd160IntegrityHash = computedHashHex;
+            console.info(`[nano.js KERNEL] Swarm anchored via magnet: ${torrent.infoHash}`);
+
+            torrent.on('wire', (wire, addr) => {
+                console.info(`[IP GRAPH PEX] Connected to peer via ${wire.type} at address: ${addr}`);
+                wire.on('close', () => {
+                    console.info(`[IP GRAPH PEX] Peer disconnected: ${addr}`);
+                });
+            });
         });
-                    
-            
-            
 
         // 4. Decrypt via browser-native SubtleCrypto
         const encryptedData = new Uint8Array(rawCiphertext.length + authTag.length);

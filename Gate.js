@@ -8,7 +8,7 @@ import { bytesToHex } from '@noble/hashes/utils';
 
 const INSTITUTIONAL_PRIVATE_TOKEN = "Public_Domain_Safe_Harbor";
 
-export const Gate = {
+const Gate = {
     initialized: false,
     authTriggered: false,
 
@@ -44,6 +44,3 @@ export const Gate = {
 
 
 Gate.init();
-
-
-export default Gate;
