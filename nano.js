@@ -35,9 +35,8 @@ console.info("[nano.js KERNEL] Initialized sovereign PEX seed & decryption engin
         // 2. Initialize or retrieve WebTorrent Client on window scope
         const client = window.client || (typeof WebTorrent !== 'undefined' ? new WebTorrent({
             dht: false,
-            tracker: false,
             pex: true,
-            lsd : true //lmao
+            announce : []
         }) : null);
 
         const seedBuffer = new TextEncoder().encode(JSON.stringify(packageData, null, 2));
@@ -47,11 +46,11 @@ console.info("[nano.js KERNEL] Initialized sovereign PEX seed & decryption engin
             urlList: [gateWebseed],
             name: 'EmeraldTemple Academic Encalve',
             //bootstraps PEX using public internet trackers
-            /*announce: [
+            announce: [
                 'wss://tracker.openwebtorrent.com',
                 'wss://tracker.webtorrent.dev'
-            ],*/
-            dht: false,
+            ],
+            dht: true,
             pex: true
         }, (torrent) => {
             console.info("[nano.js KERNEL] client seeded", torrent.infoHash);
