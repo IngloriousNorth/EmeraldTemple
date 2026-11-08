@@ -32,7 +32,7 @@ const WebTorrentControl = {
         }
     },
 
-    seed(fileOrSource, parsed, rayPayload, cb) {        
+    seed(fileOrSource, urlList, apaCitation, rayPayload, cb) {        
         const seedOptions = {
             dht: false,
             announce : [],

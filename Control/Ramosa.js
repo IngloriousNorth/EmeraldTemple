@@ -274,11 +274,9 @@ const RamosaControl = {
             }
         };
 
-        const parsed = this.parseMetadata(fileText, userClasses, pdfFile.name, sourceDate);
+        const urlList = this.parseMetadata(fileText, userClasses, pdfFile.name, sourceDate);
 
-        console.info(parsed);
-
-        rayPayload = this.parseSpheres(parsed.apaString, userClasses, sourceDate || parsed.metadata.year, parsed.metadata.title);
+        rayPayload = this.parseSpheres(apaCitation.apaString, userClasses, sourceDate || apaCitation.metadata.year, apaCitation.metadata.title);
         
         const cover_img = await this.extractCompressedCoverArt(pdfFile);
 
@@ -291,7 +289,7 @@ const RamosaControl = {
             fileExtension = pdfFile.name.substring(pdfFile.name.lastIndexOf('.'));
         }
 
-        const cleanTorrentName = `${parsed.dn.replace(/[*_]/g, '').trim()}${fileExtension}`;
+        const cleanTorrentName = `${apaCitation.dn.replace(/[*_]/g, '').trim()}${fileExtension}`;
 
         const seedOptions = {
             name: cleanTorrentName,
@@ -303,7 +301,7 @@ const RamosaControl = {
             pex: true
         };
 
-        WebTorrentControl.seed(pdfFile, parsed, rayPayload, seedOptions, (doc) => {
+        WebTorrentControl.seed(pdfFile, urlList, apaCitation, rayPayload, seedOptions, (doc) => {
             doc.RAy = doc.infoHash;
             console.info(`[RAMOSA CONTROL] Torrent active! RAy GraphDB ID (InfoHash): ${doc.RAy}`);
 
@@ -311,7 +309,7 @@ const RamosaControl = {
 
             rayPayload.Sphere.Doc = {
                 format: fileExtension.replace('.', '').toUpperCase(),
-                res: `Pre-1931 Archive Scan (${parsed.detectedCategory})`,
+                res: `Pre-1931 Archive Scan (${apaCitation.detectedCategory})`,
                 RAy: doc.RAy,
                 size: pdfFile.size,
                 webseeds: webseedList,
