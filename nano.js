@@ -44,7 +44,8 @@ console.info("[nano.js KERNEL] Initialized sovereign PEX seed & decryption engin
             name: 'EmeraldTemple Academic Enclave',
             dht: false,
             announce : ["wss://tracker.openwebtorrent.com", "wss://tracker.webtorrent.dev"],
-            pex: true
+            pex: true,
+            lsd : true
         }, (torrent) => {
             torrent.ripemd160IntegrityHash = computedHashHex;
             console.info(`[nano.js KERNEL] Swarm anchored via magnet: ${torrent.infoHash}`);

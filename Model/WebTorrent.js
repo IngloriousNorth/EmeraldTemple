@@ -126,7 +126,6 @@ const RamosaProtocol = {
 
                         console.log(decoded);
                         const torrents = decoded.Sphere.Doc;
-                        const infoHash = torrents && torrents[0] ? (torrents[0].RAy || torrents[0].infoHash) : 'ray_sync_' + Date.now();
 
                         window.MVC.Base.Ramosa.put(infoHash, decoded);
                         //setTimeout(MVC.Control.Table.unfold("#table"), 222);

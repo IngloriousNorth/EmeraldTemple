@@ -1,4 +1,4 @@
-import WebTorrentBase from '../Base/WebTorrent.js';
+import WebTorrentBase from '../Model/WebTorrent.js';
 
 const APPROVED_DOMAINS = [
     ".edu",
@@ -32,18 +32,11 @@ const WebTorrentControl = {
         }
     },
 
-    seed(fileOrSource, urlList, apaCitation, rayPayload, cb) {        
-        const seedOptions = {
-            dht: false,
-            announce : [],
-            pex: true,
-            name: apaCitation,
-            comment: JSON.stringify(rayPayload)
-        };
-
+    seed : function(pdfBuffer, seedOptions, rayPayload, cb) {        
         const that = this;
 
-        console.info(seedOptions.urlList);
+        console.log(seedOptions.urlList);
+
         seedOptions.urlList.forEach(function(URL){
             if(!that.isWhitelisted(URL)){
                 console.error(`[SECURITY REJECTED] Domain not allowed by whitelist policy: ${URL}`);
@@ -52,15 +45,12 @@ const WebTorrentControl = {
             }
         });
 
-        console.info("null?:", seedOptions.announce);
+        console.info("[WebTorrentControl]", "trackerless PEX: ", seedOptions.announce);
 
-        const client = window.client || window.webtorrentClient;
-        if (!client) {
-            console.error("[MVC.Control.webtorrent] window.client WebTorrent instance not found.");
-            return;
-        }
+        // Load the raw bytes of the PDF
+        //3x
 
-        client.seed(fileOrSource, seedOptions, async (torrent) => {
+        client.seed(pdfBuffer, seedOptions, async (torrent) => {
             MVC.Hook.Hero.assertProgress(torrent.infoHash);
             setInterval(MVC.Hook.Hero.onProgress(torrent), 500);
             torrent.on('done', ()=>{

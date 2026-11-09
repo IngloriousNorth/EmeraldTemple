@@ -25,7 +25,7 @@ window.dragDrop = dragDrop;
 import moment from 'moment';
 window.moment = moment;
 
-import '../Base/Form';
+import '../Model/Form';
 
 import '../Hook/Mobile';
 

@@ -1,19 +1,31 @@
-// src/Control/Ramosa.js
+// ==========================================
+// src/Control/Ramosa.js - Full Controller Engine
+// ==========================================
+
 import MVC from '../MAINFRAME/MAINFRAME.js';
-import RamosaModel from '../Base/Ramosa.js';
+import RamosaModel from '../Model/Ramosa.js';
 import WebTorrentControl from './WebTorrent.js';
-import WebTorrentBase from '../Base/WebTorrent.js';
+import WebTorrentBase from '../Model/WebTorrent.js';
+import { pipeline, env } from '@huggingface/transformers';
+
+// Configure transformers environment for browser execution
+env.allowLocalModels = false;
+
+class PipelineSingleton {
+    static task = 'text-generation';
+    static model = 'Xenova/Qwen1.5-0.5B-Chat';
+    static instance = null;
+
+    static async getInstance(progress_callback = null) {
+        if (!this.instance) {
+            this.instance = await pipeline(this.task, this.model, { progress_callback });
+        }
+        return this.instance;
+    }
+}
 
 const RamosaControl = {
     pipelineInstance: null,
-
-    fflags: {
-        TYPE_0_GUTENBERG: true,
-        TYPE_1_MODERN_SCAN: true,
-        TYPE_2_VICTORIAN_19TH: true,
-        TYPE_3_GOOGLE_BOOKS: true,
-        TYPE_4_HOLY_SEE: true
-    },
 
     toTitleCase(str) {
         if (!str) return "";
@@ -21,17 +33,11 @@ const RamosaControl = {
         return cleanStr.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
     },
 
-    spacedTitleFromFilename(fileName) {
-        let name = fileName.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
-        name = name.replace(/([a-z])([A-Z])/g, '$1 $2');
-        return name.replace(/\s*\(.*?\)/g, '').trim();
-    },
-
     generateAPAAndDN(author, year, title, translator, publisher) {
         let cleanAuthor = author ? author.replace(/\*/g, '').trim() : "";
         if (/^unknown/i.test(cleanAuthor)) cleanAuthor = "";
 
-        let baseTitle = title.replace(/\*/g, '').trim().replace(/\s*\(.*?\)/g, '').trim();
+        let baseTitle = title ? title.replace(/\*/g, '').trim().replace(/\s*\(.*?\)/g, '').trim() : "Historical Work";
         const cleanTitle = this.toTitleCase(baseTitle);
         
         let cleanPublisher = publisher ? publisher.replace(/\*/g, '').trim() : null;
@@ -48,131 +54,77 @@ const RamosaControl = {
         return { apaString, dn: apaString, cleanTitle, cleanAuthor, cleanPublisher, cleanTranslator };
     },
 
-    skipGoogleBoilerplate(rawText) {
-        if (!rawText) return "";
-        const googleSignatures = [
-            /Digitized by\s+(?:Google|the Internet Archive)/i,
-            /Original from\s+[A-Za-z\s]+University/i,
-            /This is a digital copy of a book$/i
-        ];
-        let processedText = rawText;
-        for (const sig of googleSignatures) {
-            if (sig.test(processedText)) {
-                const parts = processedText.split(/(?:Digitized by Google|Original from).*?(?:\r?\n){2,}/is);
-                if (parts.length > 1 && parts[parts.length - 1].trim().length > 50) {
-                    processedText = parts[parts.length - 1];
-                }
-            }
+    async extractFirst12PagesText(pdfFile) {
+        let arrayBuffer;
+        if (typeof pdfFile.arrayBuffer === 'function') {
+            arrayBuffer = await pdfFile.arrayBuffer();
+        } else if (pdfFile instanceof ArrayBuffer) {
+            arrayBuffer = pdfFile;
+        } else {
+            throw new Error("[RAMOSA CONTROL] Invalid file reference passed to extractFirst12PagesText");
         }
-        return processedText;
+
+        const pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        const totalPagesToScan = Math.min(pdfDoc.numPages, 12);
+        let extractedText = "";
+
+        for (let i = 1; i <= totalPagesToScan; i++) {
+            const page = await pdfDoc.getPage(i);
+            const textContent = await page.getTextContent();
+            const pageString = textContent.items.map(item => item.str).join(" ");
+            extractedText += `\n--- PAGE ${i} ---\n` + pageString;
+        }
+
+        return extractedText.trim();
     },
 
-    parseMetadata(rawText, userClasses = "Public Domain", fileName = "", sourceDate = null) {
-        const cleanedRawText = this.skipGoogleBoilerplate(rawText);
-        const cleanText = cleanedRawText.replace(/\s+/g, ' ').trim();
+    async parseMetadata(pdfFile, userClasses = "Public Domain", sourceDate = null) {
+        // Step 1: Extract text directly from the first 12 pages via pdfjsLib so the AI reads the title page
+        const rawTitlePagesText = await this.extractFirst12PagesText(pdfFile);
+        const cleanText = rawTitlePagesText.replace(/\s+/g, ' ').trim().substring(0, 4000);
 
-        let title = this.spacedTitleFromFilename(fileName);
-        let author = "";
-        let year = sourceDate || "Pre-1931";
-        let publisher = null;
-        let detectedCategory = "UNKNOWN";
-        let translator = null;
+        let extracted = { title: "Historical Work", author: "", year: sourceDate || "Pre-1931", publisher: null, translator: null };
 
-        const isValidTitle = (t) => t && !/(?:Digitized by|Internet Archive|Google Books|Original from|University Library|Project Gutenberg|funding from|Microsoft Corporation|http|www\.|\b20\d{2}\b)/i.test(t) && t.length > 2;
-        if (!isValidTitle(title)) title = "Historical Work";
+        try {
+            console.info("[RAMOSA CONTROL] Loading client-side local LLM pipeline via Transformers.js...");
+            const generator = await PipelineSingleton.getInstance();
 
-        if (this.fflags.TYPE_4_HOLY_SEE && (/Holy See|Vatican|Pontifical|Apostolic|Encyclical|Cardinal|Archbishop|Bishop|Faith of Our Fathers|Gibbons|P\.? J\.? Kenedy|Printers to the Holy See|Leo XIII|Pius/i.test(cleanText) || /vatican\.va/i.test(cleanText))) {
-            detectedCategory = "TYPE_4_HOLY_SEE";
-            year = sourceDate || cleanText.match(/\b(1[8-9]\d{2}|20\d{2})\b/)?.[1] || "Pre-1931";
-
-            // Author extraction for Holy See (checking for "by" or specific figures)
-            const holySeeByMatch = cleanText.match(/(?:(?:By|AUTHOR)\s+|by\s+)([A-Z][a-zA-Z\s\.,-]+?)(?=\s+(?:D\.D\.|LL\.D\.|M\.A\.|VOL|PUBLISHED|LONDON|NEW\s+YORK|EDINBURGH|\d{4}|$))/i);
-            if (holySeeByMatch && holySeeByMatch[1]) {
-                author = holySeeByMatch[1].trim();
-            } else if (/James Gibbons/i.test(cleanText)) {
-                author = "James Gibbons";
-            } else if (/Leo XIII/i.test(cleanText)) {
-                author = "Leo XIII, Pope";
-            } else if (/Pius XI/i.test(cleanText)) {
-                author = "Pius XI, Pope";
-            } else if (/Pius X/i.test(cleanText)) {
-                author = "Pius X, Pope";
-            }
-
-            // Publisher extraction: what comes after common publishing cities (London, New York, Edinburgh, etc.)
-            const pubMatch = cleanText.match(/(?:(?:London|New\s+York|Edinburgh|Dublin|Oxford|Cambridge|Boston|Glasgow)[:,\s]+)([A-Z][a-zA-Z\s&,.-]{3,40}(?:Co\.|Publishers|Sons|Brothers|Company|Limited|Ltd|Press)?)\b/i);
-            if (pubMatch && pubMatch[1]) {
-                const candidate = pubMatch[1].trim();
-                if (candidate && !/Internet Archive|Digitized|Microsoft|Google|http|www|Public Domain/i.test(candidate)) {
-                    publisher = candidate;
-                }
-            }
-            if (!publisher) {
-                publisher = "Vatican Polyglot Press";
-            }
-        } else if (this.fflags.TYPE_0_GUTENBERG && (/Project Gutenberg/i.test(cleanText) || /eBook of/i.test(cleanText))) {
-            detectedCategory = "TYPE_0_GUTENBERG";
-            publisher = "Project Gutenberg";
-            year = cleanText.match(/(?:Release Date|EBook #\d+)[^\d]*(\d{4})/i)?.[1] || cleanText.match(/\b(1[8-9]\d{2}|20\d{2})\b/)?.[1] || year;
-
-            const gutAuthorMatch = cleanText.match(/Author:\s*([A-Z][a-zA-Z\s,.-]+?)(?=\s+(?:Release Date|EBook|Language:|The Project|Credits|Copyright|Translator|Contributor|Title:|$))/i);
-            if (gutAuthorMatch) {
-                author = gutAuthorMatch[1].trim();
-            }
-        } else {
-            detectedCategory = "TYPE_2_VICTORIAN_19TH";
-            year = cleanText.match(/\b(1[6-9]\d{2})\b/)?.[1] || year;
-
-            // Victorian / 19th Century: Title right before "by" and author comes after
-            const titleByAuthorMatch = cleanText.match(/([A-Z][A-Za-z0-9\s,.:;-]{3,80})\s+\bby\b\s+([A-Z][a-zA-Z\s\.,-]+?)(?=\s+(?:D\.D\.|LL\.D\.|M\.A\.|VOL|PUBLISHED|LONDON|NEW\s+YORK|EDINBURGH|\d{4}|$))/i);
+            // Step 2: Simple AI prompt covering all book cases for metadata extraction
+            const prompt = `Analyze the following book opening pages and extract the metadata. Output strict JSON with keys: "title", "author", "original_published_date", "edition_published_date", "publisher", "translator".\n\nText:\n${cleanText}\n\nJSON:`;
+            const output = await generator(prompt, { max_new_tokens: 150, temperature: 0.1 });
             
-            if (titleByAuthorMatch) {
-                title = titleByAuthorMatch[1].trim();
-                const candidateAuthor = titleByAuthorMatch[2].trim();
-                if (!/Internet Archive|Digitized|Microsoft|Google|http|www/i.test(candidateAuthor)) {
-                    author = candidateAuthor;
-                }
-            } else {
-                const authorMatch = cleanText.match(/(?:(?:By|AUTHOR)\s+|By\s+the\s+Author\s+of\s+)([A-Z][a-zA-Z\s\.,-]+?)(?=\s+(?:D\.D\.|LL\.D\.|M\.A\.|VOL|PUBLISHED|LONDON|NEW\s+YORK|EDINBURGH|\d{4}|$))/i);
-                if (authorMatch && !/Internet Archive|Digitized|Microsoft|Google/i.test(authorMatch[1])) {
-                    author = authorMatch[1].trim();
-                }
+            const responseText = output[0]?.generated_text || "";
+            const jsonStartIndex = responseText.indexOf('{');
+            const jsonEndIndex = responseText.lastIndexOf('}');
+            if (jsonStartIndex !== -1 && jsonEndIndex !== -1 && jsonEndIndex > jsonStartIndex) {
+                const parsed = JSON.parse(responseText.substring(jsonStartIndex, jsonEndIndex + 1));
+                extracted.title = parsed.title || extracted.title;
+                extracted.author = parsed.author || extracted.author;
+                extracted.year = parsed.original_published_date || extracted.year;
+                extracted.publisher = parsed.publisher || extracted.publisher;
+                extracted.translator = parsed.translator || extracted.translator;
             }
-
-            // Victorian Publisher Imprint Detection: what comes after common publishing cities (London, New York, Edinburgh, etc.)
-            const pubMatch = cleanText.match(/(?:(?:London|New\s+York|Edinburgh|Dublin|Oxford|Cambridge|Boston|Glasgow)[:,\s]+)([A-Z][a-zA-Z\s&,.-]{3,40}(?:Co\.|Publishers|Sons|Brothers|Company|Limited|Ltd|Press)?)\b/i) ||
-                             cleanText.match(/([A-Z][a-zA-Z\s&,.-]{3,40}\s+(?:Co\.,?|Publishers|Sons|Brothers|Company|Limited|Ltd|Press))\s+(?:in\s+)?(?:London|New\s+York|Edinburgh|Dublin|Oxford|Cambridge|Boston|Glasgow)\b/i);
-            if (pubMatch) {
-                const candidate = (pubMatch[1] || pubMatch[0]).trim();
-                if (candidate && !/Internet Archive|Digitized|Microsoft|Google|http|www|Public Domain/i.test(candidate)) {
-                    publisher = candidate;
-                }
-            }
+        } catch (err) {
+            console.warn("[RAMOSA CONTROL] Local Transformers.js inference failed, falling back to defaults:", err);
         }
 
-        const generated = this.generateAPAAndDN(author, year, title, translator, publisher);
+        const generated = this.generateAPAAndDN(extracted.author, extracted.year, extracted.title, extracted.translator, extracted.publisher);
         return {
-            detectedCategory,
+            detectedCategory: "OPEN_AI_ARCHIVE",
             apaString: generated.apaString,
             dn: generated.dn,
-            metadata: { title: generated.cleanTitle, author: generated.cleanAuthor, year, publisher: generated.cleanPublisher, translator: generated.cleanTranslator, userClasses }
+            metadata: { title: generated.cleanTitle, author: generated.cleanAuthor, year: extracted.year, publisher: generated.cleanPublisher, translator: generated.cleanTranslator, userClasses }
         };
     },
 
-    // Empedocles
     parseSpheres(apaString, commaSeparatedClasses, sourceDate = null, forcedTitle = null) {
-        const regex = /^(?<authors>(?:[A-Z][a-zA-ZÀ-ÿ-']+(?:,\s[A-Z]\.\s?(?:[A-Z].)?)?,?\s*(?:&|and)?\s*)+)\s*\((?<year>\d{4}[a-z]?)\)\.\s+(?<title>[^.]+?)\./;
-        const match = apaString.match(regex);
+        const authorMatch = apaString.match(/^(.*?)\s*\(/);
+        const yearMatch = apaString.match(/\((\d{4}[a-z]?)\)/);
+        const titleMatch = apaString.match(/\)\.\s+(.*?)\./);
 
-        let author = "Unknown Author";
-        let year = sourceDate || "n.d.";
-        let title = forcedTitle || "Historical Work";
-
-        if (match && match.groups) {
-            author = match.groups.authors ? match.groups.authors.trim() : author;
-            year = match.groups.year ? match.groups.year.trim() : year;
-            title = match.groups.title ? this.toTitleCase(match.groups.title.replace(/\*/g, '').trim()) : title;
-        }
+        let author = authorMatch ? authorMatch[1].trim() : "Unknown Author";
+        let year = sourceDate || (yearMatch ? yearMatch[1] : "n.d.");
+        let title = forcedTitle || (titleMatch ? titleMatch[1].trim() : "Historical Work");
 
         const classList = commaSeparatedClasses ? (typeof commaSeparatedClasses === 'string' ? commaSeparatedClasses.split(',').map(c => c.trim()).filter(Boolean) : commaSeparatedClasses) : ["Public Domain"];
 
@@ -205,7 +157,15 @@ const RamosaControl = {
     },
 
     async extractCompressedCoverArt(pdfFile) {
-        const arrayBuffer = await pdfFile.arrayBuffer();
+        let arrayBuffer;
+        if (typeof pdfFile.arrayBuffer === 'function') {
+            arrayBuffer = await pdfFile.arrayBuffer();
+        } else if (pdfFile instanceof ArrayBuffer) {
+            arrayBuffer = pdfFile;
+        } else {
+            throw new Error("[RAMOSA CONTROL] Invalid file reference passed to extractCompressedCoverArt");
+        }
+
         const pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
         
         let targetPageNum = 1;
@@ -251,38 +211,16 @@ const RamosaControl = {
     },
 
     async process(pdfFile, fileText, webSeedUrl = null, sourceDate = null, userClasses = "Public Domain") {
-        console.info("[RAMOSA CONTROL] Processing extracted PDF text...");
+        console.info("[RAMOSA CONTROL] Processing PDF via local Transformers.js pipeline (scanning first 12 pages)...");
 
-        let rayPayload = {
-            rayVersion: "1.0",
-            categoryType: "TYPE_1_MODERN_SCAN",
-            Sphere: {
-                source: {
-                    uuid: `src_${Math.random().toString(36).substring(2, 9)}`,
-                    name: "Emerald Temple Archives",
-                    genus: "Document / Archive",
-                    date: new Date().toISOString().split('T')[0],
-                    cover_img: ""
-                },
-                edition: {
-                    uuid: `ed_${Math.random().toString(36).substring(2, 9)}`,
-                    title: "",
-                    date: new Date().toISOString().split('T')[0],
-                    created_at: Date.now(),
-                    webSeed: webSeedUrl
-                }
-            }
-        };
+        const apaCitation = await this.parseMetadata(pdfFile, userClasses, sourceDate);
+        
+        console.info(`[RAMOSA CONTROL] Active Metadata Category: ${apaCitation.detectedCategory}`);
 
-        const urlList = this.parseMetadata(fileText, userClasses, pdfFile.name, sourceDate);
-
-        rayPayload = this.parseSpheres(apaCitation.apaString, userClasses, sourceDate || apaCitation.metadata.year, apaCitation.metadata.title);
+        let rayPayload = this.parseSpheres(apaCitation.apaString, userClasses, sourceDate || apaCitation.metadata.year, apaCitation.metadata.title);
         
         const cover_img = await this.extractCompressedCoverArt(pdfFile);
-
-        const resolvedWebSeed = webSeedUrl;
-        rayPayload.Sphere.Doc.webSeed = resolvedWebSeed;
-        const webseedList = [resolvedWebSeed];
+        rayPayload.Sphere.source.cover_img = cover_img;
 
         let fileExtension = '.pdf';
         if (pdfFile && typeof pdfFile.name === 'string' && pdfFile.name.includes('.')) {
@@ -290,43 +228,49 @@ const RamosaControl = {
         }
 
         const cleanTorrentName = `${apaCitation.dn.replace(/[*_]/g, '').trim()}${fileExtension}`;
+        const webseedList = webSeedUrl ? [webSeedUrl] : [];
 
+        console.info(webseedList);
+
+        const arrayBuffer = await pdfFile.arrayBuffer();
+        const pdfLibFile = await pdfjsLib.getDocument({data : arrayBuffer}).promise;
+        const pdfBuffer = pdfLibFile.getData();
+
+        const fileBytes = new Uint8Array(pdfBuffer);
+        
         const seedOptions = {
             name: cleanTorrentName,
-            comment: JSON.stringify(rayPayload),
             urlList: webseedList,
+            info: JSON.stringify(rayPayload),
             dht: false,
             tracker: false,
             announce: [],
             pex: true
         };
 
-        WebTorrentControl.seed(pdfFile, urlList, apaCitation, rayPayload, seedOptions, (doc) => {
-            doc.RAy = doc.infoHash;
-            console.info(`[RAMOSA CONTROL] Torrent active! RAy GraphDB ID (InfoHash): ${doc.RAy}`);
-
-            if (!rayPayload.Sphere.Doc) rayPayload.Sphere.Doc = [];
+        WebTorrentControl.seed(fileBytes, seedOptions, rayPayload, (torrent) => {
+            torrent.RAy = torrent.infoHash;
+            console.info(`[RAMOSA CONTROL] Torrent active! RAy GraphDB ID (InfoHash): ${torrent.RAy}`);
 
             rayPayload.Sphere.Doc = {
                 format: fileExtension.replace('.', '').toUpperCase(),
                 res: `Pre-1931 Archive Scan (${apaCitation.detectedCategory})`,
-                RAy: doc.RAy,
+                RAy: torrent.RAy,
                 size: pdfFile.size,
                 webseeds: webseedList,
-                torrentBuffer: doc.torrentFile
+                torrentBuffer: torrent.torrentFile
             };
 
-            rayPayload.Sphere.source.cover_img = cover_img;
-
             WebTorrentBase.PEX.wires.forEach(wire => {
-                wire.use(WebTorrentBase.RamosaWireExtension);
-                
                 if (wire.ramosa && typeof wire.ramosa.send === 'function') {
                     wire.ramosa.send(rayPayload);
                 }
             });
 
-            MVC.Base.Ramosa.put(doc.RAy, rayPayload);
+            if (MVC.Base?.Ramosa && typeof MVC.Base.Ramosa.put === 'function') {
+                MVC.Base.Ramosa.put(torrent.RAy, rayPayload);
+                setTimeout(TEMPEST.route("#table"), 222);
+            }
         });        
 
         return rayPayload;

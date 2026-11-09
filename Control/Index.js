@@ -1,6 +1,6 @@
 // src/Control/Index.js
 import WebTorrentControl from '../Control/WebTorrent.js';
-import RamosaProtocol from '../Base/WebTorrent.js'
+import RamosaProtocol from '../Model/WebTorrent.js'
 
 const IndexControl = {
     initialize: function() {
@@ -19,16 +19,7 @@ const IndexControl = {
                     {
                         page: "table",
                         fn: function() {
-                            let ghost;
                             MVC.Control.Table.unfold("table");
-
-                            RamosaProtocol.initialize(()=>{
-                                ghost = true;
-                            });
-                            setTimeout(function(){
-                                if(!ghost)
-                                    MVC.Control.Table.unfold("table");
-                            }, 4444);
                         }
                     },
                     {
@@ -74,6 +65,8 @@ const IndexControl = {
                 if (window.TEMPEST && typeof TEMPEST.initialize === 'function') {
                     TEMPEST.initialize(tempestConfig, async () => {
                         MVC.Hook.Ramosa.unfurl();
+                        RamosaProtocol.initialize();
+
                     });
                 }
             });

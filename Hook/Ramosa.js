@@ -29,6 +29,7 @@ const RamosaHook = {
 
             console.info(`[RAMOSA HOOK] PDF dropped: "${droppedFile.name}". Extracting text via pdfjs...`);
 
+            // Inside RamosaHook.unfurl...
             (async () => {
                 try {
                     const arrayBuffer = await droppedFile.arrayBuffer();
@@ -47,11 +48,9 @@ const RamosaHook = {
 
                     console.info(`[RAMOSA HOOK] Extracted ${extractedText.length} characters. Requesting user metadata...`);
 
-                    // ── Prompt Sequence ──────────────────────────────────
                     const webSeedUrl  = prompt("1/3. Enter whitelisted Web Seed URL:", `https://dn721902.ca.archive.org/0/items/citygod00dodsgoog/citygod00dodsgoog_text.pdf`);
                     const sourceDate  = prompt("2/3. Enter Source Publication Date (e.g. 1921 or n.d.):", "426");
                     const userClasses = prompt("3/3. Enter comma-separated classes/categories:", "Public Domain, kingdom of god");
-                    // ─────────────────────────────────────────────────────
 
                     if(!webSeedUrl){
                         return;
@@ -64,8 +63,7 @@ const RamosaHook = {
                         }
                     }
 
-                    // Correct argument order matching controller signature:
-                    // async process(pdfFile, fileText, webSeedUrl, sourceDate, userClasses)
+                    // Pass droppedFile (the actual File object) instead of pdfDoc
                     await MVC.Control.Ramosa.process(
                         droppedFile, 
                         extractedText, 

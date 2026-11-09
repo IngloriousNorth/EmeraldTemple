@@ -7,11 +7,11 @@ import RamosaHook from "../Hook/Ramosa.js";
 
 import TableControl from '../Control/Table.js';
 
-import TableBase from '../Base/Table.js';
+import TableBase from '../Model/Table.js';
 
 import HeroHook from '../Hook/Hero.js';
 
-import RamosaBase from '../Base/Ramosa.js';
+import RamosaBase from '../Model/Ramosa.js';
 
 const MVC = {
     Base: {

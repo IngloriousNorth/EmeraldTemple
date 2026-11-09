@@ -1,5 +1,8 @@
-// EmeraldTemple Universal p2p GraphDB imports webtorrent functions
-import WebTorrentControl from './WebTorrent.js'
+// ==========================================
+// (MVC.)Control.Table.js - Table Controller Engine
+// ==========================================
+
+import WebTorrentControl from './WebTorrent.js';
 
 /**
  * Table.js Controller (Bootstrap 5 + jQuery UI Hybrid)
@@ -7,7 +10,7 @@ import WebTorrentControl from './WebTorrent.js'
  */
 
 function parseRAyData(rayArray) {
-  const rows = [];
+  const map = new Map();
 
   (rayArray || []).forEach(item => {
     const sphere = item.Sphere || item.entity || {};
@@ -45,39 +48,58 @@ function parseRAyData(rayArray) {
 
     apaCitation = apaCitation.replace(/(Project Gutenberg)/gi, '<span style="color: mediumvioletred;">$1</span>');
 
-    const formattedTorrents = [{
-      format: doc.format || 'PDF',
+    const torrentInfoHash = doc.RAy || doc.infoHash || edition.uuid || Math.random().toString(36).substring(2, 9);
+    const torrentFormat = doc.format || 'PDF';
+
+    const newTorrent = {
+      format: torrentFormat,
       size: doc.size || 0,
-      snatches: doc.snatches || 0,
-      infoHash: doc.RAy || doc.infoHash,
+      snatches: doc.snatches || edition.snatches || 0,
+      infoHash: torrentInfoHash,
       webseeds: doc.webseeds || doc.urlList || [doc.webseed].filter(Boolean),
       created_at: doc.created_at || edition.created_at || Date.now()
-    }];
+    };
 
-    rows.push({
-      source: {
-        uuid: groupKey,
-        name: cleanSourceName,
-        date: source.date || 'n.d.',
-        type: source.genus || source.type || 'Historical Book',
-        cover_img: source.cover_img || 'https://via.placeholder.com/222x300?text=No+Cover',
-        authors: authors.length ? authors : ['Unknown Author'],
-        classes: categories.length ? categories : ['Public Domain']
-      },
-      edition: {
-        uuid: edition.uuid || 'ed_' + Math.random().toString(36).substring(2, 9),
-        title: title,
-        date: edition.date || source.date || 'n.d.',
-        snatches: edition.snatches || doc.snatches || 0,
-        created_at: edition.created_at || Date.now(),
-        publisher: pubNameStr,
-        apaCitation: apaCitation
-      },
-      torrents: formattedTorrents
-    });
+    // Construct a composite key to group duplicate source names, APA citations, and doc RAys under the same row
+    const compositeKey = `${cleanSourceName.toLowerCase()}|${apaCitation.trim()}|${torrentInfoHash}`;
+
+    if (map.has(compositeKey)) {
+      const existing = map.get(compositeKey);
+      // Append torrent if not already present by infoHash/format
+      const duplicateTorrent = existing.torrents.some(t => t.infoHash === newTorrent.infoHash && t.format === newTorrent.format);
+      if (!duplicateTorrent) {
+        existing.torrents.push(newTorrent);
+      }
+      // Keep highest snatches or newest date if needed
+      if (newTorrent.snatches > existing.edition.snatches) {
+        existing.edition.snatches = newTorrent.snatches;
+      }
+    } else {
+      map.set(compositeKey, {
+        source: {
+          uuid: groupKey,
+          name: cleanSourceName,
+          date: source.date || 'n.d.',
+          type: source.genus || source.type || 'Historical Book',
+          cover_img: source.cover_img || 'https://via.placeholder.com/222x300?text=No+Cover',
+          authors: authors.length ? authors : ['Unknown Author'],
+          classes: categories.length ? categories : ['Public Domain']
+        },
+        edition: {
+          uuid: edition.uuid || 'ed_' + Math.random().toString(36).substring(2, 9),
+          title: title,
+          date: edition.date || source.date || 'n.d.',
+          snatches: newTorrent.snatches,
+          created_at: edition.created_at || Date.now(),
+          publisher: pubNameStr,
+          apaCitation: apaCitation
+        },
+        torrents: [newTorrent]
+      });
+    }
   });
 
-  return rows;
+  return Array.from(map.values());
 }
 
 function renderChildTorrentsTable(torrents) {
@@ -197,6 +219,7 @@ const TableControl = {
       scroller: true,
       scrollY: 'calc(100% - 100px)',
       scrollCollapse: true,
+      searching: true,
       dom: 'rt<"clear">',
       paging: true,
       columns: [
@@ -246,7 +269,7 @@ const TableControl = {
             ? src.authors.map(a => `<a href="#" class="author_name text-decoration-none">${a}</a>`).join(', ')
             : '<a href="#" class="author_name text-decoration-none">Unknown Author</a>';
 
-          const categories = (src.categories || [])
+          const categories = (src.classes || [])
             .map(c => `<a href="#" class="class_name badge bg-secondary text-decoration-none px-2 py-1" style="font-size: 0.75em; font-weight: 500; letter-spacing: 0.3px;">${c}</a>`)
             .join(' ');
 

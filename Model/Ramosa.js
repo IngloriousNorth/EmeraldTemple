@@ -1,6 +1,6 @@
 /**
  * Ramosa Protocol Base (IndexedDB Storage & GraphDB Identifier Manager)
- * Enforces strict transport-layer-neutral Open Protocol architecture.
+ * Enforces strict transport-layer-neutral Open Protocol architecture with unique constraints.
  */
 
 const RamosaBase = {
@@ -42,7 +42,7 @@ const RamosaBase = {
 
         return this.initPromise;
     },
-    // Helper to ensure we have an active, non-closing database handle
+
     async ensureDB() {
         if (!this.db) {
             return await this.init();
@@ -65,7 +65,6 @@ const RamosaBase = {
             }
             return found || null;
         }
-        //RAy is a unique index;
         return records[0];
     },
 
@@ -118,15 +117,24 @@ const RamosaBase = {
 
     /**
      * Puts a record into IndexedDB and anchors it to memory state.
-     * Enforces unique RAy (isomorphic to duplicate infoHash check in WebTorrent.js).
+     * Enforces strict uniqueness constraints on:
+     * 1. source_name (Sphere.source.name)
+     * 2. edition_apa (Sphere.edition.APA)
+     * 3. torrent_infoHash / RAy (index / Doc.RAy)
      */
     async put(RAy, rayPayload) {
         try {
+            // Ensure memory store is fully hydrated before checking constraints
+            if (!this.isLoaded) {
+                await this.loadAll();
+            }
+
             const db = await this.ensureDB();
             const transaction = db.transaction([this.storeName], "readwrite");
             const store = transaction.objectStore(this.storeName);
             
             const record = Object.assign({}, rayPayload, { 
+                index: RAy,
                 RAy: RAy
             });
 
@@ -142,74 +150,27 @@ const RamosaBase = {
                 }
             }
 
-            // Deduplicate Sphere.Doc array by RAy/infoHash if it exists
-            if (record.Sphere && Array.isArray(record.Sphere.Doc)) {
-                const seen = new Set();
-                record.Sphere.Doc = record.Sphere.Doc.filter(doc => {
-                    const key = doc.RAy || doc.infoHash;
-                    if (!key) return true;
-                    if (seen.has(key)) return false;
-                    seen.add(key);
-                    return true;
-                });
-            }
+            // Extract unique identifiers from incoming payload for strict enforcement
+            const incomingSourceName = record.Sphere?.source?.name?.trim().toLowerCase();
+            const incomingApa = record.Sphere?.edition?.APA?.trim();
+            const incomingRay = RAy;
 
-            // Enforce unique RAy / duplicate check (isomorphic to duplicate infoHash check)
-            const existingIdx = this.Base.findIndex(r => 
-                r.index === RAy || 
-                r.RAy === RAy || 
-                r.infoHash === RAy ||
-                r.Doc?.RAy === RAy ||
-                r.Doc?.infoHash === RAy ||
-                (Array.isArray(r.Sphere?.Doc) && r.Sphere.Doc.some(d => d.RAy === RAy || d.infoHash === RAy)) ||
-                (r.Sphere?.edition?.torrents && r.Sphere.edition.torrents.some(t => t.infoHash === RAy))
-            );
+            // Check against existing records in memory for duplicates across all three constraints
+            const duplicateRecord = this.Base.find(r => {
+                const existingSourceName = r.Sphere?.source?.name?.trim().toLowerCase();
+                const existingApa = r.Sphere?.edition?.APA?.trim();
+                const existingRay = r.index || r.RAy || r.Doc?.RAy;
 
-            if (existingIdx >= 0) {
-                console.warn(`[RAMOSA BASE] Duplicate RAy/infoHash detected (${RAy}). Updating existing record in-place (isomorphic to WebTorrent infoHash guard).`);
-                
-                // Merge or update cleanly instead of creating a duplicate row/entry
-                const existingRecord = this.Base[existingIdx];
-                
-                // If there are torrent arrays or doc arrays, merge them to preserve multi-torrent editions without duplicating
-                if (existingRecord.Sphere && record.Sphere) {
-                    if (Array.isArray(existingRecord.Sphere.Doc) && Array.isArray(record.Sphere.Doc)) {
-                        record.Sphere.Doc.forEach(newDoc => {
-                            const match = existingRecord.Sphere.Doc.find(d => (d.RAy === newDoc.RAy || d.infoHash === newDoc.infoHash));
-                            if (!match) {
-                                existingRecord.Sphere.Doc.push(newDoc);
-                            }
-                        });
-                    }
-                    if (existingRecord.Sphere.edition?.torrents && record.Sphere.edition?.torrents) {
-                        record.Sphere.edition.torrents.forEach(newT => {
-                            if (!existingRecord.Sphere.edition.torrents.some(t => t.infoHash === newT.infoHash)) {
-                                existingRecord.Sphere.edition.torrents.push(newT);
-                            }
-                        });
-                    }
-                }
-                
-                // Overwrite with merged/updated record properties while keeping index intact
-                const mergedRecord = Object.assign({}, existingRecord, record, { index: existingRecord.index || RAy });
-                this.Base[existingIdx] = mergedRecord;
-                
-                const request = store.put(mergedRecord);
-                request.onsuccess = () => {
-                    console.info(`[RAMOSA BASE] Successfully updated existing record for unique RAy: ${RAy}`);
-                    if (window.MVC?.Control?.Table) {
-                        if (typeof window.MVC.Control.Table.refresh === 'function') {
-                            window.MVC.Control.Table.refresh();
-                        }
-                        if (typeof window.MVC.Control.Table.unfold === 'function') {
-                            window.MVC.Control.Table.unfold("#table");
-                        }
-                    }
-                };
-                request.onerror = (event) => {
-                    console.error("[RAMOSA BASE ERROR] Failed to update duplicate RAy record:", event.target.error);
-                };
-                return;
+                const matchRay = incomingRay && existingRay === incomingRay;
+                const matchSource = incomingSourceName && existingSourceName === incomingSourceName;
+                const matchApa = incomingApa && existingApa === incomingApa;
+
+                return matchRay || matchSource || matchApa;
+            });
+
+            if (duplicateRecord) {
+                console.warn(`[RAMOSA BASE] Strict uniqueness constraint violated. Duplicate detected for Source Name ("${incomingSourceName}"), APA ("${incomingApa}"), or RAy ("${incomingRay}"). Skipping insertion.`);
+                return duplicateRecord;
             }
 
             const request = store.put(record);
@@ -235,7 +196,6 @@ const RamosaBase = {
             console.error("[RAMOSA BASE ERROR] Cannot put record due to database state:", err);
             this.db = null;
         }
-    
     }
 };
 
